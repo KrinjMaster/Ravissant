@@ -1,0 +1,15 @@
+.DS_Store
+
+/*/.DS_Store
+
+/backend/src/scraper/results/
+
+/backend/debug/
+/backend/target/
+
+/backend/**/*.rs.bk
+
+/backend/*.pdb
+
+/backend/**/mutants.out*/
+
