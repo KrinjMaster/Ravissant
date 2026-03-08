@@ -28,7 +28,7 @@ pub struct Attribute {
     pub text: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct Nutrients {
     pub proteins: Option<f32>,
     pub fats: Option<f32>,
@@ -36,12 +36,17 @@ pub struct Nutrients {
     pub calories: Option<f32>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ParsedProduct {
     pub name: String,
     pub brand: Option<String>,
-    pub weight: Option<String>,
+    pub weight: Option<f32>,
     pub category: String,
-    pub slug: String,
     pub nutrients: Nutrients,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Supermarket {
+    pub supermarket_name: String,
+    pub products: Vec<ParsedProduct>,
 }

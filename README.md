@@ -6,6 +6,11 @@ Calorie counting app that just works
 
 - /backend (backend + web scrapers)\_
 
+**DB structure:**
+
+- Products
+- Supermarkets
+
 **Supermarket products availability:**
 
 - Metro ✅

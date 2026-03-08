@@ -4,7 +4,6 @@ pub fn parse_product(
     name: Option<String>,
     attributes: &[Attribute],
     category: &str,
-    slug: &str,
 ) -> ParsedProduct {
     let mut brand = None;
     let mut weight = None;
@@ -29,7 +28,7 @@ pub fn parse_product(
 
         match name_attr.as_str() {
             "Бренд" => brand = Some(value),
-            "Вес, объем" => weight = Some(value),
+            "Вес, объем" => weight = value.parse().ok(),
             "Белки, г" => nutrients.proteins = value.parse().ok(),
             "Жиры, г" => nutrients.fats = value.parse().ok(),
             "Углеводы, г" => nutrients.carbohydrates = value.parse().ok(),
@@ -45,7 +44,6 @@ pub fn parse_product(
         brand,
         weight,
         category: category.to_string(),
-        slug: slug.to_string(),
         nutrients,
     }
 }

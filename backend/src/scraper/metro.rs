@@ -6,7 +6,6 @@ use crate::scraper::parser::parse_product;
 pub async fn fetch_category_products(
     client: &Client,
     category_name: &str,
-    slug: &str,
 ) -> Result<Vec<ParsedProduct>, Box<dyn std::error::Error>> {
     let query = r#"
     query Query($storeId: Int!, $slug: String!, $from: Int!, $size: Int!) {
@@ -27,7 +26,7 @@ pub async fn fetch_category_products(
         "query": query,
         "variables": {
             "storeId": 10,
-            "slug": slug,
+            "slug": category_name,
             "from": 0,
             "size": 10000
         }
@@ -44,7 +43,7 @@ pub async fn fetch_category_products(
     let v: serde_json::Value = serde_json::from_str(&text)?;
 
     if v.get("data").is_none() {
-        println!("Skipping slug {}: no data field", slug);
+        println!("Skipping slug {}: no data field", category_name);
         return Ok(vec![]);
     }
 
@@ -53,7 +52,7 @@ pub async fn fetch_category_products(
     let mut results = Vec::new();
 
     for product in parsed.data.category.products {
-        let parsed_product = parse_product(product.name, &product.attributes, category_name, slug);
+        let parsed_product = parse_product(product.name, &product.attributes, category_name);
 
         results.push(parsed_product);
     }
@@ -88,7 +87,7 @@ pub async fn fetch_metro_products() -> Vec<ParsedProduct> {
     let mut all_products = Vec::new();
 
     for slug in categories {
-        match fetch_category_products(&client, &slug, &slug).await {
+        match fetch_category_products(&client, &slug).await {
             Ok(products) => {
                 println!("{} -> {}", slug, products.len());
                 all_products.extend(products);
