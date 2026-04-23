@@ -4,6 +4,7 @@
 
 /*/.DS_Store
 /backend/*.db
+/mobile/assets/*.db
 
 /backend/src/scraper/results/
 
