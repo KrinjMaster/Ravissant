@@ -1,26 +1,27 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { SQLiteProvider } from "expo-sqlite";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
+import { AuthProvider } from "@/features/auth/auth.provider";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
+  const isLoggedIn = useAuth();
   return (
-    <SQLiteProvider databaseName="main.db">
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <AuthProvider>
+      <SQLiteProvider databaseName="main.db">
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Protected guard={isLoggedIn}>
+            <Stack.Screen name="(app)" options={{ headerShown: false }} />
+          </Stack.Protected>
+          <Stack.Protected guard={!isLoggedIn}>
+            <Stack.Screen
+              name="login"
+              options={{ title: "Login", headerShown: false }}
+            />
+          </Stack.Protected>
         </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </SQLiteProvider>
+      </SQLiteProvider>
+    </AuthProvider>
   );
 }
