@@ -1,22 +1,4 @@
-# Project specific
-
-.DS_Store
-
-/*/.DS_Store
-/backend/*.db
-
-/backend/src/scraper/results/
-
-/backend/debug/
-/backend/target/
-
-/backend/**/*.rs.bk
-
-/backend/*.pdb
-
-/backend/**/mutants.out*/
-
-# General
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
 node_modules/
