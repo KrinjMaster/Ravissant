@@ -6,13 +6,30 @@
       "@/*": [
         "./*"
       ],
-      "@app/*": "./app/*",
-      "@assets/*": "./assets/*",
-      "@components/*": "./components/*",
-      "@features/*": "./features/*",
-      "@hooks/*": "./hooks/*",
-      "@types/*": "./types/*",
-      "@utils/*": "./utils/*"
+      "@/app/*": [
+        "./app/*"
+      ],
+      "@/assets/*": [
+        "./assets/*"
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/features/*": [
+        "./features/*"
+      ],
+      "@/hooks/*": [
+        "./hooks/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/utils/*": [
+        "./utils/*"
+      ],
+      "@/constants/*": [
+        "./constants/*"
+      ]
     }
   },
   "include": [

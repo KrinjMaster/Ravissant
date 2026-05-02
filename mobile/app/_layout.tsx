@@ -1,27 +1,32 @@
 import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
 import { SQLiteProvider } from "expo-sqlite";
-import { AuthProvider } from "@/features/auth/auth.provider";
-import { useAuth } from "@/hooks/useAuth";
+import { Text } from "@react-navigation/elements";
+import { OnboardProvider } from "@/features/onboard/onboard.provider";
+import { useOnboard } from "@/hooks/useOnboard";
 
 export default function RootLayout() {
-  const isLoggedIn = useAuth();
   return (
-    <AuthProvider>
+    <OnboardProvider>
       <SQLiteProvider databaseName="main.db">
-        <Stack>
-          <Stack.Protected guard={isLoggedIn}>
-            <Stack.Screen name="(app)" options={{ headerShown: false }} />
-          </Stack.Protected>
-          <Stack.Protected guard={!isLoggedIn}>
-            <Stack.Screen
-              name="login"
-              options={{ title: "Login", headerShown: false }}
-            />
-          </Stack.Protected>
-        </Stack>
+        <RootStack />
       </SQLiteProvider>
-    </AuthProvider>
+    </OnboardProvider>
+  );
+}
+
+function RootStack() {
+  const { isOnboarded, isLoading } = useOnboard();
+
+  if (isLoading) return <Text>Loading</Text>;
+
+  return (
+    <Stack>
+      <Stack.Protected guard={isOnboarded}>
+        <Stack.Screen name="(app)" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={!isOnboarded}>
+        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+      </Stack.Protected>
+    </Stack>
   );
 }
