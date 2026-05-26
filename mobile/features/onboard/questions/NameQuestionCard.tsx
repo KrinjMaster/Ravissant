@@ -1,17 +1,10 @@
-import { QuestonCard } from "./QuestionCard";
-import { Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/theme";
+import { QuestionCard } from "./QuestionCard";
+import { Text } from "react-native";
 
 export const NameQuestionCard = () => {
   return (
-    <QuestonCard>
-      <Text style={styles.text}>What is yout name</Text>
-    </QuestonCard>
+    <QuestionCard>
+      <Text className="text-typography-white">What is your name</Text>
+    </QuestionCard>
   );
 };
-
-const styles = StyleSheet.create({
-  text: {
-    color: colors.textPrimary,
-  },
-});

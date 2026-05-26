@@ -1,17 +1,10 @@
-import { QuestonCard } from "./QuestionCard";
-import { Text, StyleSheet } from "react-native";
-import { colors } from "@/constants/theme";
+import { QuestionCard } from "./QuestionCard";
+import { Text } from "react-native";
 
 export const GoalQuestionCard = () => {
   return (
-    <QuestonCard>
-      <Text style={styles.text}>What is your goal</Text>
-    </QuestonCard>
+    <QuestionCard>
+      <Text className="text-typography-white">What is your goal</Text>
+    </QuestionCard>
   );
 };
-
-const styles = StyleSheet.create({
-  text: {
-    color: colors.textPrimary,
-  },
-});

@@ -1,19 +1,8 @@
 import { ReactElement } from "react";
-import { View, StyleSheet, Dimensions } from "react-native";
-import { spacing } from "@/constants/theme";
+import { View } from "react-native";
 
-const { width, height } = Dimensions.get("window");
-
-export const QuestonCard = ({ children }: { children: ReactElement }) => (
-  <View style={styles.card}>{children}</View>
+export const QuestionCard = ({ children }: { children: ReactElement }) => (
+  <View className="flex-1 w-full h-full bg-secondary-200 rounded-3xl p-10">
+    {children}
+  </View>
 );
-
-const styles = StyleSheet.create({
-  card: {
-    padding: spacing.lg,
-    height: height * 0.8,
-    width: width,
-    borderColor: "red",
-    borderWidth: 1,
-  },
-});

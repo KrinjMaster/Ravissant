@@ -4,20 +4,25 @@ import { Text } from "@react-navigation/elements";
 import { OnboardProvider } from "@/features/onboard/onboard.provider";
 import { useOnboard } from "@/hooks/useOnboard";
 
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
+import "@/global.css";
+
 export default function RootLayout() {
   return (
-    <OnboardProvider>
-      <SQLiteProvider databaseName="main.db">
-        <RootStack />
-      </SQLiteProvider>
-    </OnboardProvider>
+    <GluestackUIProvider mode="dark">
+      <OnboardProvider>
+        <SQLiteProvider databaseName="main.db">
+          <RootStack />
+        </SQLiteProvider>
+      </OnboardProvider>
+    </GluestackUIProvider>
   );
 }
 
 function RootStack() {
   const { isOnboarded, isLoading } = useOnboard();
 
-  if (isLoading) return <Text>Loading</Text>;
+  if (false) return <Text>Loading</Text>;
 
   return (
     <Stack>

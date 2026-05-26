@@ -1,22 +1,10 @@
-import { Dimensions, View } from "react-native";
+import { View, Text } from "react-native";
 import { OnboardCards } from "@/features/onboard/OnboardCards";
-import { colors } from "@/constants/theme";
-import { StyleSheet } from "react-native";
 
 export default function OnboardPage() {
   return (
-    <View style={styles.container}>
+    <View className="flex-1 justify-center items-center bg-background-50">
       <OnboardCards />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.bgPrimary,
-    height: Dimensions.get("window").height,
-  },
-});
