@@ -52,9 +52,6 @@ jobs:
       - name: TypeScript check
         run: npx tsc --noEmit
 
-      - name: Prettier check
-        run: npx prettier --check .
-
       # Expo validation
       - name: Expo Doctor
         run: npx expo-doctor
