@@ -1,0 +1,71 @@
+name: Mobile CI
+
+on:
+  push:
+    paths:
+      - "mobile/**"
+  pull_request:
+    paths:
+      - "mobile/**"
+
+jobs:
+  mobile-ci:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: mobile
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Node setup
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: mobile/package-lock.json
+
+      # Cache Metro + Expo + npm
+      - name: Cache Metro + Expo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/expo
+            ~/.cache/metro
+            mobile/node_modules
+          key: ${{ runner.os }}-mobile-${{ hashFiles('mobile/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-mobile-
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Code quality
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Prettier check
+        run: npx prettier --check .
+
+      # Expo validation
+      - name: Expo Doctor
+        run: npx expo-doctor
+
+      - name: Expo export (bundle check)
+        run: npx expo export
+
+      # Security
+      - name: NPM audit (production)
+        run: npm audit --production
+
+      # Tests (optional)
+      - name: Run tests
+        run: npm test --if-present

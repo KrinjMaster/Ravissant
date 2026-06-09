@@ -2,8 +2,7 @@
 import React from "react";
 import { createProgress } from "@gluestack-ui/core/progress/creator";
 import { View } from "react-native";
-import { tva } from "@gluestack-ui/utils/nativewind-utils";
-import {
+import { tva ,
   withStyleContext,
   useStyleContext,
 } from "@gluestack-ui/utils/nativewind-utils";

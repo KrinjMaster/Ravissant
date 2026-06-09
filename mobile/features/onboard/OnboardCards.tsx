@@ -1,7 +1,5 @@
 import { View } from "react-native";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityQuestionCard } from "./questions/ActivityQuestionCard";
-import { GoalQuestionCard } from "./questions/GoalQuestionCard";
 import { Button, ButtonText } from "@/components/ui/button/index";
 import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
 import Animated, {
@@ -16,7 +14,8 @@ import * as Haptics from "expo-haptics";
 import { IntroductionCard } from "./questions/IntroductionCard";
 import { SexQuestionCard } from "./questions/SexQuestionCard";
 import { VStack } from "@/components/ui/vstack";
-import { useOnboard } from "@/hooks/useOnboard";
+// import { ActivityQuestionCard } from "./questions/ActivityQuestionCard";
+// import { GoalQuestionCard } from "./questions/GoalQuestionCard";
 // import { WeightQuestionCard } from "./questions/WeightQuestionCards";
 // import { AgeQuestionCard } from "./questions/AgeQuestionCard";
 // import { HeightQuestionCard } from "./questions/HeightQuestionCard";
@@ -24,24 +23,17 @@ import { useOnboard } from "@/hooks/useOnboard";
 const AnimatedTrack = Animated.createAnimatedComponent(ProgressFilledTrack);
 
 export const OnboardCards = () => {
-  const { updateUserData, onboardingData } = useOnboard();
-
   const data = useMemo(
     () => [
       <IntroductionCard key="1" />,
-      <SexQuestionCard
-        key="2"
-        sex={onboardingData.sex}
-        updateSex={updateUserData}
-      />,
+      <SexQuestionCard key="2" />,
       // <AgeQuestionCard key="3" />,
       // <WeightQuestionCard key="4" />,
       // <HeightQuestionCard key="5" />,
       // <GoalQuestionCard key="6" />,
       // <ActivityQuestionCard key="7" />,
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onboardingData],
+    [],
   );
 
   const [currentQuestion, setCurrentQuestion] = useState(0);

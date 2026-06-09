@@ -1,6 +1,5 @@
 import { View } from "react-native";
 import { OnboardCards } from "@/features/onboard/OnboardCards";
-import { LinearGradient } from "expo-linear-gradient";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 
 export default function OnboardPage() {
@@ -24,7 +23,6 @@ export default function OnboardPage() {
 
         <Rect width="100%" height="100%" fill="url(#glow)" />
       </Svg>
-
       <OnboardCards />
     </View>
   );

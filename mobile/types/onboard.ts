@@ -11,4 +11,5 @@ export interface UserData {
   activityLevel: ActivityLevel;
   dailyCalorieTarget: number;
   manualOverride: boolean;
+  isOnboarded: boolean;
 }

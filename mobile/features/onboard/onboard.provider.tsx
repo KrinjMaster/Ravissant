@@ -1,15 +1,15 @@
 import { ReactNode, useEffect, useState } from "react";
 import { OnboardContext } from "./onboard.context";
-import { getData, setData } from "@/utils/storage";
+import { getData, storeData } from "@/utils/storage";
 import { UserData } from "@/types/onboard";
 
 export const OnboardProvider = ({ children }: { children: ReactNode }) => {
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<Partial<UserData>>({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const stored = await getData("userData");
+      const stored = await getData<UserData>("userData");
       if (stored) setUserData(stored);
       setIsLoading(false);
     };
@@ -18,12 +18,27 @@ export const OnboardProvider = ({ children }: { children: ReactNode }) => {
 
   const completeOnboarding = async (data: UserData) => {
     setUserData(data);
-    await setData("userData", data);
+    await storeData("userData", data);
   };
+
+  const updateUserData = (patch: Partial<UserData>) => {
+    setUserData((prev) => ({
+      ...prev,
+      ...patch,
+    }));
+  };
+
+  useEffect(() => console.log(userData), [userData]);
 
   return (
     <OnboardContext.Provider
-      value={{ userData, isLoading, completeOnboarding }}
+      value={{
+        userData,
+        isLoading,
+        isOnboarded: userData.isOnboarded ?? false,
+        updateUserData,
+        completeOnboarding,
+      }}
     >
       {children}
     </OnboardContext.Provider>

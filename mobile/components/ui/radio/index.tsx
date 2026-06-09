@@ -2,8 +2,8 @@
 import React from "react";
 import { createRadio } from "@gluestack-ui/core/radio/creator";
 import { Pressable, View, Platform, Text } from "react-native";
-import { tva } from "@gluestack-ui/utils/nativewind-utils";
 import {
+  tva,
   withStyleContext,
   useStyleContext,
 } from "@gluestack-ui/utils/nativewind-utils";
@@ -45,6 +45,9 @@ const radioStyle = tva({
       sm: "gap-1.5",
       md: "gap-2",
       lg: "gap-2",
+      xl: "gap-2",
+      "2xl": "gap-2",
+      "3xl": "gap-2",
     },
   },
 });
@@ -54,13 +57,16 @@ const radioGroupStyle = tva({
 });
 
 const radioIconStyle = tva({
-  base: "rounded-full justify-center items-center text-transparent fill-primary-400",
+  base: "rounded-full m-auto justify-center items-center text-transparent fill-primary-400",
 
   parentVariants: {
     size: {
       sm: "h-[9px] w-[9px]",
       md: "h-3 w-3",
       lg: "h-4 w-4",
+      xl: "h-6 w-6",
+      "2xl": "h-8 w-8",
+      "3xl": "h-10 w-10",
     },
   },
 });
@@ -72,7 +78,9 @@ const radioIndicatorStyle = tva({
       sm: "h-4 w-4",
       md: "h-5 w-5",
       lg: "h-6 w-6",
-      xl: "h-12 w-12",
+      xl: "h-8 w-8",
+      "2xl": "h-10 w-10",
+      "3xl": "h-12 w-12",
     },
   },
 });

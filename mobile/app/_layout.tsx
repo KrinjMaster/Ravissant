@@ -2,15 +2,13 @@ import { Stack } from "expo-router";
 import { SQLiteProvider } from "expo-sqlite";
 import { Text } from "@react-navigation/elements";
 import { OnboardProvider } from "@/features/onboard/onboard.provider";
-import { useOnboard } from "@/hooks/useOnboard";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
 import {
   configureReanimatedLogger,
   ReanimatedLogLevel,
 } from "react-native-reanimated";
-import { useEffect } from "react";
-import { getData } from "@/utils/storage";
+import { useOnboard } from "@/hooks/useOnboard";
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
@@ -30,12 +28,7 @@ export default function RootLayout() {
 }
 
 function RootStack() {
-  const { isOnboarded, isLoading, loadOnboardState } = useOnboard();
-
-  useEffect(() => {
-    loadOnboardState();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { isOnboarded, isLoading } = useOnboard();
 
   if (isLoading) return <Text>Loading</Text>;
 
