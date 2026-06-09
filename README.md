@@ -26,11 +26,8 @@ The mobile app is built with **Expo** and **React Native**, providing a native-l
 - **Framework**: Expo with React Native
 - **Routing**: Expo Router for file-based routing
 - **Styling**: Tailwind CSS via NativeWind, Gluestack UI for component library
-- **Type Safety**: TypeScript
 - **Storage**: Expo SQLite for local data, AsyncStorage for preferences
-- **Icons**: Lucide React Native, Expo Vector Icons
-- **Animation**: Legend Motion for smooth animations
-- **Navigation**: React Navigation with bottom tab navigation
+- **Animation**: Reanimated for smooth animations
 
 ### Mobile Folder Structure
 
@@ -40,22 +37,19 @@ mobile/
 │   ├── (app)/              # Main app routes
 │   ├── _layout.tsx         # Root layout and navigation setup
 │   ├── onboarding.tsx      # Onboarding flow
-│   └── +not-found.tsx      # 404 fallback page
+│   ├── +not-found.tsx      # 404 fallback page
+│   └── /...                # Other pages
 ├── /components             # Reusable UI components
 │   └── /ui                 # Gluestack UI component wrappers
 ├── /features               # Feature-specific modules
-│   └── /onboard            # Onboarding feature logic and components
+│   ├── /onboard            # Onboarding feature logic and components
+│   └── /...                # Other feature logic and components
 ├── /hooks                  # Custom React hooks
-│   └── useOnboard.ts       # Onboarding state management hook
 ├── /types                  # TypeScript type definitions
 ├── /utils                  # Utility functions and helpers
 ├── /constants              # App constants and configuration
 ├── /assets                 # Images, icons, and fonts
-├── app.json                # Expo configuration
-├── tailwind.config.js      # Tailwind CSS configuration
-├── global.css              # Global styles
-├── tsconfig.json           # TypeScript configuration
-└── package.json            # Dependencies and scripts
+└── app.json                # Expo configuration
 ```
 
 ### Folder Purposes
