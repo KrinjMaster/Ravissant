@@ -32,6 +32,43 @@ The mobile app is built with **Expo** and **React Native**, providing a native-l
 - **Animation**: Legend Motion for smooth animations
 - **Navigation**: React Navigation with bottom tab navigation
 
+### Mobile Folder Structure
+
+```
+mobile/
+├── /app                    # Expo Router pages (file-based routing)
+│   ├── (app)/              # Main app routes
+│   ├── _layout.tsx         # Root layout and navigation setup
+│   ├── onboarding.tsx      # Onboarding flow
+│   └── +not-found.tsx      # 404 fallback page
+├── /components             # Reusable UI components
+│   └── /ui                 # Gluestack UI component wrappers
+├── /features               # Feature-specific modules
+│   └── /onboard            # Onboarding feature logic and components
+├── /hooks                  # Custom React hooks
+│   └── useOnboard.ts       # Onboarding state management hook
+├── /types                  # TypeScript type definitions
+├── /utils                  # Utility functions and helpers
+├── /constants              # App constants and configuration
+├── /assets                 # Images, icons, and fonts
+├── app.json                # Expo configuration
+├── tailwind.config.js      # Tailwind CSS configuration
+├── global.css              # Global styles
+├── tsconfig.json           # TypeScript configuration
+└── package.json            # Dependencies and scripts
+```
+
+### Folder Purposes
+
+- **/app** - Expo Router file-based routing; contains all navigable screens and layouts
+- **/components/ui** - Reusable UI components built with Gluestack and styled with NativeWind
+- **/features** - Feature-specific modules grouping related screens, hooks, and logic
+- **/hooks** - Custom React hooks for state management and business logic
+- **/types** - Centralized TypeScript type definitions for type safety across the app
+- **/utils** - Helper functions and utility modules for common operations
+- **/constants** - App-wide constants, configuration values, and magic strings
+- **/assets** - Static resources including images, icons, and custom fonts
+
 ### Getting Started
 
 ```bash
