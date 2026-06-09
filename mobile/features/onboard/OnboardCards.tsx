@@ -1,9 +1,7 @@
 import { View } from "react-native";
 import { useEffect, useMemo, useState } from "react";
-import { NameQuestionCard } from "./questions/NameQuestionCard";
 import { ActivityQuestionCard } from "./questions/ActivityQuestionCard";
 import { GoalQuestionCard } from "./questions/GoalQuestionCard";
-import { BioQuestionCard } from "./questions/BioQuestionCard";
 import { Button, ButtonText } from "@/components/ui/button/index";
 import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
 import Animated, {
@@ -12,36 +10,48 @@ import Animated, {
   withTiming,
   Easing,
   SlideOutRight,
-  SlideInLeft,
-  FadeIn,
-  FadeOut,
-  FadeInRight,
-  FadeOutRight,
   SlideInRight,
 } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import { IntroductionCard } from "./questions/IntroductionCard";
+import { SexQuestionCard } from "./questions/SexQuestionCard";
+import { VStack } from "@/components/ui/vstack";
+import { useOnboard } from "@/hooks/useOnboard";
+// import { WeightQuestionCard } from "./questions/WeightQuestionCards";
+// import { AgeQuestionCard } from "./questions/AgeQuestionCard";
+// import { HeightQuestionCard } from "./questions/HeightQuestionCard";
 
 const AnimatedTrack = Animated.createAnimatedComponent(ProgressFilledTrack);
 
 export const OnboardCards = () => {
+  const { updateUserData, onboardingData } = useOnboard();
+
   const data = useMemo(
     () => [
-      <NameQuestionCard key="1" />,
-      <GoalQuestionCard key="2" />,
-      <BioQuestionCard key="3" />,
-      <ActivityQuestionCard key="4" />,
+      <IntroductionCard key="1" />,
+      <SexQuestionCard
+        key="2"
+        sex={onboardingData.sex}
+        updateSex={updateUserData}
+      />,
+      // <AgeQuestionCard key="3" />,
+      // <WeightQuestionCard key="4" />,
+      // <HeightQuestionCard key="5" />,
+      // <GoalQuestionCard key="6" />,
+      // <ActivityQuestionCard key="7" />,
     ],
-    [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [onboardingData],
   );
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [direction, setDirection] = useState<"next" | "back" | null>(null);
 
   const goBack = () => {
-    setDirection("back");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setCurrentQuestion((prev) => prev - 1);
   };
   const goNext = () => {
-    setDirection("next");
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setCurrentQuestion((prev) => prev + 1);
   };
 
@@ -61,8 +71,8 @@ export const OnboardCards = () => {
   }));
 
   return (
-    <View className="flex w-screen justify-between items-center pt-10 pb-2.5">
-      <View className="flex flex-row w-[95%] h-[90%] gap-4">
+    <VStack className="pt-[10%] pb-[0%]" space="3xl">
+      <VStack className="flex-row h-[90%]" space="md">
         <Progress size="sm" orientation="vertical" className="h-[90%] my-auto">
           <AnimatedTrack style={animatedTrackStyle} />
         </Progress>
@@ -80,14 +90,14 @@ export const OnboardCards = () => {
             {data[currentQuestion]}
           </Animated.View>
         </View>
-      </View>
+      </VStack>
       <View className="flex-row w-[95%] justify-between">
         <Button
           size="xl"
           action="primary"
           disabled={currentQuestion === 0}
           onPress={goBack}
-          className="w-[30%]"
+          className="w-[40%]"
         >
           <ButtonText>Назад</ButtonText>
         </Button>
@@ -96,11 +106,11 @@ export const OnboardCards = () => {
           action="primary"
           disabled={currentQuestion === data.length - 1}
           onPress={goNext}
-          className="w-[67%]"
+          className="w-[58%]"
         >
           <ButtonText>Вперед</ButtonText>
         </Button>
       </View>
-    </View>
+    </VStack>
   );
 };

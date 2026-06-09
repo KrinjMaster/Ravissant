@@ -59,11 +59,11 @@ const buttonStyle = tva({
     },
 
     size: {
-      xs: "px-3.5 h-8",
-      sm: "px-4 h-9",
-      md: "px-5 h-10",
-      lg: "px-6 h-11",
-      xl: "px-7 h-12",
+      xs: "px-1.5 h-8",
+      sm: "px-2 h-9",
+      md: "px-2 h-10",
+      lg: "px-3 h-11",
+      xl: "px-4 h-12",
     },
   },
   compoundVariants: [
@@ -119,7 +119,7 @@ const buttonStyle = tva({
 });
 
 const buttonTextStyle = tva({
-  base: "text-typography-0 font-normal web:select-none",
+  base: "text-typography-0 font-seenonim web:select-none",
   parentVariants: {
     action: {
       primary:
@@ -141,7 +141,7 @@ const buttonTextStyle = tva({
       sm: "text-sm",
       md: "text-base",
       lg: "text-lg",
-      xl: "text-xl",
+      xl: "text-3xl",
     },
   },
   parentCompoundVariants: [

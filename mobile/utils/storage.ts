@@ -9,10 +9,10 @@ export const storeData = async <T>(name: string, value: T) => {
   }
 };
 
-export const getData = async (name: string) => {
+export const getData = async <T>(name: string): Promise<T | null> => {
   try {
-    const jsonValue = await AsyncStorage.getItem(name);
-    return jsonValue != null ? JSON.parse(jsonValue) : null;
+    const value = await AsyncStorage.getItem(name);
+    return value ? JSON.parse(value) : null;
   } catch {
     return null;
   }

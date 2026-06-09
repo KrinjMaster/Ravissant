@@ -41,7 +41,13 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-font",
+        {
+          "fonts": ["./assets/fonts/Seenonim.otf"]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -53,6 +59,6 @@
         "projectId": "c6d505a0-0c70-4002-bed1-07465c42eef7"
       }
     },
-    "owner": "krinjmaser"
+    "owner": "krinjmaster"
   }
 }

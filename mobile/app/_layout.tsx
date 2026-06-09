@@ -3,9 +3,19 @@ import { SQLiteProvider } from "expo-sqlite";
 import { Text } from "@react-navigation/elements";
 import { OnboardProvider } from "@/features/onboard/onboard.provider";
 import { useOnboard } from "@/hooks/useOnboard";
-
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from "react-native-reanimated";
+import { useEffect } from "react";
+import { getData } from "@/utils/storage";
+
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false,
+});
 
 export default function RootLayout() {
   return (
@@ -20,9 +30,14 @@ export default function RootLayout() {
 }
 
 function RootStack() {
-  const { isOnboarded, isLoading } = useOnboard();
+  const { isOnboarded, isLoading, loadOnboardState } = useOnboard();
 
-  if (false) return <Text>Loading</Text>;
+  useEffect(() => {
+    loadOnboardState();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (isLoading) return <Text>Loading</Text>;
 
   return (
     <Stack>

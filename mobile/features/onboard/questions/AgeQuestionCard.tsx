@@ -1,10 +1,10 @@
 import { QuestionCard } from "./QuestionCard";
 import { Text } from "react-native";
 
-export const BioQuestionCard = () => {
+export const AgeQuestionCard = () => {
   return (
     <QuestionCard>
-      <Text className="text-typography-white">What is your bio</Text>
+      <Text className="text-typography-white">What is your age</Text>
     </QuestionCard>
   );
 };
