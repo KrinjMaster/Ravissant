@@ -47,6 +47,14 @@
         {
           "fonts": ["./assets/fonts/Seenonim.otf"]
         }
+      ],
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": ["ru"]
+          }
+        }
       ]
     ],
     "experiments": {

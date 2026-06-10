@@ -30,6 +30,11 @@ export default function RootLayout() {
 function RootStack() {
   const { isOnboarded, isLoading } = useOnboard();
 
+  // const [loaded] = useFonts({
+  //   Seenonim: require("../assets/fonts/Seenonim.otf"),
+  // });
+  //
+  // if (!loaded) return null;
   if (isLoading) return <Text>Loading</Text>;
 
   return (

@@ -11,13 +11,15 @@ import Animated, {
   SlideInRight,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { IntroductionCard } from "./questions/IntroductionCard";
-import { SexQuestionCard } from "./questions/SexQuestionCard";
 import { VStack } from "@/components/ui/vstack";
 // import { ActivityQuestionCard } from "./questions/ActivityQuestionCard";
 // import { GoalQuestionCard } from "./questions/GoalQuestionCard";
-// import { WeightQuestionCard } from "./questions/WeightQuestionCards";
-// import { AgeQuestionCard } from "./questions/AgeQuestionCard";
+import { useOnboard } from "@/hooks/useOnboard";
+import { getAge } from "@/utils/date";
+import { AgeQuestionCard } from "./questions/AgeQuestionCard";
+import { IntroductionCard } from "./questions/IntroductionCard";
+import { SexQuestionCard } from "./questions/SexQuestionCard";
+import { WeightQuestionCard } from "./questions/WeightQuestionCards";
 // import { HeightQuestionCard } from "./questions/HeightQuestionCard";
 
 const AnimatedTrack = Animated.createAnimatedComponent(ProgressFilledTrack);
@@ -27,8 +29,8 @@ export const OnboardCards = () => {
     () => [
       <IntroductionCard key="1" />,
       <SexQuestionCard key="2" />,
-      // <AgeQuestionCard key="3" />,
-      // <WeightQuestionCard key="4" />,
+      <AgeQuestionCard key="3" />,
+      <WeightQuestionCard key="4" />,
       // <HeightQuestionCard key="5" />,
       // <GoalQuestionCard key="6" />,
       // <ActivityQuestionCard key="7" />,
@@ -37,15 +39,33 @@ export const OnboardCards = () => {
   );
 
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const { userData } = useOnboard();
 
   const goBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setCurrentQuestion((prev) => prev - 1);
   };
+
   const goNext = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setCurrentQuestion((prev) => prev + 1);
   };
+
+  const canProceed = (() => {
+    switch (currentQuestion) {
+      case 0:
+        return true;
+
+      case 1:
+        return !!userData.sex;
+
+      case 2:
+        return userData.birthday ? getAge(userData.birthday) >= 18 : false;
+
+      default:
+        return false;
+    }
+  })();
 
   const progress = ((currentQuestion + 1) / data.length) * 100;
   const animatedValue = useSharedValue(0);
@@ -96,7 +116,7 @@ export const OnboardCards = () => {
         <Button
           size="xl"
           action="primary"
-          disabled={currentQuestion === data.length - 1}
+          disabled={currentQuestion === data.length - 1 || !canProceed}
           onPress={goNext}
           className="w-[58%]"
         >

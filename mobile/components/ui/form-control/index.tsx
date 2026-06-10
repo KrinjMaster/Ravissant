@@ -43,7 +43,7 @@ const formControlErrorStyle = tva({
 });
 
 const formControlErrorTextStyle = tva({
-  base: "text-error-700",
+  base: "font-seenonim text-error-700",
   variants: {
     isTruncated: {
       true: "web:truncate",
@@ -469,4 +469,3 @@ export {
   FormControlHelper,
   FormControlHelperText,
 };
-

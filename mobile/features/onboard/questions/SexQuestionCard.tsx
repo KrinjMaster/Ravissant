@@ -18,8 +18,11 @@ export const SexQuestionCard = () => {
 
   return (
     <Card variant="elevated" className="h-full" size="lg">
-      <Heading size="3xl" className="mt-[5%]">
-        Выбери свой пол
+      <Heading size="5xl" className="text-typography-200">
+        ВЫБЕРИ СВОЙ
+      </Heading>
+      <Heading size="4xl" className="text-tertiary-500">
+        пол
       </Heading>
       <FormControl>
         <RadioGroup

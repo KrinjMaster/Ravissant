@@ -187,18 +187,19 @@ export const config = {
     "--color-secondary-950": "230 230 230",
 
     /* Tertiary (optional alt accent) */
-    "--color-tertiary-0": "40 18 70",
-    "--color-tertiary-50": "55 10 95",
-    "--color-tertiary-100": "70 5 130",
-    "--color-tertiary-200": "86 3 173",
-    "--color-tertiary-300": "105 35 200",
-    "--color-tertiary-400": "125 131 255",
-    "--color-tertiary-500": "145 150 255",
-    "--color-tertiary-600": "170 175 255",
-    "--color-tertiary-700": "195 198 255",
-    "--color-tertiary-800": "220 222 255",
-    "--color-tertiary-900": "235 236 255",
-    "--color-tertiary-950": "245 246 255",
+    // "--color-tertiary-0": "40 18 70",
+    // "--color-tertiary-50": "55 10 95",
+    // "--color-tertiary-100": "70 5 130",
+    // "--color-tertiary-200": "86 3 173",
+    // "--color-tertiary-300": "105 35 200",
+    // "--color-tertiary-400": "125 131 255",
+    // changed this color
+    "--color-tertiary-500": "225 20 98",
+    // "--color-tertiary-600": "170 175 255",
+    // "--color-tertiary-700": "195 198 255",
+    // "--color-tertiary-800": "220 222 255",
+    // "--color-tertiary-900": "235 236 255",
+    // "--color-tertiary-950": "245 246 255",
 
     /* Error (your red) */
     "--color-error-0": "60 10 12",

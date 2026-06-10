@@ -5,7 +5,7 @@ export type ActivityLevel = "sedentary" | "light" | "moderate" | "active";
 export interface UserData {
   goal: Goal;
   sex: Sex;
-  age: number;
+  birthday: Date;
   heightCm: number;
   weightKg: number;
   activityLevel: ActivityLevel;
