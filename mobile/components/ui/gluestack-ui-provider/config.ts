@@ -192,10 +192,10 @@ export const config = {
     // "--color-tertiary-100": "70 5 130",
     // "--color-tertiary-200": "86 3 173",
     // "--color-tertiary-300": "105 35 200",
-    // "--color-tertiary-400": "125 131 255",
+    // "--color-tertiary-400": "237 49 121",
     // changed this color
     "--color-tertiary-500": "225 20 98",
-    // "--color-tertiary-600": "170 175 255",
+    "--color-tertiary-600": "237 49 121",
     // "--color-tertiary-700": "195 198 255",
     // "--color-tertiary-800": "220 222 255",
     // "--color-tertiary-900": "235 236 255",

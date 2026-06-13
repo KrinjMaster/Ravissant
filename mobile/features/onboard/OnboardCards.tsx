@@ -12,15 +12,16 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { VStack } from "@/components/ui/vstack";
-// import { ActivityQuestionCard } from "./questions/ActivityQuestionCard";
-// import { GoalQuestionCard } from "./questions/GoalQuestionCard";
 import { useOnboard } from "@/hooks/useOnboard";
 import { getAge } from "@/utils/date";
-import { AgeQuestionCard } from "./questions/AgeQuestionCard";
 import { IntroductionCard } from "./questions/IntroductionCard";
 import { SexQuestionCard } from "./questions/SexQuestionCard";
+import { AgeQuestionCard } from "./questions/AgeQuestionCard";
 import { WeightQuestionCard } from "./questions/WeightQuestionCards";
-// import { HeightQuestionCard } from "./questions/HeightQuestionCard";
+import { HeightQuestionCard } from "./questions/HeightQuestionCard";
+import { ActivityQuestionCard } from "./questions/ActivityQuestionCard";
+import { GoalQuestionCard } from "./questions/GoalQuestionCard";
+import { FinalScreenCard } from "./questions/FinalScreenCard";
 
 const AnimatedTrack = Animated.createAnimatedComponent(ProgressFilledTrack);
 
@@ -31,9 +32,10 @@ export const OnboardCards = () => {
       <SexQuestionCard key="2" />,
       <AgeQuestionCard key="3" />,
       <WeightQuestionCard key="4" />,
-      // <HeightQuestionCard key="5" />,
-      // <GoalQuestionCard key="6" />,
-      // <ActivityQuestionCard key="7" />,
+      <HeightQuestionCard key="5" />,
+      <ActivityQuestionCard key="6" />,
+      <GoalQuestionCard key="7" />,
+      <FinalScreenCard key="8" />,
     ],
     [],
   );
@@ -55,13 +57,24 @@ export const OnboardCards = () => {
     switch (currentQuestion) {
       case 0:
         return true;
-
       case 1:
         return !!userData.sex;
-
       case 2:
-        return userData.birthday ? getAge(userData.birthday) >= 18 : false;
-
+        return userData.birthday
+          ? getAge(new Date(userData.birthday)) >= 18
+          : false;
+      case 3:
+        return (
+          !!userData.weight && userData.weight >= 30 && userData.weight <= 300
+        );
+      case 4:
+        return (
+          !!userData.height && userData.height >= 120 && userData.height <= 250
+        );
+      case 5:
+        return !!userData.activityLevel;
+      case 6:
+        return !!userData.goal;
       default:
         return false;
     }

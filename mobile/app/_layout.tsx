@@ -9,6 +9,8 @@ import {
   ReanimatedLogLevel,
 } from "react-native-reanimated";
 import { useOnboard } from "@/hooks/useOnboard";
+// import { useFonts } from "expo-font";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
@@ -29,6 +31,10 @@ export default function RootLayout() {
 
 function RootStack() {
   const { isOnboarded, isLoading } = useOnboard();
+
+  if (process.env.EXPO_PUBLIC_RESET_STORAGE) {
+    AsyncStorage.removeItem("user_data");
+  }
 
   // const [loaded] = useFonts({
   //   Seenonim: require("../assets/fonts/Seenonim.otf"),

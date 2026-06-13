@@ -1,11 +1,12 @@
-import { UserData } from "@/types/onboard";
+import { NutritionPlan, UserData } from "@/types/onboard";
 import { createContext } from "react";
 
 interface Props {
   userData: Partial<UserData>;
   isLoading: boolean;
-  completeOnboarding: (data: UserData) => void;
+  completeOnboarding: () => void;
   updateUserData: (patch: Partial<UserData>) => void;
+  updateNutritionPlan: (patch: Partial<NutritionPlan>) => void;
   isOnboarded: boolean;
 }
 
