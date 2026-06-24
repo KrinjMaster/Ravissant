@@ -145,7 +145,7 @@ const buttonTextStyle = tva({
       sm: "text-sm",
       md: "text-base",
       lg: "text-lg",
-      xl: "text-3xl",
+      xl: "text-2xl",
     },
   },
   parentCompoundVariants: [

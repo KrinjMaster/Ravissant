@@ -1,5 +1,4 @@
 import { Stack } from "expo-router";
-import { SQLiteProvider } from "expo-sqlite";
 import { Text } from "@react-navigation/elements";
 import { OnboardProvider } from "@/features/onboard/onboard.provider";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
@@ -9,44 +8,61 @@ import {
   ReanimatedLogLevel,
 } from "react-native-reanimated";
 import { useOnboard } from "@/hooks/useOnboard";
-// import { useFonts } from "expo-font";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import { useFonts } from "expo-font";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { deleteDatabaseAsync } from "expo-sqlite";
+import { useEffect } from "react";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
   strict: false,
 });
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: Infinity,
+    },
+  },
+});
+
 export default function RootLayout() {
   return (
-    <GluestackUIProvider mode="dark">
-      <OnboardProvider>
-        <SQLiteProvider databaseName="main.db">
+    <QueryClientProvider client={queryClient}>
+      <GluestackUIProvider mode="dark">
+        <OnboardProvider>
           <RootStack />
-        </SQLiteProvider>
-      </OnboardProvider>
-    </GluestackUIProvider>
+        </OnboardProvider>
+      </GluestackUIProvider>
+    </QueryClientProvider>
   );
 }
 
 function RootStack() {
   const { isOnboarded, isLoading } = useOnboard();
 
-  if (process.env.EXPO_PUBLIC_RESET_STORAGE) {
-    AsyncStorage.removeItem("user_data");
-  }
+  // if (process.env.EXPO_PUBLIC_RESET_STORAGE) {
+  //   console.log("true");
+  //   AsyncStorage.removeItem("user_data");
+  // }
+  useEffect(() => {
+    async function resetDB() {
+      await deleteDatabaseAsync("main.db");
+    }
 
-  // const [loaded] = useFonts({
-  //   Seenonim: require("../assets/fonts/Seenonim.otf"),
-  // });
-  //
-  // if (!loaded) return null;
-  if (isLoading) return <Text>Loading</Text>;
+    resetDB();
+  }, []);
+
+  const [loaded] = useFonts({
+    Seenonim: require("../assets/fonts/Seenonim.otf"),
+  });
+
+  if (isLoading || !loaded) return <Text>Loading</Text>;
 
   return (
     <Stack>
       <Stack.Protected guard={isOnboarded}>
-        <Stack.Screen name="(app)" options={{ headerShown: false }} />
+        <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
       </Stack.Protected>
       <Stack.Protected guard={!isOnboarded}>
         <Stack.Screen name="onboarding" options={{ headerShown: false }} />

@@ -1,13 +1,12 @@
-use hex::encode;
 use sha2::{Digest, Sha256};
 
-pub fn generate_product_id(source: &str, name: &str, brand: &str, weight: &f32) -> String {
+pub fn generate_product_id(source: &str, name: &str, brand: &str, serving_size: &f64) -> String {
     let input = format!(
         "{}:{}:{}:{}",
         source.to_lowercase(),
         name.to_lowercase(),
         brand.to_lowercase(),
-        weight
+        serving_size
     );
 
     let mut hasher = Sha256::new();

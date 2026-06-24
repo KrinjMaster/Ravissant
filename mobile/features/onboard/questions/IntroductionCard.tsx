@@ -5,12 +5,9 @@ import { Card } from "@/components/ui/card";
 export const IntroductionCard = () => {
   return (
     <Card variant="elevated" className="h-full" size="lg">
-      <Heading className="my-auto text-center text-2xl">
+      <Heading className="my-auto text-center" size="xl">
         Привет, это{"\n"}
-        <Text
-          className="text-primary-700 tracking-widest text-6xl"
-          style={{ fontFamily: "Seenonim" }}
-        >
+        <Text className="text-primary-700 tracking-widest" size="6xl">
           Ravissant
         </Text>
       </Heading>

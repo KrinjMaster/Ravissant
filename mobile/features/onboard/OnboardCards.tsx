@@ -131,7 +131,7 @@ export const OnboardCards = () => {
           action="primary"
           disabled={currentQuestion === data.length - 1 || !canProceed}
           onPress={goNext}
-          className="w-[58%]"
+          className="w-[55%]"
         >
           <ButtonText>Вперед</ButtonText>
         </Button>

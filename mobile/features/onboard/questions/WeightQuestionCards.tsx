@@ -47,12 +47,15 @@ export const WeightQuestionCard = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <Card variant="elevated" className="h-full" size="lg">
         <Heading size="5xl" className="text-typography-200">
-          ВЫБЕРИ СВОЙ
+          ВЫБЕРИ{"\n"}СВОЙ
         </Heading>
         <Heading size="4xl" className="text-tertiary-500">
           вес
         </Heading>
-        <FormControl className="mt-[15%]" isInvalid={isInvalid && value !== ""}>
+        <FormControl
+          className="mt-[15%] gap-1.5"
+          isInvalid={isInvalid && value !== ""}
+        >
           <VStack space="xs">
             <Text className="text-typography-300 text-xl">Введи вес (кг)</Text>
             <Input variant="half-rounded" size="3xl">
@@ -66,7 +69,7 @@ export const WeightQuestionCard = () => {
           </VStack>
           <FormControlError className="gap-3.5">
             <FormControlErrorIcon as={AlertCircleIcon} />
-            <FormControlErrorText>
+            <FormControlErrorText size="sm">
               Введите вес от 30 до 300 кг
             </FormControlErrorText>
           </FormControlError>

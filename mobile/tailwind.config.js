@@ -201,6 +201,11 @@ module.exports = {
         "soft-3": "0px 0px 30px rgba(38, 38, 38, 0.1)",
         "soft-4": "0px 0px 40px rgba(38, 38, 38, 0.1)",
       },
+      screens: {
+        compact: "0px", // <400
+        regular: "400px", // 400-429
+        large: "430px", // >=430
+      },
     },
   },
 };

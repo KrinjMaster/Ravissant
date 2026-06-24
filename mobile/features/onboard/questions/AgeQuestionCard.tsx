@@ -22,7 +22,7 @@ export const AgeQuestionCard = () => {
   return (
     <Card variant="elevated" className="h-full" size="lg">
       <Heading size="5xl" className="text-typography-200">
-        ВЫБЕРИ СВОЙ
+        ВЫБЕРИ{"\n"}СВОЙ
       </Heading>
       <Heading size="4xl" className="text-tertiary-500">
         возраст
@@ -43,7 +43,7 @@ export const AgeQuestionCard = () => {
         />
         <FormControlError className="gap-3.5">
           <FormControlErrorIcon as={AlertCircleIcon} />
-          <FormControlErrorText>
+          <FormControlErrorText className="w-[95%]" size="sm">
             Тебе должно быть 18, чтобы продолжить
           </FormControlErrorText>
         </FormControlError>

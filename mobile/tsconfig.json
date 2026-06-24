@@ -30,6 +30,12 @@
       "@/constants/*": [
         "./constants/*"
       ],
+      "@/lib/*": [
+        "./lib/*"
+      ],
+      "@/services/*": [
+        "./services/*"
+      ],
       "tailwind.config": [
         "./tailwind.config.js"
       ]

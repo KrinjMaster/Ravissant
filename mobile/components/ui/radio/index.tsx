@@ -45,15 +45,15 @@ const radioStyle = tva({
       sm: "gap-1.5",
       md: "gap-2",
       lg: "gap-2",
-      xl: "gap-2",
-      "2xl": "gap-2",
+      xl: "gap-0.5",
+      "2xl": "gap-1 large:gap-2",
       "3xl": "gap-2",
     },
   },
 });
 
 const radioGroupStyle = tva({
-  base: "gap-2",
+  base: "gap-1",
 });
 
 const radioIconStyle = tva({

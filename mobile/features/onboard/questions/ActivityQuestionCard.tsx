@@ -22,7 +22,7 @@ export const ActivityQuestionCard = () => {
   return (
     <Card variant="elevated" className="h-full" size="lg">
       <Heading size="5xl" className="text-typography-200">
-        ВЫБЕРИ СВОЙ
+        ВЫБЕРИ{"\n"}СВОЙ
       </Heading>
       <Heading size="4xl" className="text-tertiary-500">
         уровень активности
@@ -37,7 +37,7 @@ export const ActivityQuestionCard = () => {
             })
           }
         >
-          <VStack space="xl">
+          <VStack space="4xl">
             {activityLevels.map(({ value, title, description }) => (
               <Box key={title}>
                 <Radio value={value} size="2xl" className="justify-between">
@@ -46,7 +46,7 @@ export const ActivityQuestionCard = () => {
                     <RadioIcon as={CircleIcon} />
                   </RadioIndicator>
                 </Radio>
-                <Text size="sm" className="text-typography-300 w-[90%]">
+                <Text size="sm" className="text-typography-300 w-[85%]">
                   {description}
                 </Text>
               </Box>

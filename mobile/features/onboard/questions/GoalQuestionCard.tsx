@@ -22,7 +22,7 @@ export const GoalQuestionCard = () => {
   return (
     <Card variant="elevated" className="h-full" size="lg">
       <Heading size="5xl" className="text-typography-200">
-        ВЫБЕРИ СВОЮ
+        ВЫБЕРИ{"\n"}СВОЮ
       </Heading>
       <Heading size="4xl" className="text-tertiary-500">
         цель
@@ -37,7 +37,7 @@ export const GoalQuestionCard = () => {
             })
           }
         >
-          <VStack space="xl">
+          <VStack space="4xl">
             {goals.map(({ value, title, description }) => (
               <Box key={title}>
                 <Radio value={value} size="2xl" className="justify-between">

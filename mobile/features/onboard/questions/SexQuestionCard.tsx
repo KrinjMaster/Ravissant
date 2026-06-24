@@ -19,7 +19,7 @@ export const SexQuestionCard = () => {
   return (
     <Card variant="elevated" className="h-full" size="lg">
       <Heading size="5xl" className="text-typography-200">
-        ВЫБЕРИ СВОЙ
+        ВЫБЕРИ{"\n"}СВОЙ
       </Heading>
       <Heading size="4xl" className="text-tertiary-500">
         пол
@@ -34,7 +34,7 @@ export const SexQuestionCard = () => {
             })
           }
         >
-          <VStack space="xl">
+          <VStack space="4xl">
             <Radio value="male" size="3xl" className="justify-between">
               <RadioLabel>Мужчина</RadioLabel>
               <RadioIndicator>

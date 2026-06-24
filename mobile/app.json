@@ -41,21 +41,7 @@
           }
         }
       ],
-      "expo-sqlite",
-      [
-        "expo-font",
-        {
-          "fonts": ["./assets/fonts/Seenonim.otf"]
-        }
-      ],
-      [
-        "expo-localization",
-        {
-          "supportedLocales": {
-            "ios": ["ru"]
-          }
-        }
-      ]
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -45,7 +45,9 @@ export const FinalScreenCard = () => {
         </Heading>
         <VStack space="lg" className="mt-[10%]">
           <VStack space="xs">
-            <Text className="text-typography-300 text-xl">Калории</Text>
+            <Text className="text-typography-300" size="xl">
+              Калории
+            </Text>
             <Input variant="half-rounded" size="2xl">
               <InputField
                 keyboardType="numeric"
@@ -124,7 +126,7 @@ export const FinalScreenCard = () => {
         <Button
           size="xl"
           action="tertiary"
-          className="w-full py-1 h-[10%] my-auto mb-0"
+          className="w-full py-1 h-16 my-auto mb-0"
           onPress={() => {
             updateUserData({ isOnboarded: true });
             completeOnboarding();

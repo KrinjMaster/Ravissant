@@ -10,7 +10,6 @@ export const OnboardProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const load = async () => {
       const stored = await getData<UserData>("user_data");
-      console.log("data", stored?.isOnboarded);
       if (stored) setUserData(stored);
       setIsLoading(false);
     };
