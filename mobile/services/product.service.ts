@@ -23,4 +23,6 @@ export const productService = {
   },
   searchItems: async (db: SQLiteDatabase, params: string) =>
     await productRepository.getItemsByName(db, params),
+  getItemById: async (db: SQLiteDatabase, productId: string) =>
+    await productRepository.getItemById(db, productId),
 };

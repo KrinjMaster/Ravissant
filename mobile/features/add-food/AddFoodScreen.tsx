@@ -1,15 +1,17 @@
-import { Button, ButtonText } from "@/components/ui/button";
+import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FormControl } from "@/components/ui/form-control";
 import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { ArrowLeftIcon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useSearchItems } from "@/hooks/useSearchItems";
 import { MealType } from "@/types/products";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Keyboard, ScrollView, TouchableWithoutFeedback } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, ScrollView } from "react-native";
 
 export const AddFoodScreen = ({
   meal,
@@ -19,18 +21,36 @@ export const AddFoodScreen = ({
   date: string;
 }) => {
   const [searchString, setSearchString] = useState("");
-  const { data } = useSearchItems(searchString);
+  const { data, isLoading } = useSearchItems(searchString);
   const handleFinish = () => {
     router.back();
   };
-
-  useEffect(() => {
-    console.log(data);
-  }, [searchString]);
+  const handleForward = (productId: string, date: string, meal: string) => {
+    router.push({
+      pathname: "/modal/add-product",
+      params: {
+        productId,
+        meal,
+        date,
+      },
+    });
+  };
 
   return (
-    <VStack className="w-screen h-screen bg-secondary-0 pt-16 pb-8 px-2">
-      <Text>{meal}</Text>
+    <VStack className="w-screen h-screen bg-secondary-0 pt-16 px-2" space="xl">
+      <HStack className="items-center justify-center">
+        <Button
+          action="tertiary"
+          onPress={handleFinish}
+          className="absolute left-0 pl-1.5 pr-3.5"
+        >
+          <ButtonIcon as={ArrowLeftIcon} color="white" size="2xl" />
+          <ButtonText size="md">Назад</ButtonText>
+        </Button>
+        <Text size="3xl" className="text-center">
+          {meal}
+        </Text>
+      </HStack>
       <FormControl>
         <Input variant="half-rounded" size="2xl">
           <InputField
@@ -40,35 +60,29 @@ export const AddFoodScreen = ({
           />
         </Input>
       </FormControl>
-      <ScrollView className="mt-5 flex-1 px-3">
+      <ScrollView className="flex-1 px-3">
         <VStack space="sm">
+          {isLoading ? <Text size="6xl">LOADING</Text> : null}
           {data && searchString.length !== 0
             ? data.map(({ name, brand, id, calories }) => (
-                <Card
-                  size="md"
+                <Pressable
                   key={id}
-                  variant="outline"
-                  className="rounded-xl"
+                  onPress={() => handleForward(id, date, meal)}
                 >
-                  <Heading size="sm" className="line-clamp-1">
-                    {name}
-                  </Heading>
-                  <Heading size="sm" className="line-clamp-1">
-                    {brand}
-                  </Heading>
-                  <Text>{calories}</Text>
-                </Card>
+                  <Card size="md" variant="outline" className="rounded-xl">
+                    <Heading size="sm" className="line-clamp-1">
+                      {name}
+                    </Heading>
+                    <Heading size="sm" className="line-clamp-1">
+                      {brand}
+                    </Heading>
+                    <Text>{calories} ккал / 100г</Text>
+                  </Card>
+                </Pressable>
               ))
             : null}
         </VStack>
       </ScrollView>
-      <Button
-        action="primary"
-        onPress={handleFinish}
-        className="fixed bottom-0 left-0 right-0"
-      >
-        <ButtonText>Завершить</ButtonText>
-      </Button>
     </VStack>
   );
 };

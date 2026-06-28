@@ -41,7 +41,7 @@ export default function Index() {
     router.push({
       pathname: "/modal/add-food",
       params: {
-        meal: "breakfast",
+        meal: meal,
         date: displayDate.toISOString().substring(0, 10),
       },
     });

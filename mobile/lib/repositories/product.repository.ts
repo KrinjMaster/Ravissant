@@ -107,4 +107,33 @@ export const productRepository = {
       [`%${searchParams}%`],
     );
   },
+  getItemById: async (db: SQLiteDatabase, productId: string) => {
+    return db.getFirstAsync<{
+      name: string;
+      brand: string;
+      serving_size: number;
+      calories: number;
+      protein: number;
+      fat: number;
+      carbs: number;
+      supermarket: string;
+    }>(
+      `
+    SELECT
+      p.name,
+      p.brand,
+      p.serving_size,
+      p.calories_per_100g as calories,
+      p.proteins_per_100g as protein,
+      p.fats_per_100g as fat,
+      p.carbs_per_100g as carbs,
+      s.name as supermarket
+    FROM products p
+    JOIN supermarkets s ON p.source = s.id
+    WHERE p.id = ?
+    LIMIT 1;
+    `,
+      [`${productId}`],
+    );
+  },
 };
