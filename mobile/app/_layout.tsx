@@ -10,7 +10,7 @@ import {
 import { useOnboard } from "@/hooks/useOnboard";
 import { useFonts } from "expo-font";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { deleteDatabaseAsync } from "expo-sqlite";
+import { deleteDatabaseAsync, SQLiteProvider } from "expo-sqlite";
 import { useEffect } from "react";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 configureReanimatedLogger({
@@ -28,13 +28,18 @@ const queryClient = new QueryClient({
 
 export default function RootLayout() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <GluestackUIProvider mode="dark">
-        <OnboardProvider>
-          <RootStack />
-        </OnboardProvider>
-      </GluestackUIProvider>
-    </QueryClientProvider>
+    <SQLiteProvider
+      databaseName="main.db"
+      assetSource={{ assetId: require("../assets/main.db") }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <GluestackUIProvider mode="dark">
+          <OnboardProvider>
+            <RootStack />
+          </OnboardProvider>
+        </GluestackUIProvider>
+      </QueryClientProvider>
+    </SQLiteProvider>
   );
 }
 
@@ -45,13 +50,13 @@ function RootStack() {
   //   console.log("true");
   //   AsyncStorage.removeItem("user_data");
   // }
-  useEffect(() => {
-    async function resetDB() {
-      await deleteDatabaseAsync("main.db");
-    }
-
-    resetDB();
-  }, []);
+  // useEffect(() => {
+  //   async function resetDB() {
+  //     await deleteDatabaseAsync("main.db");
+  //   }
+  //
+  //   resetDB();
+  // }, []);
 
   const [loaded] = useFonts({
     Seenonim: require("../assets/fonts/Seenonim.otf"),
@@ -61,6 +66,9 @@ function RootStack() {
 
   return (
     <Stack>
+      <Stack.Protected guard={isOnboarded}>
+        <Stack.Screen name="modal" options={{ headerShown: false }} />
+      </Stack.Protected>
       <Stack.Protected guard={isOnboarded}>
         <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
       </Stack.Protected>

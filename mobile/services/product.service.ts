@@ -3,8 +3,8 @@ import { MealType } from "@/types/products";
 import { SQLiteDatabase } from "expo-sqlite";
 
 export const productService = {
-  getSummary: (db: SQLiteDatabase, day: string) =>
-    productRepository.getSummary(db, day),
+  getSummary: async (db: SQLiteDatabase, day: string) =>
+    await productRepository.getSummary(db, day),
   getMealInfo: async (db: SQLiteDatabase, day: string, mealType: MealType) => {
     const [summary, items] = await Promise.all([
       productRepository.getMealMacros(db, day, mealType),
@@ -14,11 +14,13 @@ export const productService = {
     return {
       summary: summary ?? {
         calories: 0,
-        proteins: 0,
-        fats: 0,
+        protein: 0,
+        fat: 0,
         carbs: 0,
       },
       items: items ?? [],
     };
   },
+  searchItems: async (db: SQLiteDatabase, params: string) =>
+    await productRepository.getItemsByName(db, params),
 };

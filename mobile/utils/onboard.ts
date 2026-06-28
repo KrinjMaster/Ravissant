@@ -1,4 +1,5 @@
 import { ActivityLevel, Goal, NutritionPlan, Sex } from "@/types/onboard";
+import { MealType } from "@/types/products";
 
 export const calculatePlan = ({
   sex,
@@ -93,3 +94,19 @@ export const calculatePlan = ({
     carbs,
   };
 };
+
+const mealDistribution: Record<MealType, number> = {
+  breakfast: 0.25,
+  lunch: 0.35,
+  snack: 0.15,
+  dinner: 0.25,
+};
+
+export function calculateMealCalories(totalCalories: number) {
+  return {
+    breakfast: Math.round(totalCalories * mealDistribution.breakfast),
+    lunch: Math.round(totalCalories * mealDistribution.lunch),
+    snack: Math.round(totalCalories * mealDistribution.snack),
+    dinner: Math.round(totalCalories * mealDistribution.dinner),
+  };
+}

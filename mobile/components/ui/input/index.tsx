@@ -81,7 +81,7 @@ const inputSlotStyle = tva({
 });
 
 const inputFieldStyle = tva({
-  base: "font-seenonim flex-1 text-typography-900 py-0 px-3 placeholder:text-typography-500 h-full ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed",
+  base: "font-seenonim flex-1 text-typography-900 py-0 px-3 placeholder:text-typography-300 h-full ios:leading-[0px] web:cursor-text web:data-[disabled=true]:cursor-not-allowed",
 
   parentVariants: {
     variant: {
