@@ -25,4 +25,18 @@ export const productService = {
     await productRepository.getItemsByName(db, params),
   getItemById: async (db: SQLiteDatabase, productId: string) =>
     await productRepository.getItemById(db, productId),
+  addMealItem: async (
+    db: SQLiteDatabase,
+    productId: string,
+    mealType: MealType,
+    grams: number,
+    loggedDay: string,
+  ) =>
+    await productRepository.addMealItem(
+      db,
+      productId,
+      mealType,
+      grams,
+      loggedDay,
+    ),
 };

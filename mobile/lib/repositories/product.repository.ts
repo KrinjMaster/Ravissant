@@ -1,5 +1,6 @@
 import { MealType } from "@/types/products";
 import { SQLiteDatabase } from "expo-sqlite";
+import { randomUUID } from "expo-crypto";
 
 export const productRepository = {
   getSummary: async (db: SQLiteDatabase, dayDate: string) => {
@@ -134,6 +135,29 @@ export const productRepository = {
     LIMIT 1;
     `,
       [`${productId}`],
+    );
+  },
+  addMealItem: async (
+    db: SQLiteDatabase,
+    productId: string,
+    mealType: MealType,
+    grams: number,
+    loggedDay: string,
+  ) => {
+    console.log(mealType, grams, loggedDay);
+    await db.runAsync(
+      `
+    INSERT INTO food_entries (
+      id,
+      logged_at,
+      logged_day,
+      meal_type,
+      product_id,
+      grams
+    )
+    VALUES (?, datetime('now'), ?, ?, ?, ?);
+    `,
+      [randomUUID(), loggedDay, mealType, productId, grams],
     );
   },
 };

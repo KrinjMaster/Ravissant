@@ -7,7 +7,7 @@ export function useMealInfo(day: string, mealType: MealType) {
   const db = useSQLiteContext();
 
   return useQuery({
-    queryKey: ["meal-info", day],
+    queryKey: ["meal-info", `${day} ${mealType}`],
     queryFn: () => productService.getMealInfo(db, day, mealType),
   });
 }
