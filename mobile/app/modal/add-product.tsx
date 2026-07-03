@@ -48,7 +48,7 @@ export default function AddFoodModal() {
   if (isLoading || !data) {
     return (
       <VStack className="w-screen h-screen bg-secondary-0 pt-16 pb-8 px-2">
-        <Text size="6xl">Loading</Text>
+        <Text size="6xl">Loading...</Text>
       </VStack>
     );
   }

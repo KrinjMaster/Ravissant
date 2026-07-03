@@ -32,6 +32,9 @@ export const textStyle = tva({
       "4xl": "text-4xl",
       "5xl": "text-5xl",
       "6xl": "text-5xl large:text-6xl",
+      "7xl": "text-6xl large:text-7xl",
+      "8xl": "text-7xl large:text-8xl",
+      "9xl": "text-8xl large:text-9xl",
     },
     sub: {
       true: "text-xs",

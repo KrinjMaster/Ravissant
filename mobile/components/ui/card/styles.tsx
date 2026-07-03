@@ -14,6 +14,7 @@ export const cardStyle = tva({
       outline: "border border-outline-200",
       ghost: "rounded-none",
       filled: "bg-background-50",
+      "half-rounded": "bg-background-50 rounded-2xl",
     },
   },
 });

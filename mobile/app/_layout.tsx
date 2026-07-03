@@ -11,7 +11,8 @@ import { useOnboard } from "@/hooks/useOnboard";
 import { useFonts } from "expo-font";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { deleteDatabaseAsync, SQLiteProvider } from "expo-sqlite";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
@@ -27,6 +28,36 @@ const queryClient = new QueryClient({
 });
 
 export default function RootLayout() {
+  const [dbReady, setDbReady] = useState(false);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        if (process.env.EXPO_PUBLIC_RESET_DB === "true") {
+          console.log("RESET DB");
+
+          await deleteDatabaseAsync("main.db");
+        }
+
+        if (process.env.EXPO_PUBLIC_RESET_STORAGE === "true") {
+          console.log("RESET STORAGE");
+
+          await AsyncStorage.removeItem("user_data");
+        }
+      } catch (e) {
+        console.log("reset error", e);
+      } finally {
+        setDbReady(true);
+      }
+    };
+
+    init();
+  }, []);
+
+  if (!dbReady) {
+    return <Text>Loading DB...</Text>;
+  }
+
   return (
     <SQLiteProvider
       databaseName="main.db"
@@ -46,23 +77,25 @@ export default function RootLayout() {
 function RootStack() {
   const { isOnboarded, isLoading } = useOnboard();
 
-  // if (process.env.EXPO_PUBLIC_RESET_STORAGE) {
-  //   console.log("true");
+  // if (process.env.EXPO_PUBLIC_RESET_STORAGE === "true") {
+  //   console.log("RESET STORAGE");
   //   AsyncStorage.removeItem("user_data");
   // }
-  // useEffect(() => {
+  //
+  // if (process.env.EXPO_PUBLIC_RESET_DB === "true") {
+  //   console.log("RESET DB");
   //   async function resetDB() {
   //     await deleteDatabaseAsync("main.db");
   //   }
   //
   //   resetDB();
-  // }, []);
+  // }
 
   const [loaded] = useFonts({
     Seenonim: require("../assets/fonts/Seenonim.otf"),
   });
 
-  if (isLoading || !loaded) return <Text>Loading</Text>;
+  if (isLoading || !loaded) return <Text>Loading...</Text>;
 
   return (
     <Stack>

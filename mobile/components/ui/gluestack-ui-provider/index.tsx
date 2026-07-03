@@ -8,7 +8,7 @@ import { useColorScheme } from "nativewind";
 export type ModeType = "light" | "dark" | "system";
 
 export function GluestackUIProvider({
-  mode = "light",
+  mode = "dark",
   ...props
 }: {
   mode?: ModeType;
