@@ -1,29 +1,22 @@
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { MacrosDisplay } from "@/features/homepage/MacrosDisplay";
+import { MealDisplay } from "@/features/homepage/MealDisplay";
 import { HomePageSkeleton } from "@/features/skeletons/HomePageSkeleton";
 import { useMacrosSummary } from "@/hooks/useMacrosSummary";
 import { useOnboard } from "@/hooks/useOnboard";
-import { MealType } from "@/types/products";
 import { calculateMealCalories } from "@/utils/onboard";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { useState } from "react";
 
 export default function Index() {
   const [displayDate] = useState(new Date(Date.now()));
+  const { userData } = useOnboard();
   const { data: macrosData, isLoading: isMacrosLoading } = useMacrosSummary(
     displayDate.toISOString(),
   );
-  const { userData } = useOnboard();
   const caloriesByMeal = calculateMealCalories(
     userData.nutritionPlan?.calories ?? 0,
   );
-
-  // const { data: mealData1, isLoading: isMeal1Loading } = useMealInfo(
-  //   displayDate.toISOString(),
-  //   "breakfast",
-  // );
 
   // const openModal = (meal: MealType) => {
   //   router.push({
@@ -55,8 +48,27 @@ export default function Index() {
         data={{
           ...macrosData,
           calories: 1250,
-          calorieGoal: userData.nutritionPlan?.calories ?? 0,
         }}
+      />
+      <MealDisplay
+        meal="breakfast"
+        date={displayDate}
+        plannedCalories={caloriesByMeal.breakfast}
+      />
+      <MealDisplay
+        meal="lunch"
+        date={displayDate}
+        plannedCalories={caloriesByMeal.lunch}
+      />
+      <MealDisplay
+        meal="dinner"
+        date={displayDate}
+        plannedCalories={caloriesByMeal.dinner}
+      />
+      <MealDisplay
+        meal="snack"
+        date={displayDate}
+        plannedCalories={caloriesByMeal.snack}
       />
     </VStack>
   );
