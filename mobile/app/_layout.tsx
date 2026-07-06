@@ -98,7 +98,7 @@ function RootStack() {
   if (isLoading || !loaded) return <Text>Loading...</Text>;
 
   return (
-    <Stack>
+    <Stack screenOptions={{ gestureEnabled: true }}>
       <Stack.Protected guard={isOnboarded}>
         <Stack.Screen name="modal" options={{ headerShown: false }} />
       </Stack.Protected>

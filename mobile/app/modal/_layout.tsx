@@ -5,7 +5,7 @@ export default function ModalLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        presentation: "fullScreenModal",
+        presentation: "card",
       }}
     />
   );

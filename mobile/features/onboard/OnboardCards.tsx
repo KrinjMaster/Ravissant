@@ -9,6 +9,7 @@ import Animated, {
   Easing,
   SlideOutRight,
   SlideInRight,
+  createAnimatedComponent,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { VStack } from "@/components/ui/vstack";
@@ -23,7 +24,7 @@ import { ActivityQuestionCard } from "./questions/ActivityQuestionCard";
 import { GoalQuestionCard } from "./questions/GoalQuestionCard";
 import { FinalScreenCard } from "./questions/FinalScreenCard";
 
-const AnimatedTrack = Animated.createAnimatedComponent(ProgressFilledTrack);
+const AnimatedTrack = createAnimatedComponent(ProgressFilledTrack);
 
 export const OnboardCards = () => {
   const data = useMemo(

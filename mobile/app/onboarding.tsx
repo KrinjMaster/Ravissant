@@ -1,10 +1,10 @@
-import { View } from "react-native";
 import { OnboardCards } from "@/features/onboard/OnboardCards";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
+import { VStack } from "@/components/ui/vstack";
 
 export default function OnboardPage() {
   return (
-    <View className="flex-1 justify-center items-center bg-secondary-0">
+    <VStack className="justify-center items-center bg-secondary-0">
       <Svg
         width={500}
         height={500}
@@ -24,6 +24,6 @@ export default function OnboardPage() {
         <Rect width="100%" height="100%" fill="url(#glow)" />
       </Svg>
       <OnboardCards />
-    </View>
+    </VStack>
   );
 }

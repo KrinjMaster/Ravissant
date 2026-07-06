@@ -54,6 +54,8 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
 
             name TEXT NOT NULL,
 
+            search_text TEXT NOT NULL,
+
             source TEXT NOT NULL,
 
             brand TEXT,
@@ -184,6 +186,7 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
         INSERT OR IGNORE INTO products (
             id,
             name,
+            search_text,
             source,
             brand,
             source_category,
@@ -203,7 +206,8 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
             ?7,
             ?8,
             ?9,
-            ?10
+            ?10,
+            ?11
         )
         ",
     )?;
@@ -226,12 +230,16 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
                 &product.brand.clone().unwrap_or_default(),
                 &product.serving_size.unwrap_or(0.0),
             );
+            let brand = product.brand.unwrap_or_default();
+
+            let search_text = format!("{} {}", brand.to_lowercase(), product.name.to_lowercase(),);
 
             stmt_product.execute(params![
                 product_id,
                 product.name,
+                search_text,
                 supermarket_id,
-                product.brand.unwrap_or_default(),
+                brand,
                 product.category,
                 product.serving_size.unwrap_or(0.0),
                 product.nutrients.proteins.unwrap_or(0.0),

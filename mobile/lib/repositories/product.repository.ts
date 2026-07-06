@@ -101,11 +101,11 @@ export const productRepository = {
       p.serving_size,
       p.calories_per_100g AS calories
     FROM products p
-    WHERE (COALESCE(p.brand, '') || ' ' || p.name) LIKE ?
+    WHERE p.search_text LIKE ?
     ORDER BY p.name
     LIMIT 10;
     `,
-      [`%${searchParams}%`],
+      [`%${searchParams.toLowerCase()}%`],
     );
   },
   getItemById: async (db: SQLiteDatabase, productId: string) => {

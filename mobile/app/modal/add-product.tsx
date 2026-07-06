@@ -1,5 +1,10 @@
+import { Box } from "@/components/ui/box";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Divider } from "@/components/ui/divider/Divider";
 import { FormControl } from "@/components/ui/form-control";
+import { Grid, GridItem } from "@/components/ui/grid/Grid";
+import { HStack } from "@/components/ui/hstack";
 import { ArrowLeftIcon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
@@ -34,6 +39,7 @@ export default function AddFoodModal() {
   useEffect(() => {
     if (data) {
       setWeight(data.serving_size.toString());
+      console.log(data);
     }
   }, [data]);
 
@@ -47,7 +53,7 @@ export default function AddFoodModal() {
 
   if (isLoading || !data) {
     return (
-      <VStack className="w-screen h-screen bg-secondary-0 pt-16 pb-8 px-2">
+      <VStack className="w-screen h-screen bg-secondary-0 pt-16 pb-16 px-2">
         <Text size="6xl">Loading...</Text>
       </VStack>
     );
@@ -56,40 +62,98 @@ export default function AddFoodModal() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <VStack
-        className="w-screen h-screen bg-secondary-0 pt-16 pb-8 px-2"
+        className="w-screen h-screen bg-secondary-0 items-center pt-[25%] pb-8 px-2"
         space="lg"
       >
-        <Button
-          action="tertiary"
-          onPress={handleFinish}
-          className="pl-1.5 pr-3.5 w-32"
-        >
-          <ButtonIcon as={ArrowLeftIcon} color="white" size="2xl" />
-          <ButtonText size="md">Назад</ButtonText>
-        </Button>
-        <Text size="2xl">{data.name}</Text>
-        <Text size="2xl">{data.supermarket}</Text>
-        <Text size="2xl">{data.serving_size} грaмм</Text>
-        <Text size="2xl">ккал / 100г - {data.calories}</Text>
-        <Text size="2xl">белок / 100г - {data.protein}</Text>
-        <Text size="2xl">жиры / 100г - {data.fat}</Text>
-        <Text size="2xl">углеводы / 100г - {data.carbs}</Text>
-        <FormControl>
-          <Input variant="half-rounded" size="2xl">
-            <InputField
-              keyboardType="numeric"
-              value={weight}
-              onChangeText={(text) => setWeight(text)}
-            />
-          </Input>
+        <Card variant="half-rounded" className="w-full">
+          <Text size="2xl" className="line-clamp-2 text-start">
+            {data.name}
+          </Text>
+          <HStack>
+            <Text size="3xl" className="text-info-500">
+              {data.supermarket}
+            </Text>
+          </HStack>
+        </Card>
+        <Divider className="my-0.5 w-[85%] h-0.5 rounded-full bg-background-200" />
+        <Card variant="half-rounded" className="w-full pb-10">
+          <Text size="8xl" className="text-center">
+            {data.serving_size} г
+          </Text>
+          <Grid
+            className="gap-4"
+            _extra={{
+              className: "grid-cols-9",
+            }}
+          >
+            <GridItem
+              _extra={{
+                className: "col-span-3",
+              }}
+            >
+              <Box className="relative w-fit items-center m-auto">
+                <Text size="3xl">{data.protein} г</Text>
+                <Text
+                  size="xl"
+                  className="absolute -bottom-6 text-typography-400"
+                >
+                  белки
+                </Text>
+              </Box>
+            </GridItem>
+            <GridItem
+              _extra={{
+                className: "col-span-3",
+              }}
+            >
+              <Box className="relative w-fit items-center m-auto">
+                <Text size="3xl">{data.fat} г</Text>
+                <Text
+                  size="xl"
+                  className="absolute -bottom-6 text-typography-400"
+                >
+                  жиры
+                </Text>
+              </Box>
+            </GridItem>
+            <GridItem
+              _extra={{
+                className: "col-span-3",
+              }}
+            >
+              <Box className="relative w-fit items-center m-auto">
+                <Text size="3xl">{data.carbs} г</Text>
+                <Text
+                  size="xl"
+                  className="absolute -bottom-6 text-typography-400"
+                >
+                  углеводы
+                </Text>
+              </Box>
+            </GridItem>
+          </Grid>
+        </Card>
+        <FormControl className="w-full mt-8">
+          <VStack>
+            <Text className="text-typography-200 text-xl pl-2">
+              Введите вес
+            </Text>
+            <Input variant="half-rounded" size="2xl">
+              <InputField
+                keyboardType="numeric"
+                value={weight}
+                onChangeText={(text) => setWeight(text)}
+              />
+            </Input>
+          </VStack>
         </FormControl>
         <Button
           action="primary"
           size="xl"
-          className="w-full mt-auto"
+          className="w-full mt-auto h-20 rounded-3xl"
           onPress={handleAddItem}
         >
-          <ButtonText>Добавить</ButtonText>
+          <ButtonText className="text-3xl">Добавить</ButtonText>
         </Button>
       </VStack>
     </TouchableWithoutFeedback>

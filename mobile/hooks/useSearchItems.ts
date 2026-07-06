@@ -8,5 +8,6 @@ export function useSearchItems(params: string) {
   return useQuery({
     queryKey: ["product-items", params],
     queryFn: () => productService.searchItems(db, params),
+    placeholderData: (previousData) => previousData,
   });
 }
