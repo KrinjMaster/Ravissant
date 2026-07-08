@@ -6,7 +6,7 @@ export function useMacrosSummary(day: string) {
   const db = useSQLiteContext();
 
   return useQuery({
-    queryKey: ["summary", day],
+    queryKey: ["summary", day.substring(0, 10)],
     queryFn: () => productService.getSummary(db, day),
   });
 }

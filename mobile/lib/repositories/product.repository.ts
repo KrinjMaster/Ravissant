@@ -1,6 +1,6 @@
 import { MealType } from "@/types/products";
 import { SQLiteDatabase } from "expo-sqlite";
-import { randomUUID } from "expo-crypto";
+import { generateId } from "@/utils/product";
 
 export const productRepository = {
   getSummary: async (db: SQLiteDatabase, dayDate: string) => {
@@ -14,10 +14,10 @@ export const productRepository = {
     }>(
       `
     SELECT
-      COALESCE(SUM(p.calories_per_100g * f.grams / 100),0) calories,
-      COALESCE(SUM(p.proteins_per_100g * f.grams / 100),0) protein,
-      COALESCE(SUM(p.fats_per_100g * f.grams / 100),0) fat,
-      COALESCE(SUM(p.carbs_per_100g * f.grams / 100),0) carbs
+      ROUND(COALESCE(SUM(p.calories_per_100g * f.grams / 100),0)) calories,
+      ROUND(COALESCE(SUM(p.proteins_per_100g * f.grams / 100),0)) protein,
+      ROUND(COALESCE(SUM(p.fats_per_100g * f.grams / 100),0)) fat,
+      ROUND(COALESCE(SUM(p.carbs_per_100g * f.grams / 100),0)) carbs
     FROM food_entries f
     JOIN products p ON p.id = f.product_id
     WHERE DATE(f.logged_day)=?
@@ -40,10 +40,10 @@ export const productRepository = {
     }>(
       `
     SELECT
-      COALESCE(SUM(p.calories_per_100g * f.grams / 100), 0) AS calories,
-      COALESCE(SUM(p.proteins_per_100g * f.grams / 100), 0) AS protein,
-      COALESCE(SUM(p.fats_per_100g * f.grams / 100), 0) AS fat,
-      COALESCE(SUM(p.carbs_per_100g * f.grams / 100), 0) AS carbs
+      ROUND(COALESCE(SUM(p.calories_per_100g * f.grams / 100), 0)) AS calories,
+      ROUND(COALESCE(SUM(p.proteins_per_100g * f.grams / 100), 0)) AS protein,
+      ROUND(COALESCE(SUM(p.fats_per_100g * f.grams / 100), 0)) AS fat,
+      ROUND(COALESCE(SUM(p.carbs_per_100g * f.grams / 100), 0)) AS carbs
     FROM food_entries f
     JOIN products p ON p.id = f.product_id
     WHERE f.logged_day = ?
@@ -60,22 +60,28 @@ export const productRepository = {
     const day = dayDate.substring(0, 10);
 
     return db.getAllAsync<{
+      id: string;
+      productId: string;
+      name: string;
+      weight: number;
       calories: number;
       protein: number;
+      brand: string;
       fat: number;
       carbs: number;
     }>(
       `
     SELECT
       f.id,
-      f.grams,
+      f.grams AS weight,
       f.logged_at,
-      p.id AS product_id,
+      p.id AS productId,
       p.name,
-      p.calories_per_100g,
-      p.proteins_per_100g,
-      p.fats_per_100g,
-      p.carbs_per_100g
+      p.brand,
+      ROUND(p.calories_per_100g * f.grams / 100) AS calories,
+      ROUND(p.proteins_per_100g * f.grams / 100) AS protein,
+      ROUND(p.fats_per_100g * f.grams / 100) AS fat,
+      ROUND(p.carbs_per_100g * f.grams / 100) AS carbs
     FROM food_entries f
     JOIN products p ON p.id = f.product_id
     WHERE f.logged_day = ?
@@ -124,10 +130,10 @@ export const productRepository = {
       p.name,
       p.brand,
       p.serving_size,
-      p.calories_per_100g as calories,
-      p.proteins_per_100g as protein,
-      p.fats_per_100g as fat,
-      p.carbs_per_100g as carbs,
+      ROUND(p.calories_per_100g) as calories,
+      ROUND(p.proteins_per_100g) as protein,
+      ROUND(p.fats_per_100g) as fat,
+      ROUND(p.carbs_per_100g) as carbs,
       s.name as supermarket
     FROM products p
     JOIN supermarkets s ON p.source = s.id
@@ -144,7 +150,6 @@ export const productRepository = {
     grams: number,
     loggedDay: string,
   ) => {
-    console.log(mealType, grams, loggedDay);
     await db.runAsync(
       `
     INSERT INTO food_entries (
@@ -157,7 +162,16 @@ export const productRepository = {
     )
     VALUES (?, datetime('now'), ?, ?, ?, ?);
     `,
-      [randomUUID(), loggedDay, mealType, productId, grams],
+      [await generateId(), loggedDay, mealType, productId, grams],
+    );
+  },
+  removeMealItem: async (db: SQLiteDatabase, itemId: string) => {
+    await db.runAsync(
+      `
+    DELETE FROM food_entries
+    WHERE id = ?;
+    `,
+      [itemId],
     );
   },
 };

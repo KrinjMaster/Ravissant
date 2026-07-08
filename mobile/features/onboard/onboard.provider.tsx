@@ -41,8 +41,6 @@ export const OnboardProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  useEffect(() => console.log(userData), [userData]);
-
   return (
     <OnboardContext.Provider
       value={{

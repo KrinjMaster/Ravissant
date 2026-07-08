@@ -3,9 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
 import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
 import { HStack } from "@/components/ui/hstack";
-import { AddIcon } from "@/components/ui/icon";
+import { AddIcon, Icon, InfoIcon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
-import { useMealInfo } from "@/hooks/useMealInfo";
 import { MealType } from "@/types/products";
 import { getMealLocale } from "@/utils/meals";
 import { router } from "expo-router";
@@ -17,8 +16,11 @@ import {
   withTiming,
 } from "react-native-reanimated";
 import { useEffect } from "react";
-import { SkeletonText } from "@/components/ui/skeleton/Skeleton";
 import { VStack } from "@/components/ui/vstack";
+import { Pressable } from "react-native";
+import { useMealMacros } from "@/hooks/useMealMacros";
+import { SkeletonText } from "@/components/ui/skeleton";
+import * as Haptics from "expo-haptics";
 
 const AnimatedProgress = createAnimatedComponent(ProgressFilledTrack);
 
@@ -31,8 +33,11 @@ export const MealDisplay = ({
   date: Date;
   plannedCalories: number;
 }) => {
-  const { data: mealData, isLoading } = useMealInfo(date.toISOString(), meal);
-  const { calories } = mealData?.summary ?? {
+  const { data: mealMacros, isLoading } = useMealMacros(
+    date.toISOString(),
+    meal,
+  );
+  const { calories } = mealMacros ?? {
     calories: 0,
   };
 
@@ -51,12 +56,12 @@ export const MealDisplay = ({
           easing: Easing.inOut(Easing.cubic),
         },
       );
-      console.log(calories);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [calories]);
 
-  const openModal = () => {
+  const openAddFoodModal = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push({
       pathname: "/modal/add-food",
       params: {
@@ -64,6 +69,20 @@ export const MealDisplay = ({
         date: date.toISOString().substring(0, 10),
       },
     });
+  };
+
+  const openMealInfoModal = () => {
+    if (mealMacros) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      router.push({
+        pathname: "/modal/meal-info",
+        params: {
+          meal: meal,
+          date: date.toISOString().substring(0, 10),
+          calorieGoal: plannedCalories,
+        },
+      });
+    }
   };
 
   if (isLoading) {
@@ -75,26 +94,31 @@ export const MealDisplay = ({
   }
 
   return (
-    <Card className="w-full h-[9%] py-2.5 px-2" variant="half-rounded">
-      <HStack className="h-full" space="lg">
-        <Progress orientation="vertical" size="sm" className="">
+    <Card className="w-full h-[9%] p-2.5" variant="half-rounded">
+      <HStack className="h-full pr-2.5" space="lg">
+        <Progress orientation="vertical" size="sm" className="overflow-hidden">
           <AnimatedProgress
             className="bg-tertiary-600"
             style={animatedProgressStyle}
           />
         </Progress>
-        <VStack className="gap-0 relative w-[80%] border">
-          <Heading size="2xl">{getMealLocale(meal)}</Heading>
-          <Text size="md" className="bottom-2 text-secondary-800 mt-1.5">
-            {Math.round(calories)} / {plannedCalories} ккал
+        <VStack className="gap-0 relative w-[80%]">
+          <HStack className="items-center" space="sm">
+            <Heading size="2xl">{getMealLocale(meal)}</Heading>
+            <Pressable onPress={openMealInfoModal}>
+              <Icon as={InfoIcon} className="stroke-primary-600 w-6 h-6" />
+            </Pressable>
+          </HStack>
+          <Text size="md" className="bottom-3 text-secondary-800 mt-1.5">
+            {calories} / {plannedCalories} ккал
           </Text>
         </VStack>
         <Button
           variant="solid"
           action="primary"
-          size="md"
-          className="ml-auto my-auto border-none"
-          onPress={openModal}
+          size="xl"
+          className="my-auto border-none rounded-full h-[70%]"
+          onPress={openAddFoodModal}
         >
           <ButtonIcon as={AddIcon} size="2xl" />
         </Button>

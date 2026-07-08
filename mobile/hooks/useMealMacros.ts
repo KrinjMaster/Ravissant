@@ -3,11 +3,11 @@ import { productService } from "@/services/product.service";
 import { useSQLiteContext } from "expo-sqlite";
 import { MealType } from "@/types/products";
 
-export function useMealInfo(day: string, mealType: MealType) {
+export function useMealMacros(day: string, mealType: MealType) {
   const db = useSQLiteContext();
 
   return useQuery({
-    queryKey: ["meal-info", `${day} ${mealType}`],
-    queryFn: () => productService.getMealInfo(db, day, mealType),
+    queryKey: ["meal-info", `${day.substring(0, 10)} ${mealType}`],
+    queryFn: () => productService.getMealMacros(db, day, mealType),
   });
 }

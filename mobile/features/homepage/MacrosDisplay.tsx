@@ -1,11 +1,11 @@
-import { Box } from "@/components/ui/box";
 import { Card } from "@/components/ui/card";
+import { CaloriesDisplay } from "@/components/ui/custom/caloriesDisplay";
 import { HStack } from "@/components/ui/hstack";
 import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useOnboard } from "@/hooks/useOnboard";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   createAnimatedComponent,
   Easing,
@@ -21,12 +21,10 @@ interface Prop {
   carbs: number;
 }
 
-const AnimatedBox = createAnimatedComponent(Box);
 const AnimatedProgress = createAnimatedComponent(ProgressFilledTrack);
 
 export const MacrosDisplay = ({ data }: { data: Prop }) => {
   const { userData } = useOnboard();
-  const [cardWidth, setCardWidth] = useState(0);
   const { calories, protein, fat, carbs } = data;
 
   const {
@@ -41,20 +39,10 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
     fat: 0,
   };
 
-  const goalValue = `/ ${calorieGoal} ккал`;
-  const progress = Math.min(1, calories / (calorieGoal || 1)) || 0;
-
-  const animatedCaloriesValue = useSharedValue(0);
   const animatedProteinValue = useSharedValue(0);
   const animatedFatValue = useSharedValue(0);
   const animatedCarbsValue = useSharedValue(0);
 
-  const animatedBoxStyle = useAnimatedStyle(() => ({
-    width: `${animatedCaloriesValue.value}%`,
-  }));
-  const animatedGoalBoxStyle = useAnimatedStyle(() => ({
-    width: Math.max(0, cardWidth * (animatedCaloriesValue.value / 100) - 18),
-  }));
   const animatedProteinStyle = useAnimatedStyle(() => ({
     width: `${animatedProteinValue.value}%`,
   }));
@@ -64,14 +52,6 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
   const animatedCarbsStyle = useAnimatedStyle(() => ({
     width: `${animatedCarbsValue.value}%`,
   }));
-
-  useEffect(() => {
-    animatedCaloriesValue.value = withTiming(progress * 100, {
-      duration: 1200,
-      easing: Easing.inOut(Easing.cubic),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [progress]);
 
   useEffect(() => {
     animatedProteinValue.value = withTiming((protein / proteinGoal) * 100, {
@@ -90,7 +70,6 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
   }, [fat]);
 
   useEffect(() => {
-    console.log(carbs);
     animatedCarbsValue.value = withTiming((carbs / carbsGoal) * 100, {
       duration: 800,
       easing: Easing.inOut(Easing.cubic),
@@ -100,95 +79,19 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
 
   return (
     <VStack className="w-full h-[50%] justify-between">
-      <Card
-        className="w-full h-[75%] p-0 relative justify-center items-center overflow-hidden"
-        variant="half-rounded"
-        onLayout={(e) => {
-          setCardWidth(e.nativeEvent.layout.width);
-        }}
-      >
-        {/* Progress bar */}
-        <AnimatedBox
-          className="absolute left-0 top-0 bottom-0 bg-primary-400 rounded-r-2xl"
-          style={animatedBoxStyle}
-        />
-        {/* Calories text */}
-        {cardWidth > 0 && (
-          <Box
-            style={{ width: cardWidth }}
-            className="absolute top-0 bottom-0 justify-center items-center"
-          >
-            {/* Background Layer (Static) */}
-            <Box
-              style={{ width: cardWidth }}
-              className="items-center justify-center"
-            >
-              <Text
-                size="9xl"
-                className="text-secondary-400 text-center scale-y-150 subpixel-antialiased"
-              >
-                {calories}
-              </Text>
-            </Box>
-            {/* Foreground Layer */}
-            <AnimatedBox
-              className="absolute left-0 top-0 bottom-0 overflow-hidden justify-center"
-              style={animatedBoxStyle}
-            >
-              <Box
-                style={{ width: cardWidth }}
-                className="items-center justify-center"
-              >
-                <Text
-                  size="9xl"
-                  className={`${calories > calorieGoal ? "text-error-500" : "text-primary-300"} text-center scale-y-150 subpixel-antialiased`}
-                >
-                  {calories}
-                </Text>
-              </Box>
-            </AnimatedBox>
-          </Box>
-        )}
-        {/* Calorie Goal Text */}
-        {cardWidth > 0 && (
-          <Box
-            className="absolute right-4 bottom-4 h-8 justify-center items-end"
-            style={{ width: cardWidth - 32 }}
-          >
-            {/* Background Layer (Static) */}
-            <Box
-              style={{ width: cardWidth - 32 }}
-              className="items-end justify-center"
-            >
-              <Text size="2xl" className="text-secondary-700 text-right">
-                {goalValue}
-              </Text>
-            </Box>
-            {/* Foreground Layer */}
-            <AnimatedBox
-              className="absolute left-0 top-0 bottom-0 overflow-hidden justify-center"
-              style={animatedGoalBoxStyle}
-            >
-              <Box
-                style={{ width: cardWidth - 32 }}
-                className="items-end justify-center"
-              >
-                <Text size="2xl" className="text-white text-right">
-                  {goalValue}
-                </Text>
-              </Box>
-            </AnimatedBox>
-          </Box>
-        )}
-      </Card>
-      <Card variant="half-rounded" className="w-full h-[22%] p-1.5 py-4">
-        <HStack className="justify-between">
+      <CaloriesDisplay
+        calories={calories}
+        calorieGoal={calorieGoal}
+        className="w-full h-[75%]"
+      />
+      <Card variant="half-rounded" className="w-full h-[20%] px-3 py-2">
+        <HStack className="justify-between pt-2">
           <VStack className="w-[30%] items-center h-full px-0.5" space="sm">
-            <Text size="xl">Белки</Text>
+            <Text size="lg">Белки</Text>
             <Progress
               orientation="horizontal"
-              size="md"
-              className="w-full mt-auto"
+              size="sm"
+              className="w-[90%] mt-auto overflow-hidden"
             >
               <AnimatedProgress
                 className="bg-tertiary-600"
@@ -196,15 +99,15 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
               />
             </Progress>
             <Text className="text-secondary-800" size="sm">
-              {Math.round(protein)} / {proteinGoal} г.
+              {protein} / {proteinGoal} г.
             </Text>
           </VStack>
           <VStack className="w-[30%] items-center h-full px-0.5" space="sm">
-            <Text size="xl">Жиры</Text>
+            <Text size="lg">Жиры</Text>
             <Progress
               orientation="horizontal"
-              size="md"
-              className="w-full mt-auto"
+              size="sm"
+              className="w-[90%] mt-auto overflow-hidden"
             >
               <AnimatedProgress
                 className="bg-tertiary-600"
@@ -212,15 +115,15 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
               />
             </Progress>
             <Text className="text-secondary-800" size="sm">
-              {Math.round(fat)} / {fatGoal} г.
+              {fat} / {fatGoal} г.
             </Text>
           </VStack>
           <VStack className="w-[30%] items-center h-full px-0.5" space="sm">
-            <Text size="xl">Углеводы</Text>
+            <Text size="lg">Углеводы</Text>
             <Progress
               orientation="horizontal"
-              size="md"
-              className="w-full mt-auto"
+              size="sm"
+              className="w-[90%] mt-auto overflow-hidden"
             >
               <AnimatedProgress
                 className="bg-tertiary-600"
@@ -228,7 +131,7 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
               />
             </Progress>
             <Text className="text-secondary-800" size="sm">
-              {Math.round(carbs)} / {carbsGoal} г.
+              {carbs} / {carbsGoal} г.
             </Text>
           </VStack>
         </HStack>

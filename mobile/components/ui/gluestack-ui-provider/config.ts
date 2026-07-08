@@ -4,21 +4,18 @@ import { vars } from "nativewind";
 export const config = {
   dark: vars({
     /* Primary (purple accent) */
-    "--color-primary-0": "0 0 0",
-    "--color-primary-50": "0 0 0",
-    "--color-primary-100": "0 0 0",
-    "--color-primary-200": "0 0 0",
-    "--color-primary-300": "173 177 255",
-    // changed color
+    "--color-primary-0": "0 6 122",
+    "--color-primary-50": "0 8 163",
+    "--color-primary-100": "0 10 204",
+    "--color-primary-200": "0 12 245",
+    "--color-primary-300": "31 42 255",
     "--color-primary-400": "51 61 255",
-    // changed color
     "--color-primary-500": "71 81 255",
-    "--color-primary-600": "0 0 0",
-    // changed color
-    "--color-primary-700": "92 100 255",
-    "--color-primary-800": "0 0 0",
-    "--color-primary-900": "0 0 0",
-    "--color-primary-950": "0 0 0",
+    "--color-primary-600": "92 100 255",
+    "--color-primary-700": "133 139 255",
+    "--color-primary-800": "153 158 255",
+    "--color-primary-900": "173 177 255",
+    "--color-primary-950": "194 197 255",
 
     /* Secondary (dark surfaces/cards) */
     "--color-secondary-0": "15 15 15",

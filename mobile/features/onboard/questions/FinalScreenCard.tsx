@@ -32,8 +32,6 @@ export const FinalScreenCard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recommended]);
 
-  console.log(recommended, userData);
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <Card variant="elevated" className="h-full" size="lg">

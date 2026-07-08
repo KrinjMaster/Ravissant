@@ -1,10 +1,9 @@
 import { Box } from "@/components/ui/box";
-import { Divider } from "@/components/ui/divider/Divider";
+import { Divider } from "@/components/ui/divider";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { MacrosDisplay } from "@/features/homepage/MacrosDisplay";
 import { MealDisplay } from "@/features/homepage/MealDisplay";
-import { HomePageSkeleton } from "@/features/skeletons/HomePageSkeleton";
 import { useMacrosSummary } from "@/hooks/useMacrosSummary";
 import { useOnboard } from "@/hooks/useOnboard";
 import { calculateMealCalories } from "@/utils/onboard";
@@ -21,8 +20,12 @@ export default function Index() {
     userData.nutritionPlan?.calories ?? 0,
   );
 
-  if (!macrosData || isLoading) {
-    return <HomePageSkeleton />;
+  if (isLoading || !macrosData) {
+    return (
+      <VStack className="w-screen h-screen bg-secondary-0 pt-16 pb-16 px-2">
+        <Text size="6xl">Loading...</Text>
+      </VStack>
+    );
   }
 
   return (
@@ -78,10 +81,9 @@ export default function Index() {
       <MacrosDisplay
         data={{
           ...macrosData,
-          calories: 1450,
         }}
       />
-      <Divider className="my-0.5 w-[85%] h-0.5 rounded-full bg-background-200" />
+      <Divider className="my-0.5 w-[85%] h-0.5" />
       <MealDisplay
         meal="breakfast"
         date={displayDate}

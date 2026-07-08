@@ -13,13 +13,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { deleteDatabaseAsync, SQLiteProvider } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
+
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
   strict: false,
 });
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: Infinity,
@@ -59,37 +61,25 @@ export default function RootLayout() {
   }
 
   return (
-    <SQLiteProvider
-      databaseName="main.db"
-      assetSource={{ assetId: require("../assets/main.db") }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <GluestackUIProvider mode="dark">
-          <OnboardProvider>
-            <RootStack />
-          </OnboardProvider>
-        </GluestackUIProvider>
-      </QueryClientProvider>
-    </SQLiteProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SQLiteProvider
+        databaseName="main.db"
+        assetSource={{ assetId: require("../assets/main.db") }}
+      >
+        <QueryClientProvider client={queryClient}>
+          <GluestackUIProvider mode="dark">
+            <OnboardProvider>
+              <RootStack />
+            </OnboardProvider>
+          </GluestackUIProvider>
+        </QueryClientProvider>
+      </SQLiteProvider>
+    </GestureHandlerRootView>
   );
 }
 
 function RootStack() {
   const { isOnboarded, isLoading } = useOnboard();
-
-  // if (process.env.EXPO_PUBLIC_RESET_STORAGE === "true") {
-  //   console.log("RESET STORAGE");
-  //   AsyncStorage.removeItem("user_data");
-  // }
-  //
-  // if (process.env.EXPO_PUBLIC_RESET_DB === "true") {
-  //   console.log("RESET DB");
-  //   async function resetDB() {
-  //     await deleteDatabaseAsync("main.db");
-  //   }
-  //
-  //   resetDB();
-  // }
 
   const [loaded] = useFonts({
     Seenonim: require("../assets/fonts/Seenonim.otf"),
