@@ -16,10 +16,13 @@ import { useRemoveMealItem } from "@/hooks/useRemoveMealItem";
 import { MealType } from "@/types/products";
 import { getMealLocale } from "@/utils/meals";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect } from "react";
+import React from "react";
 import { ScrollView } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import * as Haptics from "expo-haptics";
+import { SkeletonText, Skeleton } from "@/components/ui/skeleton";
+import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function RightAction() {
   return (
@@ -44,6 +47,7 @@ export default function AddProductModal() {
     meal,
   );
   const { mutateAsync: removeMealItem } = useRemoveMealItem();
+  const insets = useSafeAreaInsets();
 
   const handleFinish = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -57,14 +61,47 @@ export default function AddProductModal() {
 
   if (isItemsLoading || isMacrosLoading || !mealItems || !mealMacros) {
     return (
-      <VStack className="w-screen h-screen bg-secondary-0 pt-16 pb-16 px-2">
-        <Text size="6xl">Loading...</Text>
+      <VStack
+        className="w-screen h-screen bg-secondary-0 pt-16 pb-16 px-2"
+        space="xl"
+      >
+        <SkeletonText className="w-[60%] h-8 mx-auto" />
+        <VStack className="w-full h-[50%] border justify-between mt-2.5">
+          <Skeleton className="w-full h-[75%] px-3 py-2 rounded-xl" />
+          <Skeleton className="w-full h-[20%] px-3 py-2 rounded-xl" />
+        </VStack>
+        <Skeleton className="w-full h-[13%] px-3 py-2 rounded-xl" />
+        <Skeleton className="w-full h-[13%] px-3 py-2 rounded-xl" />
+        <Skeleton className="w-full h-[13%] px-3 py-2 rounded-xl" />
       </VStack>
     );
   }
 
   return (
-    <VStack className="w-full h-screen bg-secondary-0 pt-[15%] pb-8" space="md">
+    <VStack
+      className="w-full h-screen bg-secondary-0 pb-8"
+      space="md"
+      style={{ paddingTop: insets.top }}
+    >
+      <Box className="absolute top-0 -left-64 w-[30rem] h-[45rem]">
+        <Svg width="100%" height="100%" viewBox="0 0 100 100">
+          <Defs>
+            <RadialGradient
+              id="glow"
+              cx="50%"
+              cy="50%"
+              rx="50%"
+              ry="50%"
+              fx="50%"
+              fy="50%"
+            >
+              <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+              <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+            </RadialGradient>
+          </Defs>
+          <Rect width="100" height="100" fill="url(#glow)" />
+        </Svg>
+      </Box>
       <VStack
         className="w-full h-[55%] items-center justify-between px-2"
         space="md"
@@ -151,20 +188,24 @@ export default function AddProductModal() {
       </VStack>
       <ScrollView className="flex-1 mt-2.5">
         <VStack space="xl">
-          {mealItems.length
-            ? mealItems.map((val) => (
-                <ReanimatedSwipeable
-                  key={val.id}
-                  renderRightActions={() => <RightAction />}
-                  overshootRight={false}
-                  onSwipeableOpen={(direction) => {
-                    if (direction === "left") removeItem(val.id);
-                  }}
-                >
-                  <MealItem {...val} meal={meal} date={date} />
-                </ReanimatedSwipeable>
-              ))
-            : null}
+          {mealItems.length ? (
+            mealItems.map((val) => (
+              <ReanimatedSwipeable
+                key={val.id}
+                renderRightActions={() => <RightAction />}
+                overshootRight={false}
+                onSwipeableOpen={(direction) => {
+                  if (direction === "left") removeItem(val.id);
+                }}
+              >
+                <MealItem {...val} meal={meal} date={date} />
+              </ReanimatedSwipeable>
+            ))
+          ) : (
+            <Text size="xl" className="w-[85%] mt-5 mx-auto text-center">
+              Здесь могла быть ваша еда или реклама, но пока тут ничего :(
+            </Text>
+          )}
         </VStack>
       </ScrollView>
     </VStack>

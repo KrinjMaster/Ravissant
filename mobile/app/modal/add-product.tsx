@@ -6,7 +6,7 @@ import { FormControl } from "@/components/ui/form-control";
 import { Grid, GridItem } from "@/components/ui/grid";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
-import { ArrowLeftIcon } from "@/components/ui/icon";
+import { ArrowLeftIcon, StarIcon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -17,6 +17,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Keyboard, TouchableWithoutFeedback } from "react-native";
 import * as Haptics from "expo-haptics";
+import { SkeletonText, Skeleton } from "@/components/ui/skeleton";
+import { useChangeFavoriteProduct } from "@/hooks/useChangeFavorite";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AddProductModal() {
   const { meal, date, productId } = useLocalSearchParams<{
@@ -27,6 +30,8 @@ export default function AddProductModal() {
   const { data, isLoading } = useProductById(productId);
   const [weight, setWeight] = useState(data?.serving_size.toString() ?? "");
   const { mutateAsync: addMealItem } = useAddMealItem();
+  const { mutateAsync: addFavorite } = useChangeFavoriteProduct();
+  const insets = useSafeAreaInsets();
 
   const handleAddItem = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -42,6 +47,7 @@ export default function AddProductModal() {
   useEffect(() => {
     if (data) {
       setWeight(data.serving_size.toString());
+      console.log(data);
     }
   }, [data]);
 
@@ -50,10 +56,27 @@ export default function AddProductModal() {
     router.back();
   };
 
+  const handleChangeFavorite = async () => {
+    await addFavorite({
+      productId: productId,
+      isFavoriteAlready: data?.isFavorite ?? false,
+    });
+  };
+
   if (isLoading || !data) {
     return (
-      <VStack className="w-screen h-screen bg-secondary-0 pt-16 pb-16 px-2">
-        <Text size="6xl">Loading...</Text>
+      <VStack
+        className="w-screen h-screen bg-secondary-0 pt-16 pb-8 px-2"
+        space="sm"
+      >
+        <SkeletonText className="w-[80%] h-8 mx-auto" />
+        <SkeletonText className="w-[80%] h-8 mx-auto" />
+        <SkeletonText className="w-[60%] h-8 mx-auto" />
+        <VStack className="w-full h-[40%] border justify-between mt-2.5">
+          <Skeleton className="w-full h-[75%] px-3 py-2 rounded-xl" />
+          <Skeleton className="w-full h-[20%] px-3 py-2 rounded-xl" />
+        </VStack>
+        <Skeleton className="mt-auto w-full h-[9%] px-3 py-2 rounded-xl" />
       </VStack>
     );
   }
@@ -61,23 +84,36 @@ export default function AddProductModal() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <VStack
-        className="w-screen h-screen bg-secondary-0 items-center pt-[15%] pb-8 px-2"
+        className="w-screen h-screen bg-secondary-0 items-center px-2"
         space="xl"
+        style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
         <VStack space="sm">
-          <HStack className="w-full items-center justify-center pt-5 p-0">
+          <HStack className="w-full justify-between">
             <Button
               action="default"
               variant="outline"
               onPress={handleFinish}
-              className="absolute left-0 top-0"
               size="xl"
             >
               <ButtonIcon as={ArrowLeftIcon} size="2xl" />
             </Button>
-            <Heading size="2xl" className="line-clamp-3 text-start ml-16">
+            <Heading size="xl" className="line-clamp-3 text-center w-[75%]">
               {data.name}
             </Heading>
+            <Button
+              action="default"
+              variant="outline"
+              className={`${data.isFavorite ? "bg-background-200" : ""}`}
+              onPress={handleChangeFavorite}
+              size="xl"
+            >
+              <ButtonIcon
+                as={StarIcon}
+                size="2xl"
+                className={`${data.isFavorite ? "fill-primary-800 stroke-primary-800" : ""}`}
+              />
+            </Button>
           </HStack>
           <HStack className="px-5">
             <Text

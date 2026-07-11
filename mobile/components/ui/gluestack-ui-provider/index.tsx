@@ -15,7 +15,7 @@ export function GluestackUIProvider({
   children?: React.ReactNode;
   style?: ViewProps["style"];
 }) {
-  const { colorScheme, setColorScheme } = useColorScheme();
+  const { setColorScheme } = useColorScheme();
 
   useEffect(() => {
     setColorScheme(mode);
@@ -25,8 +25,12 @@ export function GluestackUIProvider({
   return (
     <View
       style={[
-        config[colorScheme!],
-        { flex: 1, height: "100%", width: "100%" },
+        config["dark"],
+        {
+          flex: 1,
+          height: "100%",
+          width: "100%",
+        },
         props.style,
       ]}
     >

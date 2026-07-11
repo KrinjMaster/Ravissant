@@ -14,6 +14,7 @@ import { deleteDatabaseAsync, SQLiteProvider } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { ThemeProvider, useTheme } from "@react-navigation/native";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 
 configureReanimatedLogger({
@@ -55,6 +56,9 @@ export default function RootLayout() {
 
     init();
   }, []);
+
+  const theme = useTheme();
+  theme.colors.background = "rgba(15, 15, 15)";
 
   if (!dbReady) {
     return <Text>Loading DB...</Text>;

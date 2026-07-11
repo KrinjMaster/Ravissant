@@ -94,7 +94,7 @@ export const MealDisplay = ({
   }
 
   return (
-    <Card className="w-full h-[9%] p-2.5" variant="half-rounded">
+    <Card className="w-full h-24 p-2.5" variant="half-rounded">
       <HStack className="h-full pr-2.5" space="lg">
         <Progress orientation="vertical" size="sm" className="overflow-hidden">
           <AnimatedProgress
@@ -117,7 +117,7 @@ export const MealDisplay = ({
           variant="solid"
           action="primary"
           size="xl"
-          className="my-auto border-none rounded-full h-[70%]"
+          className="my-auto border-none rounded-full h-12 px-3 py-2.5 ml-auto"
           onPress={openAddFoodModal}
         >
           <ButtonIcon as={AddIcon} size="2xl" />

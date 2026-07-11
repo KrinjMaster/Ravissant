@@ -61,4 +61,29 @@ export const productService = {
       }),
     ]);
   },
+  addFavoriteItem: async (db: SQLiteDatabase, productId: string) => {
+    await productRepository.addFavoriteProduct(db, productId);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["meal-by-id", productId],
+    });
+  },
+  removeFavoriteItem: async (db: SQLiteDatabase, productId: string) => {
+    await productRepository.removeFavoriteProduct(db, productId);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["meal-by-id", productId],
+    });
+  },
+  getRecentItems: async (db: SQLiteDatabase) =>
+    await productRepository.getRecentItems(db),
+  getRecentWeight: async (db: SQLiteDatabase) =>
+    await productRepository.getRecentWeight(db),
+  changeDayWeight: async (db: SQLiteDatabase, day: string, weight: number) => {
+    await productRepository.changeDayWeight(db, day, weight);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["weight-recent"],
+    });
+  },
 };

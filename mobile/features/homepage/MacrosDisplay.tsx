@@ -6,6 +6,7 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useOnboard } from "@/hooks/useOnboard";
 import { useEffect } from "react";
+import { Dimensions } from "react-native";
 import {
   createAnimatedComponent,
   Easing,
@@ -13,6 +14,7 @@ import {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { useSafeAreaFrame } from "react-native-safe-area-context";
 
 interface Prop {
   calories: number;
@@ -26,6 +28,7 @@ const AnimatedProgress = createAnimatedComponent(ProgressFilledTrack);
 export const MacrosDisplay = ({ data }: { data: Prop }) => {
   const { userData } = useOnboard();
   const { calories, protein, fat, carbs } = data;
+  const { height: visibleHeight } = useSafeAreaFrame();
 
   const {
     calories: calorieGoal,
@@ -78,7 +81,10 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
   }, [carbs]);
 
   return (
-    <VStack className="w-full h-[50%] justify-between">
+    <VStack
+      className="w-full justify-between"
+      style={{ height: visibleHeight / 2 }}
+    >
       <CaloriesDisplay
         calories={calories}
         calorieGoal={calorieGoal}
