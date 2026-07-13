@@ -17,3 +17,11 @@ export const getData = async <T>(name: string): Promise<T | null> => {
     return null;
   }
 };
+
+export const removeData = async (name: string) => {
+  try {
+    await AsyncStorage.removeItem(name);
+  } catch {
+    return null;
+  }
+};

@@ -4,7 +4,7 @@ import { createContext } from "react";
 interface Props {
   userData: Partial<UserData>;
   isLoading: boolean;
-  completeOnboarding: () => void;
+  completeOnboarding: (data: Partial<UserData>) => void;
   updateUserData: (patch: Partial<UserData>) => void;
   updateNutritionPlan: (patch: Partial<NutritionPlan>) => void;
   isOnboarded: boolean;

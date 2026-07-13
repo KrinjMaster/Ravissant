@@ -126,8 +126,7 @@ export const FinalScreenCard = () => {
           action="tertiary"
           className="w-full py-1 h-16 my-auto mb-0"
           onPress={() => {
-            updateUserData({ isOnboarded: true });
-            completeOnboarding();
+            completeOnboarding(userData);
           }}
         >
           <ButtonText>Завершить</ButtonText>

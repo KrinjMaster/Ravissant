@@ -77,11 +77,11 @@ const drawerStyle = tva({
 });
 
 const drawerBackdropStyle = tva({
-  base: "absolute left-0 top-0 right-0 bottom-0 bg-background-dark web:cursor-default",
+  base: "absolute left-0 top-0 right-0 bottom-0 bg-secondary-0 web:cursor-default",
 });
 
 const drawerContentStyle = tva({
-  base: "bg-background-0 overflow-scroll border-outline-100 p-6 absolute",
+  base: "bg-background-0 overflow-scroll p-2 absolute rounded-t-[50px]",
   parentVariants: {
     size: {
       sm: "w-1/4",
@@ -93,7 +93,7 @@ const drawerContentStyle = tva({
       left: "h-full border-r",
       right: "h-full border-l",
       top: "w-full border-b",
-      bottom: "w-full border-t",
+      bottom: "w-full",
     },
   },
   parentCompoundVariants: [

@@ -120,7 +120,7 @@ const buttonStyle = tva({
 });
 
 const buttonTextStyle = tva({
-  base: "text-typography-0 font-seenonim web:select-none",
+  base: "text-typography-800 font-seenonim web:select-none",
   parentVariants: {
     action: {
       primary:
@@ -132,7 +132,7 @@ const buttonTextStyle = tva({
       positive:
         "text-success-600 data-[hover=true]:text-success-600 data-[active=true]:text-success-700",
       negative:
-        "text-error-600 data-[hover=true]:text-error-600 data-[active=true]:text-error-700",
+        "data-[hover=true]:text-error-600 data-[active=true]:text-error-700",
     },
     variant: {
       link: "data-[hover=true]:underline data-[active=true]:underline",
@@ -170,7 +170,7 @@ const buttonTextStyle = tva({
       variant: "solid",
       action: "negative",
       class:
-        "text-typography-0 data-[hover=true]:text-typography-0 data-[active=true]:text-typography-0",
+        "text-error-100 data-[hover=true]:text-error-200 data-[active=true]:text-error-200",
     },
     {
       variant: "outline",

@@ -1,6 +1,6 @@
 import { ReactNode, useEffect, useState } from "react";
 import { OnboardContext } from "./onboard.context";
-import { getData, storeData } from "@/utils/storage";
+import { getData, removeData, storeData } from "@/utils/storage";
 import { NutritionPlan, UserData } from "@/types/onboard";
 
 export const OnboardProvider = ({ children }: { children: ReactNode }) => {
@@ -11,13 +11,19 @@ export const OnboardProvider = ({ children }: { children: ReactNode }) => {
     const load = async () => {
       const stored = await getData<UserData>("user_data");
       if (stored) setUserData(stored);
+      console.log(stored);
       setIsLoading(false);
     };
     load();
   }, []);
 
-  const completeOnboarding = async () => {
-    await storeData("user_data", { ...userData, isOnboarded: true });
+  const completeOnboarding = async (data: Partial<UserData>) => {
+    const newData = data || userData;
+
+    await removeData("user_data");
+    await storeData("user_data", { ...newData, isOnboarded: true });
+
+    setUserData((prev) => ({ ...prev, ...newData, isOnboarded: true }));
   };
 
   const updateUserData = (patch: Partial<UserData>) => {
