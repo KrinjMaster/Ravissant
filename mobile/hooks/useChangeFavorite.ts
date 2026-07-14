@@ -8,12 +8,12 @@ export function useChangeFavoriteProduct() {
   return useMutation({
     mutationFn: ({
       productId,
-      isFavoriteAlready,
+      isFavorite,
     }: {
       productId: string;
-      isFavoriteAlready: boolean;
+      isFavorite: boolean;
     }) =>
-      isFavoriteAlready
+      isFavorite
         ? productService.removeFavoriteItem(db, productId)
         : productService.addFavoriteItem(db, productId),
   });

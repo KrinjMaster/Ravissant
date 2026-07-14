@@ -67,6 +67,7 @@ export const MealDisplay = ({
       params: {
         meal: meal,
         date: date.toISOString().substring(0, 10),
+        mode: "meal",
       },
     });
   };

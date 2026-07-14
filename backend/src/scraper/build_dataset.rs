@@ -139,7 +139,9 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
         CREATE TABLE IF NOT EXISTS meal_templates (
             id TEXT PRIMARY KEY,
 
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+
+            search_text TEXT NOT NULL
         )
         ",
         [],

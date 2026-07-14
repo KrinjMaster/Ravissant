@@ -1,6 +1,7 @@
 import { MealType } from "@/types/products";
 import { SQLiteDatabase } from "expo-sqlite";
 import { generateId } from "@/utils/product";
+import { Product } from "@/features/meal-template/mealTemplate.context";
 
 export const productRepository = {
   getSummary: async (db: SQLiteDatabase, dayDate: string) => {
@@ -61,7 +62,7 @@ export const productRepository = {
 
     return db.getAllAsync<{
       id: string;
-      productId: number;
+      productId: string;
       name: string;
       weight: number;
       calories: number;
@@ -267,6 +268,74 @@ export const productRepository = {
       `INSERT INTO weight_entries (weight, logged_at) 
        VALUES (?, ?);`,
       [weight, timestamp],
+    );
+  },
+  getFavoriteItemsByName: async (db: SQLiteDatabase, searchParams: string) => {
+    return db.getAllAsync<{
+      id: string;
+      name: string;
+      brand: string;
+      serving_size: number;
+      calories: number;
+    }>(
+      `
+    SELECT
+      p.id,
+      p.name,
+      p.brand,
+      p.serving_size,
+      p.calories_per_100g AS calories
+    FROM favorite_products f 
+    JOIN products p ON f.product_id = p.id
+    WHERE p.search_text LIKE ?
+    ORDER BY p.name
+    LIMIT 10;
+    `,
+      [`%${searchParams.toLowerCase()}%`],
+    );
+  },
+  getMealTemplates: async (db: SQLiteDatabase, searchParams: string) => {
+    return db.getAllAsync<{
+      id: string;
+      name: string;
+    }>(
+      `
+    SELECT
+      m.id,
+      m.name
+    FROM meal_templates m 
+    WHERE m.search_text LIKE ?
+    ORDER BY m.name
+    LIMIT 10;
+    `,
+      [`%${searchParams.toLowerCase()}%`],
+    );
+  },
+  getWeightModifiedItem: async (db: SQLiteDatabase, products: Product[]) => {
+    const placeholders = products.map(() => "?").join(",");
+
+    return db.getAllAsync<{
+      id: string;
+      name: string;
+      brand: string;
+      calories: number;
+      protein: number;
+      fat: number;
+      carbs: number;
+    }>(
+      `
+    SELECT
+      p.id,
+      p.name,
+      p.brand,
+      p.calories_per_100g AS calories,
+      p.proteins_per_100g AS protein,
+      p.fats_per_100g AS fat,
+      p.carbs_per_100g AS carbs
+    FROM products p
+    WHERE p.id IN (${placeholders});
+    `,
+      [...products.map((val) => val.productId)],
     );
   },
 };

@@ -15,19 +15,13 @@ import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeProvider, useTheme } from "@react-navigation/native";
+import { MealTemplateProvider } from "@/features/meal-template/mealTemplate.provider";
+import { queryClient } from "@/constants/query";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
   strict: false,
-});
-
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: Infinity,
-    },
-  },
 });
 
 export default function RootLayout() {
@@ -73,7 +67,9 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <GluestackUIProvider mode="dark">
             <OnboardProvider>
-              <RootStack />
+              <MealTemplateProvider>
+                <RootStack />
+              </MealTemplateProvider>
             </OnboardProvider>
           </GluestackUIProvider>
         </QueryClientProvider>

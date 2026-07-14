@@ -23,7 +23,7 @@ import { VStack } from "@/components/ui/vstack";
 import { useOnboard } from "@/hooks/useOnboard";
 import { UserData } from "@/types/onboard";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import { Card } from "@/components/ui/card";
@@ -41,8 +41,9 @@ interface IsInvalid {
   isHeightInvalid: boolean;
 }
 
-export default function Index() {
-  const { userData, updateUserData, completeOnboarding } = useOnboard();
+export default function Profile() {
+  const insets = useSafeAreaInsets();
+  const { userData, completeOnboarding } = useOnboard();
   const [isInvalid, setIsInvalid] = useState<IsInvalid>({
     isAgeInvalid: false,
     isWeightInvalid: false,
@@ -87,8 +88,6 @@ export default function Index() {
       nutritionPlan: recommended,
     });
   };
-
-  const insets = useSafeAreaInsets();
 
   return (
     <VStack style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}>

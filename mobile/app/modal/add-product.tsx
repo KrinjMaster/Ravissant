@@ -12,7 +12,7 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useAddMealItem } from "@/hooks/useAddMealItem";
 import { useProductById } from "@/hooks/useProductById";
-import { MealType } from "@/types/products";
+import { MealType, ModalMode } from "@/types/products";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Keyboard, TouchableWithoutFeedback } from "react-native";
@@ -20,28 +20,37 @@ import * as Haptics from "expo-haptics";
 import { SkeletonText, Skeleton } from "@/components/ui/skeleton";
 import { useChangeFavoriteProduct } from "@/hooks/useChangeFavorite";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useMealTemplate } from "@/hooks/useMealTemplate";
 
 export default function AddProductModal() {
-  const { meal, date, productId } = useLocalSearchParams<{
+  const { meal, date, productId, mode } = useLocalSearchParams<{
     productId: string;
     meal: MealType;
     date: string;
+    mode: ModalMode;
   }>();
+
   const { data, isLoading } = useProductById(productId);
   const [weight, setWeight] = useState(data?.serving_size.toString() ?? "");
   const { mutateAsync: addMealItem } = useAddMealItem();
   const { mutateAsync: addFavorite } = useChangeFavoriteProduct();
+  const { addTemplateItem } = useMealTemplate();
   const insets = useSafeAreaInsets();
 
   const handleAddItem = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    addMealItem({
-      productId,
-      mealType: meal,
-      grams: Number(weight),
-      loggedDay: date,
-    });
-    handleFinish();
+
+    if (mode === "meal") {
+      addMealItem({
+        productId,
+        mealType: meal,
+        grams: Number(weight),
+        loggedDay: date,
+      });
+    } else {
+      addTemplateItem(productId, Number(weight));
+    }
+    handleGoBack();
   };
 
   useEffect(() => {
@@ -51,7 +60,7 @@ export default function AddProductModal() {
     }
   }, [data]);
 
-  const handleFinish = () => {
+  const handleGoBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.back();
   };
@@ -59,7 +68,7 @@ export default function AddProductModal() {
   const handleChangeFavorite = async () => {
     await addFavorite({
       productId: productId,
-      isFavoriteAlready: data?.isFavorite ?? false,
+      isFavorite: data?.isFavorite ?? false,
     });
   };
 
@@ -93,7 +102,7 @@ export default function AddProductModal() {
             <Button
               action="default"
               variant="outline"
-              onPress={handleFinish}
+              onPress={handleGoBack}
               size="xl"
             >
               <ButtonIcon as={ArrowLeftIcon} size="2xl" />

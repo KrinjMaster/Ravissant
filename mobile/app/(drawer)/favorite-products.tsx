@@ -1,56 +1,40 @@
-import { useLocalSearchParams, router } from "expo-router";
+import { Text } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { useSearchFavoriteItems } from "@/hooks/useSearchFavoriteItems";
+import { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
+import { Box } from "@/components/ui/box";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Divider } from "@/components/ui/divider";
 import { FormControl } from "@/components/ui/form-control";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
-import { AddIcon, ArrowLeftIcon } from "@/components/ui/icon";
+import { ArrowLeftIcon, StarIcon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { SkeletonText } from "@/components/ui/skeleton";
-import { Text } from "@/components/ui/text";
-import { VStack } from "@/components/ui/vstack";
-import { useSearchItems } from "@/hooks/useSearchItems";
-import { MealType, ModalMode } from "@/types/products";
-import { getMealLocale } from "@/utils/meals";
-import { useState } from "react";
-import { Pressable, ScrollView } from "react-native";
-import { Box } from "@/components/ui/box";
-import * as Haptics from "expo-haptics";
-import { useRecentItems } from "@/hooks/useRecentItems";
+import { router } from "expo-router";
+import { ScrollView, Pressable } from "react-native";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useChangeFavoriteProduct } from "@/hooks/useChangeFavorite";
 
-export default function AddFoodModal() {
-  const { meal, date, mode } = useLocalSearchParams<{
-    meal: MealType;
-    date: string;
-    mode: ModalMode;
-  }>();
+export default function FavoriteProducts() {
+  const insets = useSafeAreaInsets();
   const [searchString, setSearchString] = useState("");
   const { data: searchData, isLoading: isSearchLoading } =
-    useSearchItems(searchString);
-  const { data: recentData, isLoading: isRecentLoading } = useRecentItems();
-  const showSkeleton =
-    searchString.length > 0 && !searchData && isSearchLoading;
-  const insets = useSafeAreaInsets();
+    useSearchFavoriteItems(searchString);
+  const { mutateAsync: removeFavorite } = useChangeFavoriteProduct();
+  const showSkeleton = !searchData && isSearchLoading;
 
   const handleGoBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.back();
   };
 
-  const handleForward = (productId: string, date: string, meal: string) => {
+  const handleRemoveFavorite = async (productId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push({
-      pathname: "/modal/add-product",
-      params: {
-        productId,
-        meal,
-        date,
-        mode,
-      },
-    });
+    await removeFavorite({ productId, isFavorite: true });
   };
 
   return (
@@ -59,7 +43,7 @@ export default function AddFoodModal() {
       space="md"
       style={{ paddingTop: insets.top }}
     >
-      <Box className="absolute bottom-52 -left-64 w-[30rem] h-[45rem]">
+      <Box className="absolute top-16 -left-64 w-[30rem] h-[45rem]">
         <Svg width="100%" height="100%" viewBox="0 0 100 100">
           <Defs>
             <RadialGradient
@@ -78,7 +62,7 @@ export default function AddFoodModal() {
           <Rect width="100" height="100" fill="url(#glow)" />
         </Svg>
       </Box>
-      <Box className="absolute -bottom-24 -right-80 w-[30rem] h-[45rem]">
+      <Box className="absolute -bottom-72 -right-80 w-[30rem] h-[45rem]">
         <Svg width="100%" height="100%" viewBox="0 0 100 100">
           <Defs>
             <RadialGradient
@@ -108,7 +92,7 @@ export default function AddFoodModal() {
           <ButtonIcon as={ArrowLeftIcon} size="2xl" />
         </Button>
         <Text size="3xl" className="text-center">
-          {mode === "meal" ? getMealLocale(meal) : meal}
+          Любимые
         </Text>
       </HStack>
       <FormControl>
@@ -123,7 +107,7 @@ export default function AddFoodModal() {
       <ScrollView className="flex-1 px-3 mt-2.5">
         <VStack space="md" className="pb-5">
           {searchData && searchData.length === 0 ? (
-            <Text size="6xl" className="text-center">
+            <Text size="5xl" className="text-center">
               Ничего не найдено :(
             </Text>
           ) : null}
@@ -140,19 +124,16 @@ export default function AddFoodModal() {
                 </Card>
               ))
             : null}
-          {/* Search items */}
-          {searchData && searchString.length !== 0
+          {/* Search favorite items */}
+          {searchData
             ? searchData.map(({ name, brand, id, calories, serving_size }) => (
-                <Pressable
-                  key={id}
-                  onPress={() => handleForward(id, date, meal)}
-                >
+                <Pressable key={id}>
                   <Card
                     size="md"
                     variant="half-rounded"
-                    className="rounded-xl p-0 pr-5"
+                    className="rounded-xl p-0 pr-2"
                   >
-                    <HStack className="justify-between items-center">
+                    <HStack className="justify-between ">
                       <Box className="w-[85%] p-3 pr-0">
                         <Heading size="sm" className="line-clamp-2">
                           {name}
@@ -167,58 +148,17 @@ export default function AddFoodModal() {
                         </HStack>
                       </Box>
                       <Button
-                        variant="solid"
+                        variant="outline"
                         action="primary"
                         size="xl"
-                        className="border-none rounded-full px-2 py-5 w-12 h-12"
-                        onPress={() => handleForward(id, date, meal)}
+                        className="border-0 mt-2 rounded-full px-2 py-5 w-12 h-12"
+                        onPress={() => handleRemoveFavorite(id)}
                       >
-                        <ButtonIcon as={AddIcon} size="2xl" />
-                      </Button>
-                    </HStack>
-                  </Card>
-                </Pressable>
-              ))
-            : null}
-          {/* Recent items */}
-          {recentData && searchString.length === 0 ? (
-            <Text size="2xl" className="text-typography-500">
-              Недавние
-            </Text>
-          ) : null}
-          {recentData && searchString.length === 0
-            ? recentData.map(({ name, brand, id, calories, serving_size }) => (
-                <Pressable
-                  key={id}
-                  onPress={() => handleForward(id, date, meal)}
-                >
-                  <Card
-                    size="md"
-                    variant="half-rounded"
-                    className="rounded-xl p-0 pr-5"
-                  >
-                    <HStack className="justify-between items-center">
-                      <Box className="w-[85%] p-3 pr-0">
-                        <Heading size="sm" className="line-clamp-2">
-                          {name}
-                        </Heading>
-                        <Text className="line-clamp-1 text-typography-300">
-                          {brand}
-                        </Text>
-                        <HStack space="md" className="items-center mt-1.5">
-                          <Text>{serving_size} г</Text>
-                          <Divider className="w-0.5 h-[75%]" />
-                          <Text>{calories} ккал / 100 г</Text>
-                        </HStack>
-                      </Box>
-                      <Button
-                        variant="solid"
-                        action="primary"
-                        size="xl"
-                        className="border-none rounded-full px-2 py-5 w-12 h-12"
-                        onPress={() => handleForward(id, date, meal)}
-                      >
-                        <ButtonIcon as={AddIcon} size="2xl" />
+                        <ButtonIcon
+                          as={StarIcon}
+                          size="2xl"
+                          className="fill-primary-800 stroke-primary-800"
+                        />
                       </Button>
                     </HStack>
                   </Card>

@@ -49,7 +49,7 @@ export default function AddProductModal() {
   const { mutateAsync: removeMealItem } = useRemoveMealItem();
   const insets = useSafeAreaInsets();
 
-  const handleFinish = () => {
+  const handleGoBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.back();
   };
@@ -110,7 +110,7 @@ export default function AddProductModal() {
           <Button
             action="default"
             variant="outline"
-            onPress={handleFinish}
+            onPress={handleGoBack}
             className="absolute left-0"
             size="xl"
           >

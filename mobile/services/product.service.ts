@@ -1,4 +1,5 @@
-import { queryClient } from "@/app/_layout";
+import { queryClient } from "@/constants/query";
+import { Product } from "@/features/meal-template/mealTemplate.context";
 import { productRepository } from "@/lib/repositories/product.repository";
 import { MealType } from "@/types/products";
 import { SQLiteDatabase } from "expo-sqlite";
@@ -39,6 +40,9 @@ export const productService = {
       queryClient.invalidateQueries({
         queryKey: ["meal-items", `${loggedDay} ${mealType}`],
       }),
+      queryClient.invalidateQueries({
+        queryKey: ["recent-items"],
+      }),
     ]);
   },
   removeMealItem: async (
@@ -59,6 +63,9 @@ export const productService = {
       queryClient.invalidateQueries({
         queryKey: ["meal-items", `${day} ${mealType}`],
       }),
+      queryClient.invalidateQueries({
+        queryKey: ["recent-items"],
+      }),
     ]);
   },
   addFavoriteItem: async (db: SQLiteDatabase, productId: string) => {
@@ -74,6 +81,10 @@ export const productService = {
     await queryClient.invalidateQueries({
       queryKey: ["meal-by-id", productId],
     });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["product-favorite-items"],
+    });
   },
   getRecentItems: async (db: SQLiteDatabase) =>
     await productRepository.getRecentItems(db),
@@ -86,4 +97,10 @@ export const productService = {
       queryKey: ["weight-recent"],
     });
   },
+  searchFavoriteItems: async (db: SQLiteDatabase, params: string) =>
+    await productRepository.getFavoriteItemsByName(db, params),
+  searchMealTemplates: async (db: SQLiteDatabase, params: string) =>
+    await productRepository.getMealTemplates(db, params),
+  getWeightModifiedItem: async (db: SQLiteDatabase, ids: Product[]) =>
+    await productRepository.getWeightModifiedItem(db, ids),
 };

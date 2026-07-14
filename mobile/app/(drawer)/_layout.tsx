@@ -45,6 +45,14 @@ export default function DrawerLayout() {
       >
         <ExpoDrawer.Screen name="index" options={{ title: "Home" }} />
         <ExpoDrawer.Screen name="profile" options={{ title: "Profile" }} />
+        <ExpoDrawer.Screen
+          name="favorite-products"
+          options={{ title: "Favorites" }}
+        />
+        <ExpoDrawer.Screen
+          name="meal-templates"
+          options={{ title: "Meal templates" }}
+        />
       </ExpoDrawer>
       <View
         className={`${pathname === "/" ? "absolute" : "hidden"} bottom-0 left-0 right-0 z-50 overflow-hidden`}
@@ -97,8 +105,9 @@ export default function DrawerLayout() {
                 variant="link"
                 size="lg"
                 className="justify-start px-4 w-[95%]"
+                onPress={() => handleForward("/meal-templates")}
               >
-                <ButtonText>Добавить рецепт</ButtonText>
+                <ButtonText>Рецепты</ButtonText>
                 <ButtonIcon
                   size="2xl"
                   as={ChevronRightIcon}
@@ -111,6 +120,7 @@ export default function DrawerLayout() {
                 variant="link"
                 size="lg"
                 className="justify-start px-4 w-[95%]"
+                onPress={() => handleForward("/favorite-products")}
               >
                 <ButtonText>Любимые продукты</ButtonText>
                 <ButtonIcon
