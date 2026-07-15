@@ -1,5 +1,6 @@
 import { createContext } from "react";
 import { Item } from "./mealTemplate.provider";
+import { SQLiteDatabase } from "expo-sqlite";
 
 export interface Product {
   productId: string;
@@ -17,6 +18,10 @@ interface Props {
   products: Product[];
   addTemplateItem: (productId: string, weight: number) => void;
   removeTemplateItem: (productId: string) => void;
+  finishMealTemplate: (
+    db: SQLiteDatabase,
+    templateName: string,
+  ) => Promise<void>;
   macrosData: Macros;
   displayData: Item[];
 }

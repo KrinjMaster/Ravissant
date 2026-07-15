@@ -6,11 +6,10 @@ import * as Haptics from "expo-haptics";
 import { Box } from "@/components/ui/box";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Divider } from "@/components/ui/divider";
 import { FormControl } from "@/components/ui/form-control";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
-import { AddIcon, ArrowLeftIcon, StarIcon } from "@/components/ui/icon";
+import { AddIcon, ArrowLeftIcon, ChevronRightIcon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { SkeletonText } from "@/components/ui/skeleton";
 import { router } from "expo-router";
@@ -30,9 +29,14 @@ export default function MealTemplates() {
     router.back();
   };
 
-  const handleRemoveFavorite = async (productId: string) => {
+  const handleViewTemplate = async (templateId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // await removeFavorite({ productId, isFavorite: true });
+    router.push({
+      pathname: "/modal/view-template",
+      params: {
+        templateId,
+      },
+    });
   };
 
   const handleAddTemplate = () => {
@@ -138,29 +142,27 @@ export default function MealTemplates() {
           {/* Search meal templates */}
           {searchData
             ? searchData.map(({ name, id }) => (
-                <Pressable key={id}>
+                <Pressable key={id} onPress={() => handleViewTemplate(id)}>
                   <Card
                     size="md"
                     variant="half-rounded"
-                    className="rounded-xl p-0 pr-5"
+                    className="rounded-xl p-3.5"
                   >
                     <HStack className="justify-between items-center">
-                      <Box className="w-[85%] p-3 pr-0">
-                        <Heading size="sm" className="line-clamp-2">
-                          {name}
-                        </Heading>
-                      </Box>
+                      <Heading size="xl" className="line-clamp-2">
+                        {name}
+                      </Heading>
                       <Button
-                        variant="solid"
+                        variant="outline"
                         action="primary"
                         size="xl"
-                        className="border-none rounded-full px-2 py-5 w-12 h-12"
-                        onPress={() => handleRemoveFavorite(id)}
+                        className="border-0"
+                        onPress={() => handleViewTemplate(id)}
                       >
                         <ButtonIcon
-                          as={StarIcon}
+                          as={ChevronRightIcon}
                           size="2xl"
-                          className="fill-primary-800 stroke-primary-800"
+                          className="stroke-primary-600"
                         />
                       </Button>
                     </HStack>

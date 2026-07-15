@@ -311,6 +311,49 @@ export const productRepository = {
       [`%${searchParams.toLowerCase()}%`],
     );
   },
+  getMealTemplate: async (db: SQLiteDatabase, templateId: string) => {
+    return db.getFirstAsync<{
+      id: string;
+      name: string;
+    }>(
+      `
+    SELECT
+      m.id,
+      m.name
+    FROM meal_templates m 
+    WHERE m.id = ?;
+    `,
+      [templateId],
+    );
+  },
+  getMealTemplateItems: async (db: SQLiteDatabase, templateId: string) => {
+    return db.getAllAsync<{
+      id: string;
+      name: string;
+      brand: string;
+      calories: number;
+      protein: number;
+      fat: number;
+      carbs: number;
+      weight: number;
+    }>(
+      `
+    SELECT
+      p.id,
+      p.name,
+      p.brand,
+      p.calories_per_100g AS calories,
+      p.proteins_per_100g AS protein,
+      p.fats_per_100g AS fat,
+      p.carbs_per_100g AS carbs,
+      m.grams AS weight
+    FROM meal_template_items as m
+    JOIN products p ON p.id = m.product_id;
+    WHERE m.meal_template_id = ?;
+    `,
+      [templateId],
+    );
+  },
   getWeightModifiedItem: async (db: SQLiteDatabase, products: Product[]) => {
     const placeholders = products.map(() => "?").join(",");
 
@@ -336,6 +379,66 @@ export const productRepository = {
     WHERE p.id IN (${placeholders});
     `,
       [...products.map((val) => val.productId)],
+    );
+  },
+  addMealTemplate: async (
+    db: SQLiteDatabase,
+    templateId: string,
+    templateName: string,
+  ) => {
+    await db.runAsync(
+      `
+    INSERT INTO meal_templates (
+      id,
+      name,
+      search_text 
+    )
+    VALUES (?, ?, ?);
+    `,
+      [templateId, templateName, templateName.toLowerCase()],
+    );
+  },
+  addMealTemplateItem: async (
+    db: SQLiteDatabase,
+    templateId: string,
+    itemId: string,
+    itemWeight: number,
+  ) => {
+    await db.runAsync(
+      `
+    INSERT INTO meal_template_items (
+      meal_template_id,
+      product_id,
+      grams 
+    )
+    VALUES (?, ?, ?);
+    `,
+      [templateId, itemId, itemWeight],
+    );
+  },
+  removeMealTemplate: async (db: SQLiteDatabase, templateId: string) => {
+    await db.runAsync(
+      `DELETE FROM meal_templates 
+       WHERE id = ?;`,
+      [templateId],
+    );
+    await db.runAsync(
+      `DELETE FROM meal_template_items
+       WHERE meal_template_id = ?;`,
+      [templateId],
+    );
+  },
+  getAllWeight: async (db: SQLiteDatabase) => {
+    return db.getAllAsync<{
+      logged_at: string;
+      weight: number;
+    }>(
+      `
+    SELECT
+      w.logged_at,
+      w.weight
+    FROM weight_entries w;
+    `,
     );
   },
 };

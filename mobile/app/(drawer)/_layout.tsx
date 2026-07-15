@@ -82,9 +82,12 @@ export default function DrawerLayout() {
         size="md"
       >
         <DrawerBackdrop />
-        <DrawerContent style={{ paddingBottom: insets.bottom }}>
+        <DrawerContent
+          style={{ paddingBottom: insets.bottom }}
+          className="px-5 pt-2.5 h-[27rem]"
+        >
           <DrawerBody>
-            <VStack className="items-center px-3" space="sm">
+            <VStack className="items-center" space="sm">
               <Button
                 action="secondary"
                 variant="link"
@@ -135,6 +138,7 @@ export default function DrawerLayout() {
                 variant="link"
                 size="lg"
                 className="justify-start px-4 w-[95%]"
+                onPress={() => handleForward("/modal/view-statistics")}
               >
                 <ButtonText>Статистика</ButtonText>
                 <ButtonIcon

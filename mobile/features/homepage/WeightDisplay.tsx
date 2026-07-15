@@ -4,14 +4,14 @@ import { Text } from "@/components/ui/text";
 import { useWeightLog } from "@/hooks/useWeightLog";
 import { useOnboard } from "@/hooks/useOnboard";
 import { useRecentWeight } from "@/hooks/useRecentWeight";
-import { useEffect } from "react";
 import { AddIcon, RemoveIcon } from "@/components/ui/icon";
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { VStack } from "@/components/ui/vstack";
+import { useEffect } from "react";
 
 export const WeightDisplay = () => {
   const { mutateAsync: addWeight } = useWeightLog();
-  const { data: weightData } = useRecentWeight();
+  const { data: weightData, isLoading } = useRecentWeight();
   const { userData } = useOnboard();
 
   const handleChangeWeight = async (offset: number) => {
@@ -22,6 +22,22 @@ export const WeightDisplay = () => {
       });
     }
   };
+
+  useEffect(() => {
+    if (!weightData && !isLoading) {
+      async function initWeight() {
+        if (userData.weight) {
+          await addWeight({
+            weight: userData.weight,
+            day: new Date(Date.now()).toISOString().substring(0, 10),
+          });
+        }
+      }
+
+      initWeight();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading]);
 
   return (
     <Card className="w-full h-48 p-2.5" variant="half-rounded">

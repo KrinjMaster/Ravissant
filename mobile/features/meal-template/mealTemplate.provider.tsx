@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { MealTemplateContext, Product } from "./mealTemplate.context";
 import { useQuery } from "@tanstack/react-query";
 import { productService } from "@/services/product.service";
-import { useSQLiteContext } from "expo-sqlite";
+import { SQLiteDatabase, useSQLiteContext } from "expo-sqlite";
 
 export interface Item {
   weight: number;
@@ -118,9 +118,17 @@ export const MealTemplateProvider = ({ children }: { children: ReactNode }) => {
     setProducts((prev) => prev.filter((val) => val.productId !== productId));
   };
 
+  const finishMealTemplate = async (
+    db: SQLiteDatabase,
+    templateName: string,
+  ) => {
+    await productService.addMealTemplate(db, templateName, products);
+  };
+
   return (
     <MealTemplateContext.Provider
       value={{
+        finishMealTemplate,
         products,
         addTemplateItem,
         removeTemplateItem,
