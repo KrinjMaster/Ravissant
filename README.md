@@ -102,6 +102,18 @@ Currently integrated supermarkets:
 
 - Metro
 
+Goals:
+
+- Перекрёсток
+- Пятёрочка
+- ВкусВилл
+- Лента
+- Магнит
+- Самокат
+- Купер
+- Яндекс Лавка
+- General products database
+
 ## Backend
 
 The backend service is built in Rust and provides:
