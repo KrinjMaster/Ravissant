@@ -269,7 +269,7 @@ export default function AddTemplateModal() {
               <HStack className="items-center" space="xl">
                 <Button
                   action="primary"
-                  className="w-12"
+                  className="w-12 rounded-full"
                   size="xl"
                   onPress={handleAddTemplateItem}
                 >

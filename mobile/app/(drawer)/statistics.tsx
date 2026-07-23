@@ -16,7 +16,7 @@ import { LineChart } from "@/features/general/LineChart";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { prepareWeightChartData } from "@/utils/weightChart";
 
-export default function StatisticsModal() {
+export default function Statistics() {
   const [displayData, setDisplayData] = useState<number[]>([]);
   const [displayLabels, setDisplayLabels] = useState<string[]>([]);
   const insets = useSafeAreaInsets();

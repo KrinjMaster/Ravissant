@@ -32,7 +32,7 @@ function RightAction() {
   );
 }
 
-export default function AddProductModal() {
+export default function MealInfoModal() {
   const { meal, date, calorieGoal } = useLocalSearchParams<{
     meal: MealType;
     date: string;

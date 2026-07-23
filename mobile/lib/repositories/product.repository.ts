@@ -224,7 +224,7 @@ export const productRepository = {
     FROM food_entries f
     JOIN products p ON f.product_id = p.id
     GROUP BY p.id
-    ORDER BY p.name
+    ORDER BY f.logged_at DESC
     LIMIT 5;
     `,
     );

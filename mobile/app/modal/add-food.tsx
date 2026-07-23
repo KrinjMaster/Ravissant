@@ -30,7 +30,7 @@ export default function AddFoodModal() {
   const [searchString, setSearchString] = useState("");
   const { data: searchData, isLoading: isSearchLoading } =
     useSearchItems(searchString);
-  const { data: recentData, isLoading: isRecentLoading } = useRecentItems();
+  const { data: recentData } = useRecentItems();
   const showSkeleton =
     searchString.length > 0 && !searchData && isSearchLoading;
   const insets = useSafeAreaInsets();

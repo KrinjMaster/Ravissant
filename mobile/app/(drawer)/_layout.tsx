@@ -4,7 +4,12 @@ import { Drawer as ExpoDrawer } from "expo-router/drawer";
 import { LinearGradient } from "expo-linear-gradient"; // Исправлен импорт для Expo
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, ButtonIcon, ButtonText } from "@/components/ui/button";
-import { ChevronRightIcon, MenuIcon } from "@/components/ui/icon";
+import {
+  ChevronRightIcon,
+  ChevronUpIcon,
+  Icon,
+  MenuIcon,
+} from "@/components/ui/icon";
 import { HStack } from "@/components/ui/hstack";
 import {
   Drawer,
@@ -12,6 +17,7 @@ import {
   DrawerContent,
   DrawerBody,
   DrawerFooter,
+  DrawerHeader,
 } from "@/components/ui/drawer";
 import { Divider } from "@/components/ui/divider";
 import { VStack } from "@/components/ui/vstack";
@@ -46,13 +52,18 @@ export default function DrawerLayout() {
         <ExpoDrawer.Screen name="index" options={{ title: "Home" }} />
         <ExpoDrawer.Screen name="profile" options={{ title: "Profile" }} />
         <ExpoDrawer.Screen
+          name="meal-templates"
+          options={{ title: "Meal templates" }}
+        />
+        <ExpoDrawer.Screen
           name="favorite-products"
           options={{ title: "Favorites" }}
         />
         <ExpoDrawer.Screen
-          name="meal-templates"
-          options={{ title: "Meal templates" }}
+          name="statistics"
+          options={{ title: "Statistics" }}
         />
+        <ExpoDrawer.Screen name="faq" options={{ title: "FAQ" }} />
       </ExpoDrawer>
       <View
         className={`${pathname === "/" ? "absolute" : "hidden"} bottom-0 left-0 right-0 z-50 overflow-hidden`}
@@ -67,7 +78,7 @@ export default function DrawerLayout() {
             <Button
               size="xl"
               action="primary"
-              className="w-16 h-16"
+              className="w-16 h-16 rounded-full"
               onPress={() => handleIsOpen(true)}
             >
               <ButtonIcon as={MenuIcon} size="3xl" color="white" />
@@ -86,93 +97,86 @@ export default function DrawerLayout() {
           style={{ paddingBottom: insets.bottom }}
           className="px-5 pt-2.5 h-[27rem]"
         >
-          <DrawerBody>
-            <VStack className="items-center" space="sm">
-              <Button
-                action="secondary"
-                variant="link"
-                size="lg"
-                className="justify-start px-4 w-[95%]"
-                onPress={() => handleForward("/profile")}
-              >
-                <ButtonText>Профиль</ButtonText>
-                <ButtonIcon
-                  size="2xl"
-                  as={ChevronRightIcon}
-                  className="stroke-primary-600 ml-auto"
-                />
-              </Button>
-              <Divider className="bg-secondary-100 w-full h-0.5" />
-              <Button
-                action="secondary"
-                variant="link"
-                size="lg"
-                className="justify-start px-4 w-[95%]"
-                onPress={() => handleForward("/meal-templates")}
-              >
-                <ButtonText>Рецепты</ButtonText>
-                <ButtonIcon
-                  size="2xl"
-                  as={ChevronRightIcon}
-                  className="stroke-primary-600 ml-auto"
-                />
-              </Button>
-              <Divider className="bg-secondary-100 w-full h-0.5" />
-              <Button
-                action="secondary"
-                variant="link"
-                size="lg"
-                className="justify-start px-4 w-[95%]"
-                onPress={() => handleForward("/favorite-products")}
-              >
-                <ButtonText>Любимые продукты</ButtonText>
-                <ButtonIcon
-                  size="2xl"
-                  as={ChevronRightIcon}
-                  className="stroke-primary-600 ml-auto"
-                />
-              </Button>
-              <Divider className="bg-secondary-100 w-full h-0.5" />
-              <Button
-                action="secondary"
-                variant="link"
-                size="lg"
-                className="justify-start px-4 w-[95%]"
-                onPress={() => handleForward("/modal/view-statistics")}
-              >
-                <ButtonText>Статистика</ButtonText>
-                <ButtonIcon
-                  size="2xl"
-                  as={ChevronRightIcon}
-                  className="stroke-primary-600 ml-auto"
-                />
-              </Button>
-              <Divider className="bg-secondary-100 w-full h-0.5" />
-              <Button
-                action="secondary"
-                variant="link"
-                size="lg"
-                className="justify-start px-4 w-[95%]"
-              >
-                <ButtonText>О проекте</ButtonText>
-                <ButtonIcon
-                  size="2xl"
-                  as={ChevronRightIcon}
-                  className="stroke-primary-600 ml-auto"
-                />
-              </Button>
-            </VStack>
-          </DrawerBody>
-          <DrawerFooter borderTopWidth="$1" borderColor="$borderLight300">
+          <Icon
+            as={ChevronUpIcon}
+            className="stroke-secondary-200 h-12 w-12 mx-auto scale-x-150"
+          />
+          <VStack className="items-center overflow-hidden my-auto" space="sm">
             <Button
-              size="xl"
-              action="negative"
-              onPress={() => handleIsOpen(false)}
-              className="w-full rounded-2xl"
+              action="secondary"
+              variant="link"
+              size="lg"
+              className="justify-start px-4 w-[95%]"
+              onPress={() => handleForward("/profile")}
             >
-              <ButtonText>Закрыть</ButtonText>
+              <ButtonText>Профиль</ButtonText>
+              <ButtonIcon
+                size="2xl"
+                as={ChevronRightIcon}
+                className="stroke-primary-600 ml-auto"
+              />
             </Button>
-          </DrawerFooter>
+            <Divider className="bg-secondary-100 w-full h-0.5" />
+            <Button
+              action="secondary"
+              variant="link"
+              size="lg"
+              className="justify-start px-4 w-[95%]"
+              onPress={() => handleForward("/meal-templates")}
+            >
+              <ButtonText>Рецепты</ButtonText>
+              <ButtonIcon
+                size="2xl"
+                as={ChevronRightIcon}
+                className="stroke-primary-600 ml-auto"
+              />
+            </Button>
+            <Divider className="bg-secondary-100 w-full h-0.5" />
+            <Button
+              action="secondary"
+              variant="link"
+              size="lg"
+              className="justify-start px-4 w-[95%]"
+              onPress={() => handleForward("/favorite-products")}
+            >
+              <ButtonText>Любимые продукты</ButtonText>
+              <ButtonIcon
+                size="2xl"
+                as={ChevronRightIcon}
+                className="stroke-primary-600 ml-auto"
+              />
+            </Button>
+            <Divider className="bg-secondary-100 w-full h-0.5" />
+            <Button
+              action="secondary"
+              variant="link"
+              size="lg"
+              className="justify-start px-4 w-[95%]"
+              onPress={() => handleForward("/statistics")}
+            >
+              <ButtonText>Статистика</ButtonText>
+              <ButtonIcon
+                size="2xl"
+                as={ChevronRightIcon}
+                className="stroke-primary-600 ml-auto"
+              />
+            </Button>
+            <Divider className="bg-secondary-100 w-full h-0.5" />
+            <Button
+              action="secondary"
+              variant="link"
+              size="lg"
+              className="justify-start px-4 w-[95%]"
+              onPress={() => handleForward("/faq")}
+            >
+              <ButtonText>О проекте</ButtonText>
+              <ButtonIcon
+                size="2xl"
+                as={ChevronRightIcon}
+                className="stroke-primary-600 ml-auto"
+              />
+            </Button>
+          </VStack>
         </DrawerContent>
       </Drawer>
     </View>

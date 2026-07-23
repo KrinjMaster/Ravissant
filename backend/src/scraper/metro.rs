@@ -33,7 +33,7 @@ pub async fn fetch_category_products(
     });
 
     let res = client
-        .post("https://api.metro-cc.ru/products-api/graph")
+        .post("https://online.metro-cc.ru/graphql")
         .json(&payload)
         .send()
         .await?;
@@ -81,7 +81,6 @@ pub async fn fetch_metro_products() -> Vec<ParsedProduct> {
         "chipsy-sneki-orehi",
         "chaj-kofe-kakao",
         "gotovye-bljuda-polufabrikaty",
-        "myaso-ot-miratorg-57331",
     ];
 
     let mut all_products = Vec::new();

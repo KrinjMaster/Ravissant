@@ -66,6 +66,7 @@ export default function AddProductModal() {
   };
 
   const handleChangeFavorite = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     await addFavorite({
       productId: productId,
       isFavorite: data?.isFavorite ?? false,

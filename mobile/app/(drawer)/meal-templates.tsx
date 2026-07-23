@@ -103,7 +103,7 @@ export default function MealTemplates() {
         <Button
           action="primary"
           variant="solid"
-          className="absolute right-0"
+          className="absolute right-0 rounded-full"
           size="xl"
           onPress={handleAddTemplate}
         >

@@ -20,7 +20,7 @@ export const prepareWeightChartData = (
     const date = new Date(Date.now() + offset * DAY);
     const key = date.toISOString().substring(0, 10);
 
-    data.push(dict[key] ?? 0);
+    data.push(dict[key] ?? data[data.length - 1] ?? 0);
 
     labels.push(
       date.toLocaleString("ru-RU", {

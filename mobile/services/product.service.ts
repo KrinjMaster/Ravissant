@@ -92,11 +92,14 @@ export const productService = {
   getRecentWeight: async (db: SQLiteDatabase) =>
     await productRepository.getRecentWeight(db),
   changeDayWeight: async (db: SQLiteDatabase, day: string, weight: number) => {
-    console.log("new", day, weight);
     await productRepository.changeDayWeight(db, day, weight);
 
     await queryClient.invalidateQueries({
       queryKey: ["weight-recent"],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["weight-history"],
     });
   },
   searchFavoriteItems: async (db: SQLiteDatabase, params: string) =>

@@ -37,7 +37,7 @@ cssInterop(PrimitiveIcon, {
 });
 
 const buttonStyle = tva({
-  base: "group/button rounded-full bg-primary-500 flex-row items-center justify-center data-[focus-visible=true]:web:outline-none data-[focus-visible=true]:web:ring-2 disabled:opacity-40 gap-2 transition-opacity",
+  base: "group/button rounded-2xl bg-primary-500 flex-row items-center justify-center data-[focus-visible=true]:web:outline-none data-[focus-visible=true]:web:ring-2 disabled:opacity-40 gap-2 transition-opacity",
   variants: {
     action: {
       primary:
@@ -103,6 +103,11 @@ const buttonStyle = tva({
       variant: "outline",
       class:
         "bg-transparent data-[hover=true]:bg-background-50 data-[active=true]:bg-transparent",
+    },
+    {
+      action: "default",
+      variant: "outline",
+      class: "rounded-full",
     },
     {
       action: "positive",

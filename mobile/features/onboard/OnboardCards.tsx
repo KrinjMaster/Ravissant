@@ -23,6 +23,7 @@ import { HeightQuestionCard } from "./questions/HeightQuestionCard";
 import { ActivityQuestionCard } from "./questions/ActivityQuestionCard";
 import { GoalQuestionCard } from "./questions/GoalQuestionCard";
 import { FinalScreenCard } from "./questions/FinalScreenCard";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const AnimatedTrack = createAnimatedComponent(ProgressFilledTrack);
 
@@ -96,9 +97,14 @@ export const OnboardCards = () => {
     height: `${animatedValue.value}%`,
   }));
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <VStack className="pt-[10%] pb-[0%]" space="3xl">
-      <VStack className="flex-row h-[90%]" space="md">
+    <VStack
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+      space="xl"
+    >
+      <VStack className="flex-row h-[93%]" space="md">
         <Progress size="sm" orientation="vertical" className="h-[90%] my-auto">
           <AnimatedTrack style={animatedTrackStyle} />
         </Progress>

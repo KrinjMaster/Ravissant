@@ -125,7 +125,7 @@ const drawerContentStyle = tva({
     {
       anchor: "bottom",
       size: "md",
-      class: "h-[40%]",
+      class: "h-[35%]",
     },
     {
       anchor: "bottom",

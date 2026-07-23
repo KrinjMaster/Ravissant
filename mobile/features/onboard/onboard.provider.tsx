@@ -2,6 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { OnboardContext } from "./onboard.context";
 import { getData, removeData, storeData } from "@/utils/storage";
 import { NutritionPlan, UserData } from "@/types/onboard";
+import { router } from "expo-router";
 
 export const OnboardProvider = ({ children }: { children: ReactNode }) => {
   const [userData, setUserData] = useState<Partial<UserData>>({});
@@ -24,6 +25,7 @@ export const OnboardProvider = ({ children }: { children: ReactNode }) => {
     await storeData("user_data", { ...newData, isOnboarded: true });
 
     setUserData((prev) => ({ ...prev, ...newData, isOnboarded: true }));
+    router.push("/(drawer)");
   };
 
   const updateUserData = (patch: Partial<UserData>) => {

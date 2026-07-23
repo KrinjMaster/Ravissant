@@ -2,26 +2,40 @@ use rusqlite::{params, Connection};
 use std::fs::{self, create_dir_all, File};
 
 use crate::scraper::{
-    metro::fetch_metro_products,
     models::{ParsedProduct, Supermarket},
+    scraper::Scraper,
     utils::{generate_product_id, generate_supermarket_id},
 };
 
 pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
     create_dir_all("src/scraper/results")?;
 
-    // Metro supermarket
-    let metro_products = fetch_metro_products().await;
-    let metro_file = File::create("src/scraper/results/metro.json")?;
+    let scrapers = [
+        Scraper::Metro,
+        // Scraper::Pyaterochka,
+        // Scraper::Magnit,
+        // Scraper::Perekrestok,
+    ];
 
-    let metro = Supermarket {
-        supermarket_name: "Metro".to_string(),
-        products: metro_products,
-    };
+    for scraper in scrapers {
+        println!("Now fetching {}!", scraper.display_name());
+        let products = scraper.fetch().await;
 
-    serde_json::to_writer_pretty(metro_file, &metro)?;
+        let supermarket = Supermarket {
+            supermarket_name: scraper.display_name().to_string(),
+            products,
+        };
 
-    println!("Saved {} products from metro", metro.products.len());
+        let file = File::create(format!("src/scraper/results/{}.json", scraper.id()))?;
+
+        serde_json::to_writer_pretty(file, &supermarket)?;
+
+        println!(
+            "Saved {} products from {}",
+            supermarket.products.len(),
+            supermarket.supermarket_name
+        );
+    }
 
     Ok(())
 }
