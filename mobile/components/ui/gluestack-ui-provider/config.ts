@@ -1,0 +1,160 @@
+"use client";
+import { vars } from "nativewind";
+
+export const config = {
+  dark: vars({
+    /* Primary (purple accent) */
+    "--color-primary-0": "0 6 122",
+    "--color-primary-50": "0 8 163",
+    "--color-primary-100": "0 10 204",
+    "--color-primary-200": "0 12 245",
+    "--color-primary-300": "31 42 255",
+    "--color-primary-400": "51 61 255",
+    "--color-primary-500": "71 81 255",
+    "--color-primary-600": "92 100 255",
+    "--color-primary-700": "133 139 255",
+    "--color-primary-800": "153 158 255",
+    "--color-primary-900": "173 177 255",
+    "--color-primary-950": "194 197 255",
+
+    /* Secondary (dark surfaces/cards) */
+    "--color-secondary-0": "15 15 15",
+    "--color-secondary-50": "20 20 20",
+    "--color-secondary-100": "28 28 28",
+    "--color-secondary-200": "35 35 35",
+    "--color-secondary-300": "45 45 45",
+    "--color-secondary-400": "60 60 60",
+    "--color-secondary-500": "80 80 80",
+    "--color-secondary-600": "110 110 110",
+    "--color-secondary-700": "140 140 140",
+    "--color-secondary-800": "170 170 170",
+    "--color-secondary-900": "200 200 200",
+    "--color-secondary-950": "230 230 230",
+
+    /* Tertiary (optional alt accent) */
+    // "--color-tertiary-0": "40 18 70",
+    // "--color-tertiary-50": "55 10 95",
+    // "--color-tertiary-100": "70 5 130",
+    // "--color-tertiary-200": "86 3 173",
+    // "--color-tertiary-300": "105 35 200",
+    "--color-tertiary-400": "253 94 97",
+    // changed this color
+    "--color-tertiary-500": "225 20 98",
+    "--color-tertiary-600": "237 49 121",
+    // "--color-tertiary-700": "195 198 255",
+    // "--color-tertiary-800": "220 222 255",
+    // "--color-tertiary-900": "235 236 255",
+    // "--color-tertiary-950": "245 246 255",
+
+    /* Error (your red) */
+    "--color-error-0": "60 10 12",
+    "--color-error-50": "90 20 22",
+    "--color-error-100": "130 30 32",
+    "--color-error-200": "170 40 42",
+    "--color-error-300": "210 55 58",
+    "--color-error-400": "235 65 68",
+    "--color-error-500": "251 75 78",
+    "--color-error-600": "255 100 102",
+    "--color-error-700": "255 130 132",
+    "--color-error-800": "255 170 172",
+    "--color-error-900": "255 210 211",
+    "--color-error-950": "255 235 236",
+
+    /* Success (purple-green toned neutral instead of default neon green) */
+    "--color-success-0": "20 35 25",
+    "--color-success-50": "25 50 35",
+    "--color-success-100": "35 70 45",
+    "--color-success-200": "50 100 60",
+    "--color-success-300": "70 130 80",
+    "--color-success-400": "90 160 100",
+    "--color-success-500": "110 190 120",
+    "--color-success-600": "140 210 150",
+    "--color-success-700": "170 225 180",
+    "--color-success-800": "200 240 210",
+    "--color-success-900": "225 250 230",
+    "--color-success-950": "240 255 245",
+
+    /* Warning */
+    "--color-warning-0": "50 30 10",
+    "--color-warning-50": "75 45 15",
+    "--color-warning-100": "100 60 20",
+    "--color-warning-200": "140 85 30",
+    "--color-warning-300": "180 110 40",
+    "--color-warning-400": "220 140 55",
+    "--color-warning-500": "245 170 70",
+    "--color-warning-600": "250 190 100",
+    "--color-warning-700": "252 210 130",
+    "--color-warning-800": "254 225 170",
+    "--color-warning-900": "255 240 210",
+    "--color-warning-950": "255 248 235",
+
+    /* Info (periwinkle) */
+    "--color-info-0": "25 28 60",
+    "--color-info-50": "40 45 90",
+    "--color-info-100": "55 60 120",
+    "--color-info-200": "80 90 170",
+    "--color-info-300": "100 110 220",
+    "--color-info-400": "115 120 245",
+    "--color-info-500": "125 131 255",
+    "--color-info-600": "150 155 255",
+    "--color-info-700": "175 180 255",
+    "--color-info-800": "200 205 255",
+    "--color-info-900": "225 228 255",
+    "--color-info-950": "242 243 255",
+
+    /* Typography */
+    "--color-typography-0": "10 10 10",
+    "--color-typography-50": "60 60 60",
+    "--color-typography-100": "90 90 90",
+    "--color-typography-200": "120 120 120",
+    "--color-typography-300": "150 150 150",
+    "--color-typography-400": "180 180 180",
+    //changed
+    "--color-typography-500": "250 250 250",
+    "--color-typography-600": "220 220 220",
+    "--color-typography-700": "234 234 234",
+    "--color-typography-800": "240 240 240",
+    "--color-typography-900": "248 248 248",
+    "--color-typography-950": "255 255 255",
+
+    /* Borders */
+    "--color-outline-0": "25 25 25",
+    "--color-outline-50": "35 35 35",
+    "--color-outline-100": "45 45 45",
+    "--color-outline-200": "55 55 55",
+    "--color-outline-300": "70 70 70",
+    "--color-outline-400": "90 90 90",
+    "--color-outline-500": "110 110 110",
+    "--color-outline-600": "140 140 140",
+    "--color-outline-700": "170 170 170",
+    "--color-outline-800": "200 200 200",
+    "--color-outline-900": "225 225 225",
+    "--color-outline-950": "245 245 245",
+
+    /* Background */
+    "--color-background-0": "12 12 12",
+    "--color-background-50": "20 20 20",
+    "--color-background-100": "28 28 28",
+    "--color-background-200": "35 35 35",
+    "--color-background-300": "50 50 50",
+    "--color-background-400": "75 75 75",
+    "--color-background-500": "100 100 100",
+    "--color-background-600": "130 130 130",
+    "--color-background-700": "170 170 170",
+    "--color-background-800": "200 200 200",
+    "--color-background-900": "230 230 230",
+    "--color-background-950": "255 255 255",
+
+    /* Background specials */
+    "--color-background-error": "50 20 22",
+    "--color-background-warning": "55 35 20",
+    "--color-background-success": "25 45 30",
+    "--color-background-muted": "22 22 22",
+    "--color-background-info": "25 30 50",
+
+    /* Indicators */
+    "--color-indicator-primary": "125 131 255",
+    "--color-indicator-info": "125 131 255",
+    "--color-indicator-error": "251 75 78",
+  }),
+};

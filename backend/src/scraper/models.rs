@@ -30,17 +30,17 @@ pub struct Attribute {
 
 #[derive(Serialize, Deserialize)]
 pub struct Nutrients {
-    pub proteins: Option<f32>,
-    pub fats: Option<f32>,
-    pub carbohydrates: Option<f32>,
-    pub calories: Option<f32>,
+    pub proteins: Option<f64>,
+    pub fats: Option<f64>,
+    pub carbohydrates: Option<f64>,
+    pub calories: Option<f64>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct ParsedProduct {
     pub name: String,
     pub brand: Option<String>,
-    pub weight: Option<f32>,
+    pub serving_size: Option<f64>,
     pub category: String,
     pub nutrients: Nutrients,
 }
