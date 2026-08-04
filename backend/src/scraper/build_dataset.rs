@@ -12,14 +12,18 @@ pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
 
     let scrapers = [
         Scraper::Metro,
-        // Scraper::Pyaterochka,
-        // Scraper::Magnit,
+        Scraper::Vkusvill,
         // Scraper::Perekrestok,
+        // Scraper::Lenta,
     ];
+
+    let mut result_info: Vec<(usize, &str)> = vec![];
 
     for scraper in scrapers {
         println!("Now fetching {}!", scraper.display_name());
         let products = scraper.fetch().await;
+
+        result_info.push((products.len(), scraper.display_name()));
 
         let supermarket = Supermarket {
             supermarket_name: scraper.display_name().to_string(),
@@ -29,12 +33,10 @@ pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
         let file = File::create(format!("src/scraper/results/{}.json", scraper.id()))?;
 
         serde_json::to_writer_pretty(file, &supermarket)?;
+    }
 
-        println!(
-            "Saved {} products from {}",
-            supermarket.products.len(),
-            supermarket.supermarket_name
-        );
+    for (len, name) in result_info {
+        println!("Saved {} products from {}", len, name);
     }
 
     Ok(())
@@ -46,10 +48,6 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = Connection::open("main.db")?;
 
     conn.execute("PRAGMA foreign_keys = ON;", [])?;
-
-    //
-    // Static tables
-    //
 
     conn.execute(
         "
@@ -76,15 +74,15 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
 
             source_category TEXT,
 
-            serving_size REAL,
+            serving_size INTEGER,
 
-            proteins_per_100g REAL,
+            proteins_per_100g INTEGER,
 
-            fats_per_100g REAL,
+            fats_per_100g INTEGER,
 
-            carbs_per_100g REAL,
+            carbs_per_100g INTEGER,
 
-            calories_per_100g REAL,
+            calories_per_100g INTEGER,
 
             version INTEGER NOT NULL DEFAULT 1,
 
@@ -96,10 +94,6 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
         ",
         [],
     )?;
-
-    //
-    // User tables
-    //
 
     conn.execute(
         "
@@ -130,7 +124,7 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
 
             logged_at TEXT NOT NULL,
 
-            weight REAL NOT NULL
+            weight INTEGER NOT NULL
         )
         ",
         [],
@@ -243,10 +237,10 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
             let product_id = generate_product_id(
                 &supermarket_id,
                 &product.name,
-                &product.brand.clone().unwrap_or_default(),
-                &product.serving_size.unwrap_or(0.0),
+                &product.brand.clone(),
+                &product.nutrition_basis.weight,
             );
-            let brand = product.brand.unwrap_or_default();
+            let brand = product.brand;
 
             let search_text = format!("{} {}", brand.to_lowercase(), product.name.to_lowercase(),);
 
@@ -257,11 +251,11 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
                 supermarket_id,
                 brand,
                 product.category,
-                product.serving_size.unwrap_or(0.0),
-                product.nutrients.proteins.unwrap_or(0.0),
-                product.nutrients.fats.unwrap_or(0.0),
-                product.nutrients.carbohydrates.unwrap_or(0.0),
-                product.nutrients.calories.unwrap_or(0.0),
+                product.nutrition_basis.weight,
+                product.nutrition_basis.nutrients.proteins,
+                product.nutrition_basis.nutrients.fats,
+                product.nutrition_basis.nutrients.carbohydrates,
+                product.nutrition_basis.nutrients.calories,
             ])?;
         }
     }

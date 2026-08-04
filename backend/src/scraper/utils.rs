@@ -1,6 +1,6 @@
 use sha2::{Digest, Sha256};
 
-pub fn generate_product_id(source: &str, name: &str, brand: &str, serving_size: &f64) -> String {
+pub fn generate_product_id(source: &str, name: &str, brand: &str, serving_size: &i64) -> String {
     let input = format!(
         "{}:{}:{}:{}",
         source.to_lowercase(),

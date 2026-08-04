@@ -1,0 +1,32 @@
+{
+  "supermarket_name": "Lenta",
+  "products": [
+    {
+      "name": "Горбуша натуральная, 240г",
+      "brand": "PL Lenta TempSubst",
+      "category": "Консервация",
+      "nutrition_basis": {
+        "serving": 240,
+        "unit": "г",
+        "ingredients": "Горбуша, соль.",
+        "allergens": null,
+        "nutrients": {
+          "calories": 138,
+          "proteins": 210,
+          "fats": 60,
+          "carbohydrates": 0
+        }
+      },
+      "servings": [
+        {
+          "name": "Упаковка",
+          "amount": 1.0,
+          "unit": "package",
+          "grams": 240,
+          "pieces": 1,
+          "source": "Explicit"
+        }
+      ]
+    }
+  ]
+}
