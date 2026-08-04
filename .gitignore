@@ -8,6 +8,7 @@
 
 /backend/src/scraper/results/
 /backend/data/
+/backend/src/browser-service/chrome-profile
 
 /backend/debug/
 /backend/target/
