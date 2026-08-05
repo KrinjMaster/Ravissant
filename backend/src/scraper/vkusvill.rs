@@ -121,13 +121,13 @@ fn scrape_data_from_html(html: &str) -> Option<ParsedProduct> {
     let name = extract_name(&document)?;
 
     let weight = extract_weight(&document).unwrap_or("100 г".into());
-    let brand = extract_brand(&document).unwrap_or_else(|| "ВкусВилл".to_string());
-    let category = extract_category(&document).unwrap_or_else(|| "unknown".to_string());
+    let brand = extract_brand(&document).unwrap_or("ВкусВилл".to_string());
+    let category = extract_category(&document);
     let macros = extract_macros(&document);
     let (w, unit) = parse_weight(&weight.as_str())?;
 
     let servings = extract_servings(&document, &name);
-    let ingredients = extract_ingredients(&document).unwrap_or_default();
+    let ingredients = extract_ingredients(&document);
     let allergens = extract_allergens(&document);
 
     Some(ParsedProduct {
@@ -255,7 +255,7 @@ fn parse_serving_text(text: &str, name: &str) -> Vec<Serving> {
     let re = Regex::new(r"(\d+)\s*(шт|штук)").unwrap();
 
     if let Some(caps) = re.captures(name) {
-        let count = caps.get(1).unwrap().as_str().parse::<i64>().unwrap();
+        let count = caps.get(1).unwrap().as_str().parse::<i32>().unwrap();
 
         result.push(Serving {
             name: "Упаковка".to_string(),
@@ -282,7 +282,7 @@ fn parse_serving_text(text: &str, name: &str) -> Vec<Serving> {
                     amount: 1.0,
                     unit: "package".to_string(),
                     pieces: 1,
-                    weight: Some(amount as i64),
+                    weight: Some(amount as i32),
                     source: ServingSource::Explicit,
                 });
             }
@@ -292,7 +292,7 @@ fn parse_serving_text(text: &str, name: &str) -> Vec<Serving> {
                     amount: 1.0,
                     unit: "package".to_string(),
                     pieces: 1,
-                    weight: Some((amount * 1000.0) as i64),
+                    weight: Some((amount * 1000.0) as i32),
                     source: ServingSource::Explicit,
                 });
             }
@@ -320,12 +320,12 @@ fn extract_name(document: &Html) -> Option<String> {
     )
 }
 
-fn parse_weight(weight: &str) -> Option<(i64, String)> {
+fn parse_weight(weight: &str) -> Option<(i32, String)> {
     let weight = weight.replace(',', ".");
 
     let mut parts = weight.split_whitespace();
 
-    let value = parts.next()?.parse::<i64>().ok()?;
+    let value = parts.next()?.parse::<i32>().ok()?;
     let unit = parts.next()?.to_string();
 
     match unit.as_str() {
@@ -414,10 +414,10 @@ fn extract_macros(document: &Html) -> Nutrients {
     }
 
     extract_text_macros(document).unwrap_or(Nutrients {
-        calories: 0,
-        proteins: 0,
-        fats: 0,
-        carbohydrates: 0,
+        calories: None,
+        proteins: None,
+        fats: None,
+        carbohydrates: None,
     })
 }
 
@@ -429,10 +429,10 @@ fn extract_structured_macros(document: &Html) -> Option<Nutrients> {
     let label_selector = Selector::parse(".VV23_DetailProdPageAccordion__EnergyDesc").unwrap();
 
     let mut macros = Nutrients {
-        calories: 0,
-        proteins: 0,
-        fats: 0,
-        carbohydrates: 0,
+        calories: None,
+        proteins: None,
+        fats: None,
+        carbohydrates: None,
     };
 
     let mut found = false;
@@ -460,10 +460,10 @@ fn extract_structured_macros(document: &Html) -> Option<Nutrients> {
         found = true;
 
         match label.as_str() {
-            "Ккал" => macros.calories = (value * 10.0) as i64,
-            "Белки, г" => macros.proteins = (value * 10.0) as i64,
-            "Жиры, г" => macros.fats = (value * 10.0) as i64,
-            "Углеводы, г" => macros.carbohydrates = (value * 10.0) as i64,
+            "Ккал" => macros.calories = Some((value * 100.0) as i32),
+            "Белки, г" => macros.proteins = Some((value * 100.0) as i32),
+            "Жиры, г" => macros.fats = Some((value * 100.0) as i32),
+            "Углеводы, г" => macros.carbohydrates = Some((value * 100.0) as i32),
             _ => {}
         }
     }
@@ -505,10 +505,10 @@ fn extract_text_macros(document: &Html) -> Option<Nutrients> {
         .and_then(|m| m.as_str().parse::<f64>().ok());
 
     Some(Nutrients {
-        proteins: proteins.map(|v| (v * 10.0) as i64).unwrap_or(0),
-        fats: fats.map(|v| (v * 10.0) as i64).unwrap_or(0),
-        carbohydrates: carbs.map(|v| (v * 10.0) as i64).unwrap_or(0),
-        calories: calories.map(|v| (v * 10.0) as i64).unwrap_or(0),
+        proteins: proteins.map(|v| (v * 100.0) as i32),
+        fats: fats.map(|v| (v * 100.0) as i32),
+        carbohydrates: carbs.map(|v| (v * 100.0) as i32),
+        calories: calories.map(|v| (v * 100.0) as i32),
     })
 }
 

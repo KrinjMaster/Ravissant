@@ -103,6 +103,10 @@ pub async fn fetch_metro_products() -> Vec<ParsedProduct> {
     all_products
 }
 
+fn parse_macro(value: &str) -> Option<i32> {
+    value.parse::<f32>().ok().map(|v| (v * 100.0) as i32)
+}
+
 pub fn parse_product(
     name: Option<String>,
     attributes: &[Attribute],
@@ -110,21 +114,21 @@ pub fn parse_product(
 ) -> ParsedProduct {
     let name = name.unwrap_or_default();
 
-    let mut brand = String::new();
-    let mut category = String::new();
-    let mut ingredients = String::new();
+    let mut brand = None;
+    let mut category = None;
+    let mut ingredients = None;
 
-    let mut package_size = 0;
+    let mut package_size = None;
     let mut package_unit = "g".to_string();
 
-    let mut pieces: i64 = 1;
+    let mut pieces: i32 = 1;
     let mut barcodes_res = vec![];
 
     let mut nutrients = Nutrients {
-        proteins: 0,
-        fats: 0,
-        carbohydrates: 0,
-        calories: 0,
+        proteins: None,
+        fats: None,
+        carbohydrates: None,
+        calories: None,
     };
 
     for attr in attributes {
@@ -134,12 +138,12 @@ pub fn parse_product(
         let value = value.replace(',', ".");
 
         match attr_name.as_str() {
-            "Бренд" => brand = value,
+            "Бренд" => brand = Some(value),
 
-            "Тип" => category = value,
+            "Тип" => category = Some(value),
 
             "Вес, объем" => {
-                package_size = value.parse().unwrap_or(0);
+                package_size = value.parse().ok();
             }
 
             "Количество штук в упаковке" => {
@@ -154,7 +158,7 @@ pub fn parse_product(
                 nutrients.calories = parse_macro(&value)
             }
 
-            "Состав" => ingredients = value,
+            "Состав" => ingredients = Some(value),
 
             _ => {}
         }
@@ -165,7 +169,7 @@ pub fn parse_product(
     }
 
     for barcode in &barcodes {
-        match barcode.parse::<i64>() {
+        match barcode.parse::<i32>() {
             Ok(barc) => barcodes_res.push(barc),
             Err(_) => {}
         }
@@ -173,23 +177,19 @@ pub fn parse_product(
 
     ParsedProduct {
         name: name.clone(),
-        brand,
+        brand: brand.unwrap_or("Метро".into()),
         category,
         barcodes: barcodes_res,
         nutrition_basis: NutritionBasis {
-            weight: package_size,
+            weight: package_size.unwrap_or(100),
             unit: package_unit.to_string(),
             ingredients,
             allergens: None,
             nutrients,
         },
 
-        servings: build_servings(package_size, &package_unit, pieces),
+        servings: build_servings(package_size.unwrap_or(100), &package_unit, pieces),
     }
-}
-
-fn parse_macro(value: &str) -> i64 {
-    value.parse::<f64>().map(|v| (v * 10.0) as i64).unwrap_or(0)
 }
 
 static VOLUME_RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"\d+(?:[.,]\d+)?\s*(мл|л)\b").unwrap());
@@ -212,7 +212,7 @@ fn detect_unit_from_name(name: &str) -> Option<String> {
     }
 }
 
-fn build_servings(size: i64, unit: &str, pieces: i64) -> Vec<Serving> {
+fn build_servings(size: i32, unit: &str, pieces: i32) -> Vec<Serving> {
     let mut servings = Vec::new();
 
     match unit {

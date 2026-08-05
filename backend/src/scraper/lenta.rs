@@ -30,7 +30,7 @@ impl PackageUnit {
 
 #[derive(Debug, Clone)]
 pub struct PackageInfo {
-    pub amount: i64,
+    pub amount: i32,
     pub unit: PackageUnit,
 }
 
@@ -118,7 +118,7 @@ pub async fn fetch_lenta_products() -> Vec<ParsedProduct> {
     products
 }
 
-async fn get_product(client: &Client, product_id: i64) -> Option<ParsedProduct> {
+async fn get_product(client: &Client, product_id: i32) -> Option<ParsedProduct> {
     let response = client
         .get(
             format!(
@@ -137,21 +137,21 @@ async fn get_product(client: &Client, product_id: i64) -> Option<ParsedProduct> 
 
     let package_info = parse_package(product.display.package.as_str());
     let mut brand: String = "Лента".to_string();
-    let mut ingredients: String = "".to_string();
-    let mut protein = 0;
-    let mut carbs = 0;
-    let mut fat = 0;
-    let mut calories = 0;
+    let mut ingredients: Option<String> = None;
+    let mut protein = None;
+    let mut carbs = None;
+    let mut fat = None;
+    let mut calories = None;
 
-    let category: String = match product.categories.is_empty() {
-        true => "Без категории".to_string(),
-        false => product.categories[0].name.clone(),
+    let category: Option<String> = match product.categories.is_empty() {
+        true => None,
+        false => Some(product.categories[0].name.clone()),
     };
 
     for attribute in product.attributes.clone() {
         match attribute.name.as_str() {
             "Бренд" => brand = attribute.value,
-            "Состав" => ingredients = attribute.value,
+            "Состав" => ingredients = Some(attribute.value),
             "Пищевая ценность" => {
                 let (p, f, c) = parse_macros(attribute.value.as_str());
 
@@ -194,16 +194,16 @@ async fn get_product(client: &Client, product_id: i64) -> Option<ParsedProduct> 
     })
 }
 
-async fn get_product_ids(client: &Client) -> Vec<i64> {
+async fn get_product_ids(client: &Client) -> Vec<i32> {
     let sitemaps = get_product_sitemaps(&client).await;
-    let mut ids: Vec<i64> = vec![];
+    let mut ids: Vec<i32> = vec![];
 
     for sitemap in sitemaps {
         let urls = get_sitemap_ids(&client, sitemap.as_str()).await;
         ids.extend(urls);
     }
 
-    let ids_set: HashSet<i64> = ids.into_iter().collect();
+    let ids_set: HashSet<i32> = ids.into_iter().collect();
     ids_set.into_iter().collect()
 }
 
@@ -244,7 +244,7 @@ async fn get_product_sitemaps(client: &Client) -> Vec<String> {
         .collect()
 }
 
-async fn get_sitemap_ids(client: &Client, url: &str) -> Vec<i64> {
+async fn get_sitemap_ids(client: &Client, url: &str) -> Vec<i32> {
     let response = match client.get(url).send().await {
         Ok(res) => res,
         Err(err) => {
@@ -306,22 +306,22 @@ pub fn parse_package(package: &str) -> PackageInfo {
 
     match unit {
         "г" | "гр" | "g" => PackageInfo {
-            amount: value.round() as i64,
+            amount: value as i32,
             unit: PackageUnit::Grams,
         },
 
         "кг" | "kg" => PackageInfo {
-            amount: (value * 1000.0).round() as i64,
+            amount: (value * 1000.0) as i32,
             unit: PackageUnit::Grams,
         },
 
         "мл" | "ml" => PackageInfo {
-            amount: value.round() as i64,
+            amount: value as i32,
             unit: PackageUnit::Milliliter,
         },
 
         "л" | "l" => PackageInfo {
-            amount: (value * 1000.0).round() as i64,
+            amount: (value * 1000.0) as i32,
             unit: PackageUnit::Milliliter,
         },
 
@@ -332,38 +332,41 @@ pub fn parse_package(package: &str) -> PackageInfo {
     }
 }
 
-fn parse_macros(text: &str) -> (i64, i64, i64) {
+fn parse_macros(text: &str) -> (Option<i32>, Option<i32>, Option<i32>) {
     let re = Regex::new(
         r"Белки\s*[–-]\s*([\d.,]+)г,\s*жиры\s*[–-]\s*([\d.,]+)г,\s*углеводы\s*[–-]\s*([\d.,]+)г",
     )
     .unwrap();
 
     if let Some(caps) = re.captures(text) {
-        let parse =
-            |s: &str| -> i64 { s.replace(',', ".").parse::<f64>().unwrap_or(0.0).round() as i64 };
+        let parse = |s: &str| -> Option<i32> {
+            match s.replace(',', ".").parse::<f64>().ok() {
+                Some(val) => Some(val as i32 * 10),
+                None => None,
+            }
+        };
 
         return (
-            parse(&caps[1]) * 10, // proteins
-            parse(&caps[2]) * 10, // fats
-            parse(&caps[3]) * 10, // carbs
+            parse(&caps[1]), // proteins
+            parse(&caps[2]), // fats
+            parse(&caps[3]), // carbs
         );
     }
 
-    (0, 0, 0)
+    (None, None, None)
 }
 
-fn parse_calories(text: &str) -> i64 {
+fn parse_calories(text: &str) -> Option<i32> {
     let re = Regex::new(r"([\d.,]+)\s*кКал").unwrap();
 
     if let Some(caps) = re.captures(text) {
-        return caps[1]
-            .replace(',', ".")
-            .parse::<f64>()
-            .unwrap_or(0.0)
-            .round() as i64;
+        return match caps[1].replace(',', ".").parse::<f64>().ok() {
+            Some(val) => Some(val as i32),
+            None => None,
+        };
     }
 
-    0
+    None
 }
 
 fn build_client() -> Client {
@@ -381,7 +384,7 @@ fn build_client() -> Client {
     client
 }
 
-fn product_id(url: &str) -> Option<i64> {
+fn product_id(url: &str) -> Option<i32> {
     let slug = url.trim_end_matches('/').rsplit('/').next()?;
 
     slug.rsplit('-').next()?.parse().ok()

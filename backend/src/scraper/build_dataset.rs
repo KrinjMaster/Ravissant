@@ -3,12 +3,13 @@ use std::fs::{self, create_dir_all, File};
 
 use crate::scraper::{
     models::{ParsedProduct, Supermarket},
+    openfood,
     scraper::Scraper,
     utils::{generate_product_id, generate_supermarket_id},
 };
 
 pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
-    create_dir_all("src/scraper/results")?;
+    create_dir_all("data/raw")?;
 
     let scrapers = [
         Scraper::Metro,
@@ -30,7 +31,8 @@ pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
             products,
         };
 
-        let file = File::create(format!("src/scraper/results/{}.json", scraper.id()))?;
+        create_dir_all(format!("data/raw/{}/", scraper.id()))?;
+        let file = File::create(format!("data/raw/{}/{}.json", scraper.id(), scraper.id()))?;
 
         serde_json::to_writer_pretty(file, &supermarket)?;
     }
@@ -38,6 +40,15 @@ pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
     for (len, name) in result_info {
         println!("Saved {} products from {}", len, name);
     }
+
+    Ok(())
+}
+
+pub async fn parse_products_final() -> Result<(), Box<dyn std::error::Error>> {
+    let openfood = match openfood::proccess_open_food() {
+        Ok(_) => {}
+        Err(err) => eprintln!("Error: {err}"),
+    };
 
     Ok(())
 }
