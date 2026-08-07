@@ -83,7 +83,7 @@ pub struct Supermarket {
 pub struct FinalProduct {
     pub name: String,
     pub brand: String,
-    pub category: Option<String>,
+    pub category: String,
     pub barcodes: Vec<i32>,
     pub nutrition_basis: CompleteNutritionBasis,
     pub servings: Vec<Serving>,
@@ -91,8 +91,8 @@ pub struct FinalProduct {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CompleteNutritionBasis {
-    pub weight: i32,  // product weight to display
-    pub unit: String, // product unit
+    pub quantity: i32,         // product weight to display
+    pub quantity_unit: String, // product unit
     pub ingredients: Option<String>,
     pub allergens: Option<String>,
     pub nutrients: CompleteNutrients,
@@ -100,7 +100,7 @@ pub struct CompleteNutritionBasis {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CompleteNutrients {
-    pub calories: Option<i32>,
+    pub calories: i32,
     pub protein: Option<i32>,
     pub fat: Option<i32>,
     pub carbs: Option<i32>,
@@ -123,8 +123,13 @@ pub struct OpenFoodProduct {
     pub product_name: Option<String>,
     pub brands: Option<String>,
     pub categories: Option<String>,
-    pub serving_size: Option<String>,
+    #[serde(rename = "product_quantity")]
+    pub quantity: Option<f32>,
+    #[serde(rename = "product_quantity_unit")]
+    pub quantity_unit: Option<String>,
     pub countries: Option<String>,
+    pub languages_tags: Option<String>,
+    pub completeness: f32,
     pub countries_tag: Option<String>,
     #[serde(rename = "ingredients_text")]
     pub ingredients: Option<String>,
@@ -135,7 +140,7 @@ pub struct OpenFoodProduct {
     pub protein: Option<f32>,
     #[serde(rename = "fat_100g")]
     pub fat: Option<f32>,
-    #[serde(rename = "carbohydrates_100g:")]
+    #[serde(rename = "carbohydrates_100g")]
     pub carbs: Option<f32>,
 
     // additional nutrients

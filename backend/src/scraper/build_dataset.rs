@@ -45,10 +45,12 @@ pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 pub async fn parse_products_final() -> Result<(), Box<dyn std::error::Error>> {
-    let openfood = match openfood::proccess_open_food() {
-        Ok(_) => {}
-        Err(err) => eprintln!("Error: {err}"),
-    };
+    let openfood = openfood::process_open_food()?;
+
+    create_dir_all("src/result/")?;
+    let file = File::create("src/result/final.json")?;
+    serde_json::to_writer_pretty(file, &openfood)?;
+    println!("Created final products json!");
 
     Ok(())
 }

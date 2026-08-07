@@ -19,12 +19,17 @@ interface Plu {
   plu: number;
 }
 
+interface SavedProducts {
+  supermarket_name: string;
+  products: any[];
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const outputPath = path.resolve(
   __dirname,
-  "../scraper/results/perekrestok.json",
+  "../../../data/raw/perekrestok/perekrestok.json",
 );
 
 const plusPath = path.resolve(
@@ -36,6 +41,15 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function loadProducts(): Promise<SavedProducts | null> {
+  try {
+    const file = await fs.readFile(outputPath, "utf8");
+    return JSON.parse(file);
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchPerekrestokProducts() {
   const browser = new BrowserManager();
 
@@ -44,7 +58,6 @@ export async function fetchPerekrestokProducts() {
   console.log("Connected");
 
   await browser.goto("https://www.perekrestok.ru");
-  await browser.waitForAuth();
 
   await browser.goto("https://www.perekrestok.ru/cat");
 
@@ -52,13 +65,23 @@ export async function fetchPerekrestokProducts() {
 
   let productPlus = await loadProductPlus();
 
+  const saved = await loadProducts();
+
+  const finalProducts = saved?.products ?? [];
+
+  const fetchedPlus = new Set(finalProducts.map((p) => p.plu));
+
+  productPlus = productPlus.filter((p) => !fetchedPlus.has(p.plu));
+
+  console.log(
+    `Already have ${finalProducts.length} products, ${productPlus.length} left to fetch.`,
+  );
+
   if (productPlus) {
     console.log(`Loaded ${productPlus.length} cached PLUs.`);
   } else {
     productPlus = [];
   }
-
-  const finalProducts: any[] = [];
 
   if (productPlus.length === 0) {
     await Promise.all(
@@ -109,7 +132,7 @@ export async function fetchPerekrestokProducts() {
   }
   console.log(`Saved ${productPlus.length} product plus!`);
 
-  const WORKERS = 6;
+  const WORKERS = 1;
 
   let index = 0;
 
@@ -127,7 +150,12 @@ export async function fetchPerekrestokProducts() {
         break;
       }
 
+      if (fetchedPlus.has(plu)) {
+        continue;
+      }
+
       try {
+        await sleep(500 + Math.random() * 500);
         await page.goto(
           `https://www.perekrestok.ru/cat/${plu.cat}/p/${plu.slug}-${plu.plu}`,
           {
@@ -147,7 +175,7 @@ export async function fetchPerekrestokProducts() {
           `[${current + 1}/${productPlus.length}] worker ${id}: ${plu.slug}`,
         );
 
-        if (index % 100 === 0) {
+        if (index % 5 === 0) {
           await fs.writeFile(
             outputPath,
             JSON.stringify(
@@ -164,8 +192,6 @@ export async function fetchPerekrestokProducts() {
       } catch (err) {
         console.log(`worker ${id} failed ${plu.slug}`);
       }
-
-      await sleep(500 + Math.random() * 500);
     }
 
     await browser.closePage(page);
@@ -188,8 +214,6 @@ export async function fetchPerekrestokProducts() {
 
   console.log(`Saved ${finalProducts.length} products.`);
 }
-
-main().catch(console.error);
 
 async function loadProductPlus(): Promise<Plu[] | null> {
   try {

@@ -57,6 +57,7 @@ export const parseProduct = (product: any) => {
     name: product.title,
     brand: "Перекрёсток",
     category: product.primaryCategory.title,
+    barcodes: [],
     nutrition_basis: {
       serving: product.masterData.weight ?? 100,
       unit: detectUnitFromName(product.title),
@@ -65,6 +66,7 @@ export const parseProduct = (product: any) => {
       allergens: null,
     },
     servings,
+    plu: product.masterData.plu,
   };
 
   product.features.forEach((val: any) => {
@@ -73,16 +75,16 @@ export const parseProduct = (product: any) => {
         val.items.forEach((val: any) => {
           switch (val.title) {
             case "Ккал":
-              nutrients.calories = Number(val.values[0]) / 100;
+              nutrients.calories = Number(val.values[0]) / 10;
               break;
             case "Белки":
-              nutrients.protein = Number(val.values[0]) / 100;
+              nutrients.protein = Number(val.values[0]) / 10;
               break;
             case "Жиры":
-              nutrients.fats = Number(val.values[0]) / 100;
+              nutrients.fats = Number(val.values[0]) / 10;
               break;
             case "Углеводы":
-              nutrients.carbohydrates = Number(val.values[0]) / 100;
+              nutrients.carbohydrates = Number(val.values[0]) / 10;
               break;
             default:
               break;
