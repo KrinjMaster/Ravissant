@@ -16,6 +16,8 @@
 /backend/**/*.rs.bk
 
 /backend/*.pdb
+/backend/*.env
+/mobile/*.env
 
 /backend/**/mutants.out*/
 
