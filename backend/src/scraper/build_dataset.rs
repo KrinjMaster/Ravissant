@@ -12,10 +12,11 @@ pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
     create_dir_all("data/raw")?;
 
     let scrapers = [
-        Scraper::Metro,
-        Scraper::Vkusvill,
+        // Scraper::Metro,
+        // Scraper::Vkusvill,
         // Scraper::Perekrestok,
         // Scraper::Lenta,
+        Scraper::Kuper,
     ];
 
     let mut result_info: Vec<(usize, &str)> = vec![];
@@ -27,7 +28,7 @@ pub async fn fetch_all_products() -> Result<(), Box<dyn std::error::Error>> {
         result_info.push((products.len(), scraper.display_name()));
 
         let supermarket = Supermarket {
-            supermarket_name: scraper.display_name().to_string(),
+            source: scraper.display_name().to_string(),
             products,
         };
 
@@ -242,9 +243,9 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
 
         let products: Vec<ParsedProduct> = supermarket_struct.products;
 
-        let supermarket_id = generate_supermarket_id(&supermarket_struct.supermarket_name);
+        let supermarket_id = generate_supermarket_id(&supermarket_struct.source);
 
-        stmt_supermarket.execute(params![supermarket_id, supermarket_struct.supermarket_name])?;
+        stmt_supermarket.execute(params![supermarket_id, supermarket_struct.source])?;
 
         for product in products {
             let product_id = generate_product_id(

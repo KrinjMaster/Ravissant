@@ -33,8 +33,9 @@ pub struct Attribute {
 pub struct ParsedProduct {
     pub name: String,
     pub brand: String,
+    pub sources: Vec<u64>,
     pub category: Option<String>,
-    pub barcodes: Vec<i32>,
+    pub barcodes: Vec<String>,
     pub nutrition_basis: NutritionBasis,
     pub servings: Vec<Serving>,
 }
@@ -75,7 +76,7 @@ pub struct Nutrients {
 
 #[derive(Serialize, Deserialize, Default)]
 pub struct Supermarket {
-    pub supermarket_name: String,
+    pub source: String,
     pub products: Vec<ParsedProduct>,
 }
 
@@ -84,7 +85,7 @@ pub struct FinalProduct {
     pub name: String,
     pub brand: String,
     pub category: String,
-    pub barcodes: Vec<i32>,
+    pub barcodes: Vec<String>,
     pub nutrition_basis: CompleteNutritionBasis,
     pub servings: Vec<Serving>,
 }

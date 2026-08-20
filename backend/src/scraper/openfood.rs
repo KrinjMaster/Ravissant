@@ -298,7 +298,7 @@ fn parse_openfood_product(product: &OpenFoodProduct) -> Option<FinalProduct> {
         name,
         brand,
         category,
-        barcodes: vec![barcode.parse().ok()?],
+        barcodes: vec![barcode],
         nutrition_basis: CompleteNutritionBasis {
             quantity: product.quantity.map(|v| v as i32).unwrap_or(100),
             quantity_unit: product.quantity_unit.clone().unwrap_or("г".into()),
@@ -577,7 +577,7 @@ pub fn process_open_food() -> Result<Vec<FinalProduct>, Box<dyn std::error::Erro
 
     let mut matched_barcodes = std::collections::HashSet::<String>::new();
 
-    let sources = [Scraper::Metro, Scraper::Vkusvill];
+    let sources: [Scraper; 1] = [Scraper::Kuper];
 
     for source in sources {
         let file = fs::read_to_string(format!("./data/raw/{}/{}.json", source.id(), source.id()))?;
