@@ -1,39 +1,39 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
-pub struct ApiResponse {
-    pub data: Data,
-}
-
-#[derive(Deserialize)]
-pub struct Data {
-    pub category: Category,
-}
-
-#[derive(Deserialize)]
-pub struct Category {
-    pub name: String,
-    pub products: Vec<Product>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Product {
-    pub name: Option<String>,
-    pub attributes: Vec<Attribute>,
-    pub barcodes: Vec<String>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Attribute {
-    pub name: Option<String>,
-    pub text: Option<String>,
-}
+// #[derive(Deserialize)]
+// pub struct ApiResponse {
+//     pub data: Data,
+// }
+//
+// #[derive(Deserialize)]
+// pub struct Data {
+//     pub category: Category,
+// }
+//
+// #[derive(Deserialize)]
+// pub struct Category {
+//     pub name: String,
+//     pub products: Vec<Product>,
+// }
+//
+// #[derive(Deserialize, Debug)]
+// pub struct Product {
+//     pub name: Option<String>,
+//     pub attributes: Vec<Attribute>,
+//     pub barcodes: Vec<String>,
+// }
+//
+// #[derive(Deserialize, Debug)]
+// pub struct Attribute {
+//     pub name: Option<String>,
+//     pub text: Option<String>,
+// }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ParsedProduct {
     pub name: String,
     pub brand: String,
-    pub sources: Vec<u64>,
+    pub sources: Vec<String>,
     pub category: Option<String>,
     pub barcodes: Vec<String>,
     pub nutrition_basis: NutritionBasis,

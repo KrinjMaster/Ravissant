@@ -24,6 +24,9 @@ const REQUEST_DELAY: Duration = Duration::from_millis(250);
 const PRODUCT_CONCURRENT_REQUESTS: usize = 7;
 const EAN_CONCURRENT_REQUESTS: usize = 1;
 
+const RESTAURANT_PAGE_SIZE: usize = 15;
+const RESTAURANT_CAP: usize = 75;
+
 const NON_FOOD_CATEGORIES: &[&str] = &[
     "Снова в школу",
     "Сезон чистоты",
@@ -72,7 +75,7 @@ const NON_FOOD_CATEGORIES: &[&str] = &[
     "Плавание",
 ];
 
-const SAVED_STORES: [KuperStore; 13] = [
+const SAVED_STORES: [KuperStore; 14] = [
     KuperStore::Pyatorochka,
     KuperStore::Globus,
     KuperStore::Ashan,
@@ -86,6 +89,7 @@ const SAVED_STORES: [KuperStore; 13] = [
     KuperStore::UPalicha,
     KuperStore::Magnit,
     KuperStore::Okey,
+    KuperStore::Metro,
 ];
 
 pub enum KuperStore {
@@ -103,6 +107,7 @@ pub enum KuperStore {
     Magnit,
     Okey,
     Metro,
+    Restaurant,
 }
 
 impl KuperStore {
@@ -121,7 +126,8 @@ impl KuperStore {
             KuperStore::UPalicha => (2439, "UPalicha"),
             KuperStore::Magnit => (3658, "Magnit"),
             KuperStore::Okey => (12924, "Okey"),
-            KuperStore::Metro => (122409, "Metro"),
+            KuperStore::Metro => (12, "Metro"),
+            KuperStore::Restaurant => (69, "Restaurants"),
         }
     }
 
@@ -423,14 +429,6 @@ impl Progress {
             store_name, operations_done, self.total_operations, operations_per_second, elapsed,
         );
     }
-
-    fn total_products(&self) -> usize {
-        self.total_products
-    }
-
-    fn total_operations(&self) -> usize {
-        self.total_operations
-    }
 }
 
 // Kuper API models
@@ -449,7 +447,6 @@ struct StoreCatalogueTaxons {
 struct KuperCatalogueTaxon {
     id: u64,
     name: String,
-    products_count: u64,
     children: Vec<KuperCatalogueTaxon>,
 }
 
@@ -463,14 +460,10 @@ struct ProductsTaxonResponse {
 struct KuperCategoryProduct {
     id: u64,
     sku: String,
-    retailer_sku: String,
-    name: String,
 }
 
 #[derive(Debug, Deserialize)]
 struct ProductsMeta {
-    products_offset: u64,
-    limit: u64,
     products_total_count: u64,
 }
 
@@ -498,7 +491,6 @@ pub struct KuperBrand {
 
 #[derive(Debug, Deserialize)]
 pub struct KuperTaxon {
-    pub id: String,
     pub name: String,
 }
 
@@ -599,6 +591,78 @@ struct RecsExt {
     paging: PagingRequest,
 }
 
+#[derive(Debug, Deserialize)]
+struct RestaurantsResponse {
+    restaurants: Vec<KuperRestaurant>,
+    meta: RestaurantsMeta,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct KuperRestaurantProduct {
+    pub brand: Option<KuperBrand>,
+    pub items_per_pack: Option<i32>,
+    pub main_taxon: Option<KuperTaxon>,
+    pub name: String,
+    pub properties: Vec<KuperProperty>,
+    pub sku: String,
+    pub volume: Option<f64>,
+    pub volume_type: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct RestaurantsMeta {
+    current_page: u32,
+    next_page: Option<u32>,
+    total_pages: u32,
+    total_count: u32,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct KuperRestaurant {
+    pub id: u64,
+    pub retailer: KuperRestaurantRetailer,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct KuperRestaurantRetailer {
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct RestaurantDepartmentsResponse {
+    departments: Vec<RestaurantDepartment>,
+}
+
+#[derive(Debug, Deserialize)]
+struct RestaurantDepartment {
+    products: Vec<RestaurantProduct>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RestaurantResponse {
+    pub product: KuperRestaurantProduct,
+}
+
+#[derive(Debug, Deserialize)]
+struct RestaurantProduct {
+    id: u64,
+    sku: String,
+    name: String,
+    volume: Option<f64>,
+    volume_type: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ParsedRestaurantProduct {
+    pub restaurant_id: u64,
+    pub restaurant_name: String,
+    pub sku: String,
+    pub id: u64,
+    pub name: String,
+    pub weight: Option<f64>,
+    pub unit: Option<String>,
+}
+
 // Aplication models
 
 #[derive(Debug, Clone)]
@@ -606,7 +670,6 @@ struct KuperCategory {
     pub id: u64,
     pub name: String,
     pub parent_name: String,
-    pub products_count: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -637,7 +700,7 @@ fn parse_nutrient(nutrient_str: String) -> Option<i32> {
 fn parse_fetched_product(
     product: ProductResponse,
     eans: Vec<String>,
-    store_id: u64,
+    store_name: String,
 ) -> KuperIntermediateProduct {
     let brand = product
         .product
@@ -719,7 +782,7 @@ fn parse_fetched_product(
             name: product.product.name,
             brand,
             category,
-            sources: vec![store_id],
+            sources: vec![store_name],
             barcodes: eans,
             nutrition_basis: NutritionBasis {
                 weight,
@@ -753,7 +816,6 @@ fn all_products_taxons(taxons: &[KuperCatalogueTaxon]) -> Vec<KuperCategory> {
                     id: taxon.id,
                     name: taxon.name.clone(),
                     parent_name: parent_name.to_string(),
-                    products_count: taxon.products_count,
                 });
             }
 
@@ -987,7 +1049,141 @@ async fn fetch_product_eans_for_sku(
     Ok(result)
 }
 
-// Persistance
+// Persistance, utils
+
+fn convert_portion_to_per_100g(portion_value: Option<i32>, portion_weight: i32) -> Option<i32> {
+    let portion_value = portion_value?;
+
+    if portion_weight <= 0 {
+        return None;
+    }
+
+    Some(((portion_value as f64 * 100.0) / portion_weight as f64) as i32)
+}
+
+fn parse_restaurant_product(
+    product: KuperRestaurantProduct,
+    restaurant_name: &str,
+) -> KuperIntermediateProduct {
+    let unit = product.volume_type.unwrap_or_else(|| "g".to_string());
+
+    let weight = product
+        .volume
+        .map(|volume| match unit.as_str() {
+            "kg" | "l" => (volume * 1000.0) as i32,
+            _ => volume as i32,
+        })
+        .unwrap_or(100);
+
+    let normalized_unit = match unit.as_str() {
+        "g" | "kg" => "гр",
+        "ml" | "l" => "мл",
+        _ => "гр",
+    }
+    .to_string();
+
+    let mut nutrients = Nutrients {
+        calories: None,
+        proteins: None,
+        fats: None,
+        carbohydrates: None,
+    };
+
+    let mut portion_nutrients = Nutrients {
+        calories: None,
+        proteins: None,
+        fats: None,
+        carbohydrates: None,
+    };
+
+    let mut ingredients = None;
+
+    for property in product.properties {
+        match property.presentation.as_str() {
+            "Белки" => {
+                nutrients.proteins = parse_nutrient(property.value);
+            }
+
+            "Жиры" => {
+                nutrients.fats = parse_nutrient(property.value);
+            }
+
+            "Углеводы" => {
+                nutrients.carbohydrates = parse_nutrient(property.value);
+            }
+
+            "Калорийность" => {
+                nutrients.calories = parse_nutrient(property.value);
+            }
+
+            "Содержание белков на порцию" => {
+                portion_nutrients.proteins = parse_nutrient(property.value);
+            }
+
+            "Содержание жиров на порцию" => {
+                portion_nutrients.fats = parse_nutrient(property.value);
+            }
+
+            "Содержание углеводов на порцию" => {
+                portion_nutrients.carbohydrates = parse_nutrient(property.value);
+            }
+
+            "Энергетическая ценность на порцию" => {
+                portion_nutrients.calories = parse_nutrient(property.value);
+            }
+
+            "Состав" => {
+                ingredients = Some(property.value);
+            }
+
+            _ => {}
+        }
+    }
+
+    if nutrients.proteins.is_none() {
+        nutrients.proteins = convert_portion_to_per_100g(portion_nutrients.proteins, weight);
+    }
+
+    if nutrients.fats.is_none() {
+        nutrients.fats = convert_portion_to_per_100g(portion_nutrients.fats, weight);
+    }
+
+    if nutrients.carbohydrates.is_none() {
+        nutrients.carbohydrates =
+            convert_portion_to_per_100g(portion_nutrients.carbohydrates, weight);
+    }
+
+    if nutrients.calories.is_none() {
+        nutrients.calories = convert_portion_to_per_100g(portion_nutrients.calories, weight);
+    }
+
+    KuperIntermediateProduct {
+        sku: product.sku.clone(),
+
+        product: ParsedProduct {
+            name: product.name,
+            brand: restaurant_name.to_string(),
+            category: product.main_taxon.map(|taxon| taxon.name),
+            sources: vec![restaurant_name.to_string()],
+            barcodes: vec![],
+            nutrition_basis: NutritionBasis {
+                weight,
+                unit: normalized_unit,
+                ingredients,
+                allergens: None,
+                nutrients,
+            },
+            servings: vec![Serving {
+                name: "Упаковка".into(),
+                amount: 1.0,
+                unit: "package".into(),
+                weight: Some(weight),
+                pieces: product.items_per_pack.unwrap_or(1),
+                source: ServingSource::Explicit,
+            }],
+        },
+    }
+}
 
 fn save_intermediate_products(store_id: u64, products: &[KuperIntermediateProduct]) {
     let path = format!("{}{}/intermediate.json", OUTPUT_PATH, store_id);
@@ -1002,11 +1198,34 @@ fn save_intermediate_products(store_id: u64, products: &[KuperIntermediateProduc
     fs::write(path, json).expect("failed to write intermediate.json");
 }
 
+fn save_restaurant_products(products: &[KuperIntermediateProduct], store_id: u64) {
+    let path = format!("{}/{}/intermediate.json", OUTPUT_PATH, store_id);
+    let path = Path::new(&path);
+
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).expect("failed to create Kuper restaurants output directory");
+    }
+
+    let json = serde_json::to_string_pretty(products)
+        .expect("failed to serialize restaurant intermediate products");
+
+    fs::write(path, json).expect("failed to write restaurant intermediate.json");
+
+    println!(
+        "[Restaurants] Saved {} intermediate products to {}",
+        products.len(),
+        path.display()
+    );
+}
+
 fn merge_products_by_sku() -> HashMap<String, ParsedProduct> {
     let mut merged: HashMap<String, ParsedProduct> = HashMap::new();
     let mut init_len = 0;
 
-    for store in SAVED_STORES {
+    let mut iter_stores: Vec<KuperStore> = SAVED_STORES.into();
+    iter_stores.extend(vec![KuperStore::Restaurant]);
+
+    for store in iter_stores {
         let store_id = store.id();
         let path = format!("{}{}/intermediate.json", OUTPUT_PATH, store_id);
 
@@ -1184,6 +1403,247 @@ async fn fetch_product_and_eans(
     (sku, product_result, eans_result)
 }
 
+// Restaurants discovery and crawling
+
+async fn fetch_restaurants_page(
+    client: &KuperClient,
+    page: u32,
+) -> Result<RestaurantsResponse, DynError> {
+    let url = format!(
+        "https://api.kuper.ru/v2/restaurants\
+?lat=55.750889\
+&lon=37.618362\
+&page={}\
+&per_page={}\
+&include%5B%5D=latest_order",
+        page, RESTAURANT_PAGE_SIZE,
+    );
+
+    let text = client
+        .curl_get(&url, &["screenname: RESTAURANTS_LIST"])
+        .await?;
+
+    if text.trim().is_empty() {
+        return Err(format!("Kuper returned empty restaurant response for page={}", page).into());
+    }
+
+    Ok(serde_json::from_str(&text)?)
+}
+
+async fn fetch_restaurants(client: &KuperClient) -> Result<Vec<KuperRestaurant>, DynError> {
+    let mut restaurants = Vec::with_capacity(RESTAURANT_CAP);
+
+    let mut page = 1u32;
+
+    while restaurants.len() < RESTAURANT_CAP {
+        let response = fetch_restaurants_page(client, page).await?;
+
+        println!(
+            "[{}] Restaurant page={}/{} | fetched={} | total={}",
+            client.store.display_name(),
+            response.meta.current_page,
+            response.meta.total_pages,
+            response.restaurants.len(),
+            response.meta.total_count,
+        );
+
+        let remaining = RESTAURANT_CAP - restaurants.len();
+
+        restaurants.extend(response.restaurants.into_iter().take(remaining));
+
+        if restaurants.len() >= RESTAURANT_CAP {
+            break;
+        }
+
+        match response.meta.next_page {
+            Some(next_page) => {
+                page = next_page;
+            }
+
+            None => {
+                break;
+            }
+        }
+
+        sleep(REQUEST_DELAY).await;
+    }
+
+    restaurants.truncate(RESTAURANT_CAP);
+
+    println!(
+        "[{}] Fetched {} restaurants out of {} available",
+        client.store.display_name(),
+        restaurants.len(),
+        // This is only informational if we reached the end.
+        restaurants.len()
+    );
+
+    Ok(restaurants)
+}
+
+async fn fetch_restaurant_products(
+    client: &KuperClient,
+    restaurant: &KuperRestaurant,
+) -> Result<Vec<ParsedRestaurantProduct>, DynError> {
+    let url = format!(
+        "https://api.kuper.ru/v2/departments\
+?sid={}\
+&ad.site_id=cl5k7lajjau4p8dq1ugg\
+&ad.placement_id=cl5ocq2jjau4p8dq1ui0",
+        restaurant.id
+    );
+
+    let text = client
+        .curl_get(&url, &["screenname: RESTAURANT_HOME_SCREEN"])
+        .await?;
+
+    let response: RestaurantDepartmentsResponse = serde_json::from_str(&text)?;
+
+    let mut products_by_sku: HashMap<String, ParsedRestaurantProduct> = HashMap::new();
+
+    for department in response.departments {
+        for product in department.products {
+            let sku = product.sku.clone();
+
+            let parsed = ParsedRestaurantProduct {
+                restaurant_id: restaurant.id,
+                restaurant_name: restaurant.retailer.name.clone(),
+                sku: product.sku,
+                id: product.id,
+                name: product.name,
+                weight: product.volume,
+                unit: product.volume_type,
+            };
+
+            products_by_sku.entry(sku).or_insert(parsed);
+        }
+    }
+
+    let products: Vec<ParsedRestaurantProduct> = products_by_sku.into_values().collect();
+
+    println!(
+        "[{}] Restaurant {}: fetched {} unique products",
+        client.store.display_name(),
+        restaurant.retailer.name,
+        products.len()
+    );
+
+    Ok(products)
+}
+
+async fn fetch_all_restaurant_products(
+    client: &KuperClient,
+) -> Result<Vec<KuperIntermediateProduct>, DynError> {
+    let restaurants = fetch_restaurants(client).await?;
+
+    let mut result = Vec::new();
+
+    for restaurant in restaurants {
+        println!("[Restaurants] Fetching {}", restaurant.retailer.name);
+
+        let products = fetch_restaurant_products(client, &restaurant).await?;
+
+        println!(
+            "[Restaurants] {} has {} products",
+            restaurant.retailer.name,
+            products.len()
+        );
+
+        let parsed = fetch_restaurant_products_details(
+            Arc::new(KuperClient {
+                anonymous_id: client.anonymous_id.clone(),
+                store: KuperStore::Restaurant,
+            }),
+            &restaurant,
+            products,
+        )
+        .await?;
+
+        result.extend(parsed);
+    }
+
+    Ok(result)
+}
+
+async fn fetch_restaurant_products_details(
+    client: Arc<KuperClient>,
+    restaurant: &KuperRestaurant,
+    products: Vec<ParsedRestaurantProduct>,
+) -> Result<Vec<KuperIntermediateProduct>, DynError> {
+    let limiter = Arc::new(Semaphore::new(PRODUCT_CONCURRENT_REQUESTS));
+
+    let mut tasks = JoinSet::new();
+
+    for product in products {
+        let client = Arc::clone(&client);
+        let limiter = Arc::clone(&limiter);
+
+        let restaurant_name = restaurant.retailer.name.clone();
+        let product_id = product.id;
+
+        tasks.spawn(async move {
+            let _permit = limiter
+                .acquire_owned()
+                .await
+                .expect("restaurant product semaphore closed");
+
+            let response = fetch_restaurant_product(&client, product_id).await?;
+
+            Ok::<KuperIntermediateProduct, DynError>(parse_restaurant_product(
+                response.product,
+                &restaurant_name,
+            ))
+        });
+    }
+
+    let mut result = Vec::new();
+
+    while let Some(task) = tasks.join_next().await {
+        match task {
+            Ok(Ok(product)) => result.push(product),
+
+            Ok(Err(error)) => {
+                eprintln!(
+                    "[{}] Failed to fetch restaurant product: {}",
+                    restaurant.retailer.name, error
+                );
+            }
+
+            Err(error) => {
+                eprintln!(
+                    "[{}] Restaurant product task crashed: {}",
+                    restaurant.retailer.name, error
+                );
+            }
+        }
+    }
+
+    Ok(result)
+}
+
+async fn fetch_restaurant_product(
+    client: &KuperClient,
+    product_id: u64,
+) -> Result<RestaurantResponse, DynError> {
+    let url = format!("https://api.kuper.ru/v2/products/{}", product_id);
+
+    let text = client
+        .curl_get(&url, &["screenname: RESTAURANT_PRODUCTS_DETAILS"])
+        .await?;
+
+    if text.trim().is_empty() {
+        return Err(format!(
+            "Kuper returned empty restaurant product response for id={}",
+            product_id
+        )
+        .into());
+    }
+
+    Ok(serde_json::from_str(&text)?)
+}
+
+// Store fetching
+
 async fn fetch_store(
     store: KuperStore,
     product_limiter: Arc<Semaphore>,
@@ -1191,6 +1651,16 @@ async fn fetch_store(
 ) -> Vec<KuperIntermediateProduct> {
     let store_id = store.id();
     let store_name = store.display_name();
+
+    let intermediate_path = format!("{}{}/intermediate.json", OUTPUT_PATH, store_id);
+
+    if Path::new(&intermediate_path).exists() {
+        println!(
+            "[{}] intermediate.json already exists, skipping fetch",
+            store_name
+        );
+        return vec![];
+    }
 
     println!("\n========== Fetching {} ==========", store_name);
 
@@ -1210,7 +1680,16 @@ async fn fetch_store(
         }
     };
 
-    println!("[{}] Found {} categories", store_name, categories.len());
+    println!(
+        "[{}] Found {} categories:\n{}",
+        store_name,
+        categories.len(),
+        categories
+            .iter()
+            .map(|c| c.clone().parent_name)
+            .collect::<Vec<String>>()
+            .join("\n")
+    );
 
     // Fetch all category products and deduplicate by SKU
 
@@ -1364,7 +1843,11 @@ async fn fetch_store(
             .map(|product| product.eans.clone())
             .unwrap_or_default();
 
-        result.push(parse_fetched_product(fetched_product, eans, store_id));
+        result.push(parse_fetched_product(
+            fetched_product,
+            eans,
+            store_name.to_string(),
+        ));
     }
 
     // Save intermediate store data
@@ -1384,6 +1867,32 @@ async fn fetch_store(
     result
 }
 
+pub async fn fetch_restaurants_products() {
+    let client = KuperClient {
+        anonymous_id: Uuid::new_v4().to_string(),
+        store: KuperStore::Restaurant,
+    };
+
+    let intermediate_path = format!("{}{}/intermediate.json", OUTPUT_PATH, client.store.id());
+
+    if Path::new(&intermediate_path).exists() {
+        println!("[Restarurants] intermediate.json already exists, skipping fetch");
+        return;
+    }
+
+    match fetch_all_restaurant_products(&client).await {
+        Ok(products) => {
+            save_restaurant_products(&products, client.store.id());
+
+            println!("[Restaurants] Finished with {} products", products.len());
+        }
+
+        Err(error) => {
+            eprintln!("[Restaurants] Failed: {}", error);
+        }
+    }
+}
+
 pub async fn fetch_kuper_products() -> Vec<ParsedProduct> {
     let product_limiter = Arc::new(Semaphore::new(PRODUCT_CONCURRENT_REQUESTS));
 
@@ -1397,6 +1906,8 @@ pub async fn fetch_kuper_products() -> Vec<ParsedProduct> {
         )
         .await;
     }
+
+    fetch_restaurants_products().await;
 
     merge_products_by_sku().into_values().collect()
 }
