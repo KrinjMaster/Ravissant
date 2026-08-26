@@ -533,7 +533,6 @@ struct UserExt {
 
 #[derive(Debug, Deserialize)]
 struct RecsBlock {
-    block_id: u32,
     ext: RecsBlockExt,
     media: Vec<RecommendedProduct>,
 }
@@ -599,7 +598,6 @@ struct RestaurantsResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct KuperRestaurantProduct {
-    pub brand: Option<KuperBrand>,
     pub items_per_pack: Option<i32>,
     pub main_taxon: Option<KuperTaxon>,
     pub name: String,
@@ -1216,6 +1214,81 @@ fn save_restaurant_products(products: &[KuperIntermediateProduct], store_id: u64
         products.len(),
         path.display()
     );
+}
+
+fn merge_products_by_name(products: Vec<ParsedProduct>) -> Vec<ParsedProduct> {
+    let initial_len = products.len();
+
+    let mut merged: HashMap<String, ParsedProduct> = HashMap::new();
+
+    for incoming in products {
+        let name = incoming.name.clone();
+
+        match merged.entry(name) {
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert(incoming);
+            }
+
+            std::collections::hash_map::Entry::Occupied(mut entry) => {
+                let existing = entry.get_mut();
+
+                for source in incoming.sources {
+                    if !existing.sources.contains(&source) {
+                        existing.sources.push(source);
+                    }
+                }
+
+                for barcode in incoming.barcodes {
+                    if !existing.barcodes.contains(&barcode) {
+                        existing.barcodes.push(barcode);
+                    }
+                }
+
+                if existing.brand == "Unknown" && incoming.brand != "Unknown" {
+                    existing.brand = incoming.brand;
+                }
+
+                if existing.category.is_none() {
+                    existing.category = incoming.category;
+                }
+
+                if existing.nutrition_basis.ingredients.is_none() {
+                    existing.nutrition_basis.ingredients = incoming.nutrition_basis.ingredients;
+                }
+
+                if existing.nutrition_basis.allergens.is_none() {
+                    existing.nutrition_basis.allergens = incoming.nutrition_basis.allergens;
+                }
+
+                let existing_nutrients = &mut existing.nutrition_basis.nutrients;
+                let incoming_nutrients = incoming.nutrition_basis.nutrients;
+
+                if existing_nutrients.calories.is_none() {
+                    existing_nutrients.calories = incoming_nutrients.calories;
+                }
+
+                if existing_nutrients.proteins.is_none() {
+                    existing_nutrients.proteins = incoming_nutrients.proteins;
+                }
+
+                if existing_nutrients.fats.is_none() {
+                    existing_nutrients.fats = incoming_nutrients.fats;
+                }
+
+                if existing_nutrients.carbohydrates.is_none() {
+                    existing_nutrients.carbohydrates = incoming_nutrients.carbohydrates;
+                }
+            }
+        }
+    }
+
+    println!(
+        "length before name merge: {}, after name merge: {}",
+        initial_len,
+        merged.len()
+    );
+
+    merged.into_values().collect()
 }
 
 fn merge_products_by_sku() -> HashMap<String, ParsedProduct> {
@@ -1909,5 +1982,7 @@ pub async fn fetch_kuper_products() -> Vec<ParsedProduct> {
 
     fetch_restaurants_products().await;
 
-    merge_products_by_sku().into_values().collect()
+    let inter_products = merge_products_by_sku().into_values().collect();
+
+    merge_products_by_name(inter_products)
 }

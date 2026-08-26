@@ -13,7 +13,7 @@ import { VStack } from "@/components/ui/vstack";
 import { useSearchItems } from "@/hooks/useSearchItems";
 import { MealType, ModalMode } from "@/types/products";
 import { getMealLocale } from "@/utils/meals";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 import { Box } from "@/components/ui/box";
 import * as Haptics from "expo-haptics";
@@ -28,8 +28,12 @@ export default function AddFoodModal() {
     mode: ModalMode;
   }>();
   const [searchString, setSearchString] = useState("");
-  const { data: searchData, isLoading: isSearchLoading } =
-    useSearchItems(searchString);
+  const {
+    data: searchData,
+    isLoading: isSearchLoading,
+    error,
+    isError,
+  } = useSearchItems(searchString);
   const { data: recentData } = useRecentItems();
   const showSkeleton =
     searchString.length > 0 && !searchData && isSearchLoading;
@@ -52,6 +56,10 @@ export default function AddFoodModal() {
       },
     });
   };
+
+  useEffect(() => {
+    console.log(isError, error);
+  }, [isError, error]);
 
   return (
     <VStack

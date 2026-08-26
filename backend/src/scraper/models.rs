@@ -74,17 +74,12 @@ pub struct Nutrients {
     pub carbohydrates: Option<i32>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
-pub struct Supermarket {
-    pub source: String,
-    pub products: Vec<ParsedProduct>,
-}
-
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct FinalProduct {
     pub name: String,
     pub brand: String,
     pub category: String,
+    pub sources: Vec<String>,
     pub barcodes: Vec<String>,
     pub nutrition_basis: CompleteNutritionBasis,
     pub servings: Vec<Serving>,
@@ -92,8 +87,8 @@ pub struct FinalProduct {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CompleteNutritionBasis {
-    pub quantity: i32,         // product weight to display
-    pub quantity_unit: String, // product unit
+    pub weight: i32,  // product weight to display
+    pub unit: String, // product unit
     pub ingredients: Option<String>,
     pub allergens: Option<String>,
     pub nutrients: CompleteNutrients,
@@ -101,12 +96,12 @@ pub struct CompleteNutritionBasis {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct CompleteNutrients {
-    pub calories: i32,
-    pub protein: Option<i32>,
-    pub fat: Option<i32>,
-    pub carbs: Option<i32>,
-    pub saturaged_fat: Option<i32>,
-    pub unsaturaged_fat: Option<i32>,
+    pub calories: Option<i32>,
+    pub protein: i32,
+    pub fat: i32,
+    pub carbs: i32,
+    pub saturated_fat: Option<i32>,
+    pub unsaturated_fat: Option<i32>,
     pub omega3_fat: Option<i32>,
     pub omega6_fat: Option<i32>,
     pub trans_fat: Option<i32>,
@@ -146,9 +141,9 @@ pub struct OpenFoodProduct {
 
     // additional nutrients
     #[serde(rename = "saturated-fat_100g")]
-    pub saturaged_fat: Option<f32>,
+    pub saturated_fat: Option<f32>,
     #[serde(rename = "unsaturated-fat_100g")]
-    pub unsaturaged_fat: Option<f32>,
+    pub unsaturated_fat: Option<f32>,
     #[serde(rename = "omega-3-fat_100g")]
     pub omega3_fat: Option<f32>,
     #[serde(rename = "omega-6-fat_100g")]

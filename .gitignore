@@ -6,7 +6,7 @@
 /backend/*.db
 /mobile/assets/*.db
 
-/backend/src/scraper/result/
+/backend/src/result/
 /backend/data/
 /backend/src/browser-service/chrome-profile/
 
