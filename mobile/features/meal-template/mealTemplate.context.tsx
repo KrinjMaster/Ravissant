@@ -12,6 +12,16 @@ interface Macros {
   protein: number;
   fat: number;
   carbs: number;
+  saturated_fat: number;
+  unsaturated_fat: number;
+  omega3_fat: number;
+  omega6_fat: number;
+  trans_fat: number;
+  cholesterol: number;
+  sugars: number;
+  fiber: number;
+  salt: number;
+  sodium: number;
 }
 
 interface Props {

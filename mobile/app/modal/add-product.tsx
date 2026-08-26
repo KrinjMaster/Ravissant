@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Divider } from "@/components/ui/divider";
 import { FormControl } from "@/components/ui/form-control";
 import { Grid, GridItem } from "@/components/ui/grid";
-import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { ArrowLeftIcon, StarIcon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
@@ -18,9 +17,17 @@ import { useEffect, useState } from "react";
 import { Keyboard, TouchableWithoutFeedback } from "react-native";
 import * as Haptics from "expo-haptics";
 import { SkeletonText, Skeleton } from "@/components/ui/skeleton";
-import { useChangeFavoriteProduct } from "@/hooks/useChangeFavorite";
+import { useChangeFavoriteProduct } from "@/hooks/useChangeFavoriteProduct";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useMealTemplate } from "@/hooks/useMealTemplate";
+import {
+  Popover,
+  PopoverBackdrop,
+  PopoverContent,
+  PopoverArrow,
+  PopoverBody,
+} from "@/components/ui/popover";
+import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
 
 export default function AddProductModal() {
   const { meal, date, productId, mode } = useLocalSearchParams<{
@@ -29,12 +36,13 @@ export default function AddProductModal() {
     date: string;
     mode: ModalMode;
   }>();
-
   const { data, isLoading } = useProductById(productId);
-  const [weight, setWeight] = useState(data?.serving_size.toString() ?? "");
+  const [weight, setWeight] = useState(data?.weight.toString() ?? "");
   const { mutateAsync: addMealItem } = useAddMealItem();
   const { mutateAsync: addFavorite } = useChangeFavoriteProduct();
   const { addTemplateItem } = useMealTemplate();
+  const [isStorePopoverOpen, setIsStorePopoverOpen] = useState(false);
+
   const insets = useSafeAreaInsets();
 
   const handleAddItem = async () => {
@@ -55,7 +63,7 @@ export default function AddProductModal() {
 
   useEffect(() => {
     if (data) {
-      setWeight(data.serving_size.toString());
+      setWeight(data.weight.toString());
       console.log(data);
     }
   }, [data]);
@@ -108,9 +116,56 @@ export default function AddProductModal() {
             >
               <ButtonIcon as={ArrowLeftIcon} size="2xl" />
             </Button>
-            <Heading size="xl" className="line-clamp-3 text-center w-[75%]">
-              {data.name}
-            </Heading>
+            <Popover
+              isOpen={isStorePopoverOpen}
+              onClose={() => setIsStorePopoverOpen(false)}
+              onOpen={() => setIsStorePopoverOpen(true)}
+              offset={10}
+              trigger={(triggerProps) => (
+                <HStack className="px-5 items-center max-w-[75%]" space="sm">
+                  {data.store?.split(", ").map((name, i) => {
+                    return i === 0 ? (
+                      <Text
+                        key={name}
+                        size="xl"
+                        className="text-typography-500 line-clamp-1"
+                      >
+                        {name}
+                        {data.store?.split(", ").length !== 1 ? "," : ""}
+                      </Text>
+                    ) : null;
+                  })}
+                  {data.store && data.store.split(", ").length > 1 ? (
+                    <Text
+                      {...triggerProps}
+                      size="lg"
+                      className="text-tertiary-600"
+                    >
+                      ещё +{data.store.split(", ").length - 1}
+                    </Text>
+                  ) : null}
+                </HStack>
+              )}
+            >
+              <PopoverBackdrop />
+              <PopoverContent className="max-w-[280px]">
+                <PopoverArrow />
+                <PopoverBody>
+                  <VStack className="px-2.5 items-start">
+                    {data.store?.split(", ").map((name, i) => (
+                      <Text
+                        key={name}
+                        size="xl"
+                        className="text-typography-600"
+                      >
+                        {name}
+                        {data.store?.split(", ").length !== i + 1 ? "," : ""}
+                      </Text>
+                    ))}
+                  </VStack>
+                </PopoverBody>
+              </PopoverContent>
+            </Popover>
             <Button
               action="default"
               variant="outline"
@@ -125,95 +180,33 @@ export default function AddProductModal() {
               />
             </Button>
           </HStack>
-          <HStack className="px-5">
-            <Text
-              size="2xl"
-              className="text-typography-500 bg-primary-400 px-6 py-0.5 rounded-xl"
-            >
-              {data.supermarket}
-            </Text>
-          </HStack>
+          <Text size="2xl" className="px-2 text-center">
+            {data.name}
+          </Text>
         </VStack>
-        <Divider className="my-0.5 w-[85%] h-0.5" />
-        <Card variant="half-rounded" className="w-full gap-5">
-          <Box className="relative w-fit items-center m-auto pb-4">
-            <Text size="8xl">{data.calories}</Text>
-            <Text size="4xl" className="absolute bottom-0">
-              ккал
-            </Text>
-          </Box>
-          <Grid
-            className="gap-4 items-center"
-            _extra={{
-              className: "grid-cols-10",
-            }}
-          >
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{data.protein} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  белки
-                </Text>
-              </Box>
-            </GridItem>
-            <Divider className="w-0.5 h-[75%]" />
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{data.fat} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  жиры
-                </Text>
-              </Box>
-            </GridItem>
-            <Divider className="w-0.5 h-[75%]" />
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{data.carbs} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  углеводы
-                </Text>
-              </Box>
-            </GridItem>
-          </Grid>
-        </Card>
-        <FormControl className="w-full mt-8">
+        <FormControl className="w-full">
           <VStack>
             <Text className="text-typography-200 pl-2" size="lg">
-              Введите вес
+              Введите вес/объём
             </Text>
             <Input variant="half-rounded" size="2xl">
               <InputField
                 keyboardType="numeric"
                 value={weight}
-                onChangeText={(text) => setWeight(text)}
+                onChangeText={setWeight}
+                className="text-left"
               />
+              <Text size="2xl" className="text-typography-400 pr-4">
+                {data.unit}
+              </Text>
             </Input>
           </VStack>
         </FormControl>
+        <Divider className="w-[85%] h-0.5" />
+        <MacrosDetailsCard {...data} />
+        <Text className="px-2.5 text-typography-400" size="sm">
+          Состав: {data.ingredients}
+        </Text>
         <Button
           action="primary"
           size="xl"

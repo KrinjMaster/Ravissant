@@ -1,3 +1,4 @@
+import { SearchSource } from "@/app/modal/add-food";
 import { queryClient } from "@/constants/query";
 import { Product } from "@/features/meal-template/mealTemplate.context";
 import { productRepository } from "@/lib/repositories/product.repository";
@@ -12,8 +13,18 @@ export const productService = {
     await productRepository.getMealMacros(db, day, mealType),
   getMealItems: async (db: SQLiteDatabase, day: string, mealType: MealType) =>
     await productRepository.getMealItems(db, day, mealType),
-  searchItems: async (db: SQLiteDatabase, params: string) =>
-    await productRepository.getItemsByName(db, params),
+  searchItems: async (
+    db: SQLiteDatabase,
+    searchParams: string,
+    source: SearchSource,
+    favoritesOnly: boolean,
+  ) =>
+    await productRepository.getItemsByName(
+      db,
+      searchParams,
+      source,
+      favoritesOnly,
+    ),
   getItemById: async (db: SQLiteDatabase, productId: string) =>
     await productRepository.getItemById(db, productId),
   addMealItem: async (
@@ -74,6 +85,10 @@ export const productService = {
 
     await queryClient.invalidateQueries({
       queryKey: ["meal-by-id", productId],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["product-favorite-items"],
     });
   },
   removeFavoriteItem: async (db: SQLiteDatabase, productId: string) => {
@@ -137,6 +152,16 @@ export const productService = {
       carbs: 0,
       protein: 0,
       fat: 0,
+      saturated_fat: 0,
+      unsaturated_fat: 0,
+      omega3_fat: 0,
+      omega6_fat: 0,
+      trans_fat: 0,
+      cholesterol: 0,
+      sugars: 0,
+      fiber: 0,
+      salt: 0,
+      sodium: 0,
     };
     const templateItems = await productRepository
       .getMealTemplateItems(db, templateId)
@@ -151,13 +176,63 @@ export const productService = {
           templateMacros.fat += Math.round((val.fat * val.weight) / 100);
           templateMacros.carbs += Math.round((val.carbs * val.weight) / 100);
 
-          return {
-            ...val,
-            calories: Math.round((val.calories * val.weight) / 100),
-            protein: Math.round((val.protein * val.weight) / 100),
-            fat: Math.round((val.fat * val.weight) / 100),
-            carbs: Math.round((val.carbs * val.weight) / 100),
-          };
+          if (val.saturated_fat) {
+            templateMacros.saturated_fat += Math.round(
+              (val.saturated_fat * val.weight) / 100,
+            );
+          }
+
+          if (val.unsaturated_fat) {
+            templateMacros.unsaturated_fat += Math.round(
+              (val.saturated_fat * val.weight) / 100,
+            );
+          }
+
+          if (val.omega3_fat) {
+            templateMacros.omega3_fat += Math.round(
+              (val.omega3_fat * val.weight) / 100,
+            );
+          }
+
+          if (val.omega6_fat) {
+            templateMacros.omega6_fat += Math.round(
+              (val.omega6_fat * val.weight) / 100,
+            );
+          }
+
+          if (val.trans_fat) {
+            templateMacros.trans_fat += Math.round(
+              (val.trans_fat * val.weight) / 100,
+            );
+          }
+
+          if (val.cholesterol) {
+            templateMacros.cholesterol += Math.round(
+              (val.cholesterol * val.weight) / 100,
+            );
+          }
+
+          if (val.sugars) {
+            templateMacros.sugars += Math.round(
+              (val.sugars * val.weight) / 100,
+            );
+          }
+
+          if (val.fiber) {
+            templateMacros.fiber += Math.round((val.fiber * val.weight) / 100);
+          }
+
+          if (val.salt) {
+            templateMacros.salt += Math.round((val.salt * val.weight) / 100);
+          }
+
+          if (val.sodium) {
+            templateMacros.sodium += Math.round(
+              (val.sodium * val.weight) / 100,
+            );
+          }
+
+          return val;
         }),
       );
 
@@ -179,4 +254,27 @@ export const productService = {
   },
   getAllWeight: async (db: SQLiteDatabase) =>
     await productRepository.getAllWeight(db),
+
+  addFavoriteTemplate: async (db: SQLiteDatabase, templateId: string) => {
+    await productRepository.addFavoriteMealTemplate(db, templateId);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["product-meal-templates"],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["search-items", "recipes", true],
+    });
+  },
+  removeFavoriteTemplate: async (db: SQLiteDatabase, templateId: string) => {
+    await productRepository.removeFavoriteMealTemplate(db, templateId);
+
+    await queryClient.invalidateQueries({
+      queryKey: ["product-meal-templates"],
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["search-items", "recipes", true],
+    });
+  },
 };

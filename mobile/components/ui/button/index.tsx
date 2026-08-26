@@ -54,7 +54,7 @@ const buttonStyle = tva({
         "bg-transparent data-[hover=true]:bg-background-50 data-[active=true]:bg-transparent",
     },
     variant: {
-      link: "px-0",
+      link: "px-0 border-0 outline-none",
       outline:
         "bg-transparent border border-secondary-300 data-[active=true]:border-secondary-500 data-[active=true]:bg-transparent",
       solid: "",
@@ -76,6 +76,12 @@ const buttonStyle = tva({
     },
     {
       action: "secondary",
+      variant: "link",
+      class:
+        "px-0 bg-transparent data-[hover=true]:bg-transparent data-[active=true]:bg-transparent",
+    },
+    {
+      action: "tertiary",
       variant: "link",
       class:
         "px-0 bg-transparent data-[hover=true]:bg-transparent data-[active=true]:bg-transparent",
@@ -200,6 +206,11 @@ const buttonTextStyle = tva({
       action: "negative",
       class:
         "text-primary-500 data-[hover=true]:text-primary-500 data-[active=true]:text-primary-500",
+    },
+    {
+      variant: "link",
+      action: "tertiary",
+      class: "color-tertiary-500",
     },
   ],
 });

@@ -57,7 +57,9 @@ export const WeightQuestionCard = () => {
           isInvalid={isInvalid && value !== ""}
         >
           <VStack space="xs">
-            <Text className="text-typography-300 text-xl">Введи вес (кг)</Text>
+            <Text className="text-typography-300 text-xl">
+              Введите вес (кг)
+            </Text>
             <Input variant="half-rounded" size="3xl">
               <InputField
                 keyboardType="decimal-pad"

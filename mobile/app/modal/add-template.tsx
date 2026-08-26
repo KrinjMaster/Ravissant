@@ -20,6 +20,8 @@ import { Keyboard, Pressable, TouchableWithoutFeedback } from "react-native";
 import { useMealTemplate } from "@/hooks/useMealTemplate";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { useSQLiteContext } from "expo-sqlite";
+import { DetailedMacrosModal } from "@/features/general/DetailedMacrosModal";
+import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
 
 function RightAction() {
   return (
@@ -82,12 +84,12 @@ export default function AddTemplateModal() {
               action="default"
               variant="outline"
               onPress={handleGoBack}
-              className="absolute left-0"
+              className="absolute left-0 top-0"
               size="xl"
             >
               <ButtonIcon as={ArrowLeftIcon} size="2xl" />
             </Button>
-            <Heading size="xl" className="line-clamp-2 text-start">
+            <Heading size="xl" className="line-clamp-2 max-w-[85%] text-center">
               {templateName === "" ? "Новый рецепт" : templateName}
             </Heading>
           </HStack>
@@ -101,75 +103,13 @@ export default function AddTemplateModal() {
             />
           </Input>
         </FormControl>
-        <Card variant="half-rounded" className="w-fit gap-5 mt-5 mx-2">
-          <Box className="relative w-fit items-center m-auto pb-4">
-            <Text size="8xl">{calories}</Text>
-            <Text size="4xl" className="absolute bottom-0">
-              ккал
-            </Text>
-          </Box>
-          <Grid
-            className="gap-4 items-center"
-            _extra={{
-              className: "grid-cols-10",
-            }}
-          >
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{protein} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  белки
-                </Text>
-              </Box>
-            </GridItem>
-            <Divider className="w-0.5 h-[75%]" />
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{fat} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  жиры
-                </Text>
-              </Box>
-            </GridItem>
-            <Divider className="w-0.5 h-[75%]" />
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{carbs} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  углеводы
-                </Text>
-              </Box>
-            </GridItem>
-          </Grid>
-        </Card>
+        <Box className="px-2.5">
+          <MacrosDetailsCard {...macrosData} />
+        </Box>
         <ScrollView className="mt-3.5">
           <VStack space="lg" style={{ paddingBottom: 2 * insets.bottom }}>
             {displayData.map(
-              ({ id, name, weight, calories, protein, carbs, fat }) => (
+              ({ id, name, weight, calories, protein, carbs, fat, unit }) => (
                 <ReanimatedSwipeable
                   key={id}
                   renderRightActions={() => <RightAction />}
@@ -185,7 +125,7 @@ export default function AddTemplateModal() {
                           {name}
                         </Heading>
                         <Text className="text-typography-400">
-                          {weight} г, {calories} ккал
+                          {weight} {unit}, {calories} ккал
                         </Text>
                         <Grid
                           className="items-center mt-2"

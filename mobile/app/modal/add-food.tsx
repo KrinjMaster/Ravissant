@@ -5,7 +5,7 @@ import { Divider } from "@/components/ui/divider";
 import { FormControl } from "@/components/ui/form-control";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
-import { AddIcon, ArrowLeftIcon } from "@/components/ui/icon";
+import { AddIcon, ArrowLeftIcon, ChevronDownIcon } from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { SkeletonText } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
@@ -20,6 +20,20 @@ import * as Haptics from "expo-haptics";
 import { useRecentItems } from "@/hooks/useRecentItems";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  Select,
+  SelectTrigger,
+  SelectInput,
+  SelectIcon,
+  SelectPortal,
+  SelectBackdrop,
+  SelectContent,
+  SelectDragIndicatorWrapper,
+  SelectDragIndicator,
+  SelectItem,
+} from "@/components/ui/select";
+
+export type SearchSource = "products" | "recipes";
 
 export default function AddFoodModal() {
   const { meal, date, mode } = useLocalSearchParams<{
@@ -28,12 +42,13 @@ export default function AddFoodModal() {
     mode: ModalMode;
   }>();
   const [searchString, setSearchString] = useState("");
+  const [source, setSource] = useState<SearchSource>("products");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
   const {
     data: searchData,
     isLoading: isSearchLoading,
     error,
-    isError,
-  } = useSearchItems(searchString);
+  } = useSearchItems(searchString, source, favoritesOnly);
   const { data: recentData } = useRecentItems();
   const showSkeleton =
     searchString.length > 0 && !searchData && isSearchLoading;
@@ -44,22 +59,26 @@ export default function AddFoodModal() {
     router.back();
   };
 
-  const handleForward = (productId: string, date: string, meal: string) => {
+  const handleForward = (
+    productId: string,
+    type: SearchSource,
+    date: string,
+    meal: string,
+  ) => {
+    console.log("type", type);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push({
-      pathname: "/modal/add-product",
-      params: {
-        productId,
-        meal,
-        date,
-        mode,
-      },
-    });
+    // router.push({
+    //   pathname: "/modal/add-product",
+    //   params: {
+    //     productId,
+    //     meal,
+    //     date,
+    //     mode,
+    //   },
+    // });
   };
 
-  useEffect(() => {
-    console.log(isError, error);
-  }, [isError, error]);
+  useEffect(() => console.log(error), [error]);
 
   return (
     <VStack
@@ -120,13 +139,60 @@ export default function AddFoodModal() {
         </Text>
       </HStack>
       <FormControl>
-        <Input variant="half-rounded" size="2xl">
+        <Input variant="half-rounded" size="2xl" className="overflow-hidden">
           <InputField
-            placeholder="Введи название ..."
+            placeholder="Введите название ..."
             value={searchString}
             onChangeText={(text) => setSearchString(text)}
+            multiline={false}
+            numberOfLines={1}
+            className="overflow-hidden"
           />
         </Input>
+        <HStack className="w-full justify-between mt-1.5 px-1.5">
+          <Select
+            defaultValue="Продукты"
+            onValueChange={(value) =>
+              setSource(value === "Продукты" ? "products" : "recipes")
+            }
+            className="w-[49%]"
+          >
+            <SelectTrigger variant="outline" size="xl">
+              <SelectInput size="sm" />
+              <SelectIcon className="mr-3 ml-auto" as={ChevronDownIcon} />
+            </SelectTrigger>
+            <SelectPortal>
+              <SelectBackdrop />
+              <SelectContent>
+                <SelectDragIndicatorWrapper>
+                  <SelectDragIndicator />
+                </SelectDragIndicatorWrapper>
+                <SelectItem label="Продукты" value="Продукты" />
+                <SelectItem label="Рецепты" value="Рецепты" />
+              </SelectContent>
+            </SelectPortal>
+          </Select>
+          <Select
+            defaultValue="Все"
+            onValueChange={(value) => setFavoritesOnly(value === "Любимые")}
+            className="w-[49%]"
+          >
+            <SelectTrigger variant="outline" size="xl">
+              <SelectInput size="sm" />
+              <SelectIcon className="mr-3 ml-auto" as={ChevronDownIcon} />
+            </SelectTrigger>
+            <SelectPortal>
+              <SelectBackdrop />
+              <SelectContent>
+                <SelectDragIndicatorWrapper>
+                  <SelectDragIndicator />
+                </SelectDragIndicatorWrapper>
+                <SelectItem label="Все" value="Все" />
+                <SelectItem label="Любимые" value="Любимые" />
+              </SelectContent>
+            </SelectPortal>
+          </Select>
+        </HStack>
       </FormControl>
       <ScrollView className="flex-1 px-3 mt-2.5">
         <VStack space="md" className="pb-5">
@@ -150,52 +216,63 @@ export default function AddFoodModal() {
             : null}
           {/* Search items */}
           {searchData && searchString.length !== 0
-            ? searchData.map(({ name, brand, id, calories, serving_size }) => (
-                <Pressable
-                  key={id}
-                  onPress={() => handleForward(id, date, meal)}
-                >
-                  <Card
-                    size="md"
-                    variant="half-rounded"
-                    className="rounded-xl p-0 pr-5"
+            ? searchData.map(
+                ({ name, brand, id, calories, weight, unit, type }) => (
+                  <Pressable
+                    key={id}
+                    onPress={() => handleForward(id, type, date, meal)}
                   >
-                    <HStack className="justify-between items-center">
-                      <Box className="w-[85%] p-3 pr-0">
-                        <Heading size="sm" className="line-clamp-2">
-                          {name}
-                        </Heading>
-                        <Text className="line-clamp-1 text-typography-300">
-                          {brand}
-                        </Text>
-                        <HStack space="md" className="items-center mt-1.5">
-                          <Text>{serving_size} г</Text>
-                          <Divider className="w-0.5 h-[75%]" />
-                          <Text>{calories} ккал / 100 г</Text>
-                        </HStack>
-                      </Box>
-                      <Button
-                        variant="solid"
-                        action="primary"
-                        size="xl"
-                        className="border-none rounded-full px-2 py-5 w-12 h-12"
-                        onPress={() => handleForward(id, date, meal)}
-                      >
-                        <ButtonIcon as={AddIcon} size="2xl" />
-                      </Button>
-                    </HStack>
-                  </Card>
-                </Pressable>
-              ))
+                    <Card
+                      size="md"
+                      variant="half-rounded"
+                      className="rounded-xl p-0 pr-5"
+                    >
+                      <HStack className="justify-between items-center">
+                        <Box className="w-[85%] p-3 pr-0">
+                          <Heading size="sm" className="line-clamp-2">
+                            {name}
+                          </Heading>
+                          <Text className="line-clamp-1 text-typography-300">
+                            {brand}
+                          </Text>
+                          <HStack space="md" className="items-center mt-1.5">
+                            <Text>
+                              {weight} {unit}
+                            </Text>
+                            <Divider className="w-0.5 h-[75%]" />
+                            <Text>{calories} ккал / 100 г</Text>
+                          </HStack>
+                        </Box>
+                        <Button
+                          variant="solid"
+                          action="primary"
+                          size="xl"
+                          className="border-none rounded-full px-2 py-5 w-12 h-12"
+                          onPress={() => handleForward(id, type, date, meal)}
+                        >
+                          <ButtonIcon as={AddIcon} size="2xl" />
+                        </Button>
+                      </HStack>
+                    </Card>
+                  </Pressable>
+                ),
+              )
             : null}
           {/* Recent items */}
-          {recentData && searchString.length === 0 ? (
+          {recentData && recentData.length > 0 && searchString.length === 0 ? (
             <Text size="2xl" className="text-typography-500">
               Недавние
             </Text>
           ) : null}
+          {recentData &&
+          recentData.length === 0 &&
+          searchString.length === 0 ? (
+            <Text size="2xl" className="text-typography-500">
+              Недавние{"\n\n"}Были бы тут, если бы вы что-нибудь добавили :(
+            </Text>
+          ) : null}
           {recentData && searchString.length === 0
-            ? recentData.map(({ name, brand, id, calories, serving_size }) => (
+            ? recentData.map(({ name, brand, id, calories, weight }) => (
                 <Pressable
                   key={id}
                   onPress={() => handleForward(id, date, meal)}
@@ -214,7 +291,7 @@ export default function AddFoodModal() {
                           {brand}
                         </Text>
                         <HStack space="md" className="items-center mt-1.5">
-                          <Text>{serving_size} г</Text>
+                          <Text>{weight} г</Text>
                           <Divider className="w-0.5 h-[75%]" />
                           <Text>{calories} ккал / 100 г</Text>
                         </HStack>

@@ -2,6 +2,7 @@ import { MealType } from "@/types/products";
 import { SQLiteDatabase } from "expo-sqlite";
 import { generateId } from "@/utils/product";
 import { Product } from "@/features/meal-template/mealTemplate.context";
+import { SearchSource } from "@/app/modal/add-food";
 
 export const productRepository = {
   getSummary: async (db: SQLiteDatabase, dayDate: string) => {
@@ -14,10 +15,10 @@ export const productRepository = {
     }>(
       ` 
         SELECT 
-          ROUND(COALESCE(SUM(p.calories_per_100g * f.grams / 100), 0)) AS calories,
-          ROUND(COALESCE(SUM(p.proteins_per_100g * f.grams / 100), 0)) AS protein,
-          ROUND(COALESCE(SUM(p.fats_per_100g * f.grams / 100), 0)) AS fat,
-          ROUND(COALESCE(SUM(p.carbs_per_100g * f.grams / 100), 0)) AS carbs
+          ROUND(COALESCE(SUM(p.calories_per_100g * f.grams / 10000), 0)) AS calories,
+          ROUND(COALESCE(SUM(p.proteins_per_100g * f.grams / 10000), 0)) AS protein,
+          ROUND(COALESCE(SUM(p.fats_per_100g * f.grams / 10000), 0)) AS fat,
+          ROUND(COALESCE(SUM(p.carbs_per_100g * f.grams / 10000), 0)) AS carbs
         FROM food_entries f
         JOIN products p ON p.id = f.product_id
         WHERE DATE(f.logged_day) = ?
@@ -38,10 +39,10 @@ export const productRepository = {
       carbs: number;
     }>(
       `
-        SELECT ROUND(COALESCE(SUM(p.calories_per_100g * f.grams / 100), 0)) AS calories,
-          ROUND(COALESCE(SUM(p.proteins_per_100g * f.grams / 100), 0)) AS protein,
-          ROUND(COALESCE(SUM(p.fats_per_100g * f.grams / 100), 0)) AS fat,
-          ROUND(COALESCE(SUM(p.carbs_per_100g * f.grams / 100), 0)) AS carbs
+        SELECT ROUND(COALESCE(SUM(p.calories_per_100g * f.grams / 10000), 0)) AS calories,
+          ROUND(COALESCE(SUM(p.proteins_per_100g * f.grams / 10000), 0)) AS protein,
+          ROUND(COALESCE(SUM(p.fats_per_100g * f.grams / 10000), 0)) AS fat,
+          ROUND(COALESCE(SUM(p.carbs_per_100g * f.grams / 10000), 0)) AS carbs
         FROM food_entries f
         JOIN products p ON p.id = f.product_id
         WHERE DATE(f.logged_day) = ?
@@ -73,10 +74,10 @@ export const productRepository = {
           p.id AS productId,
           p.name,
           p.brand,
-          ROUND(p.calories_per_100g * f.grams / 100) AS calories,
-          ROUND(p.proteins_per_100g * f.grams / 100) AS protein,
-          ROUND(p.fats_per_100g * f.grams / 100) AS fat,
-          ROUND(p.carbs_per_100g * f.grams / 100) AS carbs
+          ROUND(p.calories_per_100g * f.grams / 10000)  AS calories,
+          ROUND(p.proteins_per_100g * f.grams / 10000) AS protein,
+          ROUND(p.fats_per_100g * f.grams / 10000) AS fat,
+          ROUND(p.carbs_per_100g * f.grams / 10000) AS carbs
         FROM food_entries f
         JOIN products p ON p.id = f.product_id
         WHERE DATE(f.logged_day) = ?
@@ -86,48 +87,113 @@ export const productRepository = {
       [day, mealType],
     );
   },
-  getItemsByName: async (db: SQLiteDatabase, searchParams: string) => {
+  getItemsByName: async (
+    db: SQLiteDatabase,
+    searchParams: string,
+    source: SearchSource,
+    favoritesOnly: boolean,
+  ) => {
+    const search = `%${searchParams.toLowerCase()}%`;
+
+    if (source === "recipes") {
+      return db.getAllAsync<{
+        id: string;
+        name: string;
+        type: "recipes";
+      }>(
+        `
+          SELECT
+            m.id,
+            m.name,
+            'recipes' AS type
+          FROM meal_templates m
+          ${
+            favoritesOnly
+              ? "JOIN favorite_meal_templates f ON f.meal_template_id = m.id"
+              : ""
+          }
+          WHERE m.search_text LIKE ?
+          ORDER BY m.name
+          LIMIT 20
+        `,
+        [search],
+      );
+    }
+
     return db.getAllAsync<{
       id: string;
       name: string;
+      type: "products";
       brand: string | null;
       weight: number;
+      unit: string;
       calories: number;
     }>(
-      ` 
-        SELECT p.id,
+      `
+        SELECT
+          p.id,
           p.name,
+          'products' AS type,
           p.brand,
           p.weight,
+          p.unit,
           p.calories_per_100g / 100 AS calories
         FROM products p
+        ${favoritesOnly ? "JOIN favorite_products f ON f.product_id = p.id" : ""}
         WHERE p.search_text LIKE ?
-        ORDER BY p.name
-        LIMIT 10
+          ORDER BY p.name
+        LIMIT 20
       `,
-      [`%${searchParams.toLowerCase()}%`],
+      [search],
     );
   },
   getItemById: async (db: SQLiteDatabase, productId: string) => {
     const result = await db.getFirstAsync<{
       name: string;
       brand: string | null;
+      ingredients: string | null;
+      allergens: string | null;
       weight: number;
+      unit: string;
       calories: number;
       protein: number;
       fat: number;
       carbs: number;
+      saturated_fat: number;
+      unsaturated_fat: number;
+      omega3_fat: number;
+      omega6_fat: number;
+      trans_fat: number;
+      cholesterol: number;
+      sugars: number;
+      fiber: number;
+      salt: number;
+      sodium: number;
       store: string | null;
       isFavorite: number;
     }>(
       ` 
-        SELECT p.name,
+        SELECT 
+          p.name,
           p.brand,
+          p.ingredients,
+          p.allergens,
           p.weight,
-          p.calories_per_100g AS calories,
-          p.proteins_per_100g AS protein,
-          p.fats_per_100g AS fat,
-          p.carbs_per_100g AS carbs,
+          p.unit,
+          p.calories_per_100g / 100 AS calories,
+          p.proteins_per_100g / 100 AS protein,
+          p.fats_per_100g / 100 AS fat,
+          p.carbs_per_100g / 100 AS carbs,
+          p.saturated_fat_per_100g / 100 AS saturated_fat,
+          p.unsaturated_fat_per_100g / 100 AS unsaturated_fat,
+          p.omega3_fat_per_100g / 100 AS omega3_fat,
+          p.omega6_fat_per_100g / 100 AS omega6_fat,
+          p.trans_fat_per_100g / 100 AS trans_fat,
+          p.cholesterol_per_100g / 100 AS cholesterol,
+          p.sugars_per_100g / 100 AS sugars,
+          p.fiber_per_100g / 100 AS fiber,
+          p.salt_per_100g / 100 AS salt,
+          p.sodium_per_100g / 100 AS sodium,
          (SELECT GROUP_CONCAT(s.name, ', ')
         FROM product_sources ps
         JOIN stores s ON s.id = ps.store_id
@@ -143,9 +209,11 @@ export const productRepository = {
       `,
       [productId],
     );
+
     if (!result) {
       return null;
     }
+
     return { ...result, isFavorite: !!result.isFavorite };
   },
   addMealItem: async (
@@ -190,7 +258,7 @@ export const productRepository = {
           p.name,
           p.brand,
           p.weight,
-          p.calories_per_100g AS calories
+          p.calories_per_100g / 100 AS calories
         FROM food_entries f
         JOIN products p ON f.product_id = p.id
         GROUP BY p.id
@@ -205,6 +273,7 @@ export const productRepository = {
       name: string;
       brand: string | null;
       weight: number;
+      unit: string;
       calories: number;
     }>(
       ` 
@@ -212,7 +281,8 @@ export const productRepository = {
           p.name,
           p.brand,
           p.weight,
-          p.calories_per_100g AS calories
+          p.unit,
+          p.calories_per_100g / 100 AS calories
         FROM favorite_products f
         JOIN products p ON f.product_id = p.id
         WHERE p.search_text LIKE ?
@@ -223,10 +293,54 @@ export const productRepository = {
     );
   },
   getMealTemplates: async (db: SQLiteDatabase, searchParams: string) => {
-    return db.getAllAsync<{ id: string; name: string }>(
-      `SELECT m.id, m.name FROM meal_templates m WHERE m.search_text LIKE ? ORDER BY m.name LIMIT 10`,
-      [`%${searchParams.toLowerCase()}%`],
-    );
+    return db
+      .getAllAsync<{
+        id: string;
+        name: string;
+        productCount: number;
+        calories: number;
+        isFavorite: number;
+      }>(
+        `
+        SELECT
+          m.id,
+          m.name,
+          COUNT(mti.product_id) AS productCount,
+          CAST(
+            COALESCE(
+              SUM(
+                p.calories_per_100g * mti.grams / 10000.0
+              ),
+              0
+            ) AS INTEGER
+          ) AS calories,
+          CASE
+            WHEN f.meal_template_id IS NOT NULL THEN 1
+            ELSE 0
+          END AS isFavorite
+        FROM meal_templates m
+        LEFT JOIN meal_template_items mti
+          ON mti.meal_template_id = m.id
+        LEFT JOIN products p
+          ON p.id = mti.product_id
+        LEFT JOIN favorite_meal_templates f
+          ON f.meal_template_id = m.id
+        WHERE m.search_text LIKE ?
+        GROUP BY
+          m.id,
+          m.name,
+          f.meal_template_id
+        ORDER BY m.name
+        LIMIT 10
+      `,
+        [`%${searchParams.toLowerCase()}%`],
+      )
+      .then((rows) =>
+        rows.map((row) => ({
+          ...row,
+          isFavorite: !!row.isFavorite,
+        })),
+      );
   },
   getMealTemplate: async (db: SQLiteDatabase, templateId: string) => {
     return db.getFirstAsync<{ id: string; name: string }>(
@@ -243,17 +357,39 @@ export const productRepository = {
       protein: number;
       fat: number;
       carbs: number;
+      saturated_fat: number;
+      unsaturated_fat: number;
+      omega3_fat: number;
+      omega6_fat: number;
+      trans_fat: number;
+      cholesterol: number;
+      sugars: number;
+      fiber: number;
+      salt: number;
+      sodium: number;
       weight: number;
+      unit: string;
     }>(
       ` 
         SELECT p.id,
           p.name,
           p.brand,
-          p.calories_per_100g AS calories,
-          p.proteins_per_100g AS protein,
-          p.fats_per_100g AS fat,
-          p.carbs_per_100g AS carbs,
-          m.grams AS weight
+          p.calories_per_100g / 100 AS calories,
+          p.proteins_per_100g / 100 AS protein,
+          p.fats_per_100g / 100 AS fat,
+          p.carbs_per_100g / 100 AS carbs,
+          p.saturated_fat_per_100g / 100 AS saturated_fat,
+          p.unsaturated_fat_per_100g / 100 AS unsaturated_fat,
+          p.omega3_fat_per_100g / 100 AS omega3_fat,
+          p.omega6_fat_per_100g / 100 AS omega6_fat,
+          p.trans_fat_per_100g / 100 AS trans_fat,
+          p.cholesterol_per_100g / 100 AS cholesterol,
+          p.sugars_per_100g / 100 AS sugars,
+          p.fiber_per_100g / 100 AS fiber,
+          p.salt_per_100g / 100 AS salt,
+          p.sodium_per_100g / 100 AS sodium,
+          m.grams AS weight,
+          p.unit
         FROM meal_template_items m
         JOIN products p ON p.id = m.product_id
         WHERE m.meal_template_id = ?
@@ -268,21 +404,44 @@ export const productRepository = {
     const placeholders = products.map(() => "?").join(",");
     return db.getAllAsync<{
       id: string;
+      unit: string;
       name: string;
       brand: string | null;
       calories: number;
       protein: number;
       fat: number;
       carbs: number;
+      saturated_fat: number;
+      unsaturated_fat: number;
+      omega3_fat: number;
+      omega6_fat: number;
+      trans_fat: number;
+      cholesterol: number;
+      sugars: number;
+      fiber: number;
+      salt: number;
+      sodium: number;
     }>(
       ` 
-        SELECT p.id,
+        SELECT 
+          p.id,
+          p.unit,
           p.name,
           p.brand,
-          p.calories_per_100g AS calories,
-          p.proteins_per_100g AS protein,
-          p.fats_per_100g AS fat,
-          p.carbs_per_100g AS carbs
+          p.calories_per_100g / 100 AS calories,
+          p.proteins_per_100g / 100 AS protein,
+          p.fats_per_100g / 100 AS fat,
+          p.carbs_per_100g / 100 AS carbs,
+          p.saturated_fat_per_100g / 100 AS saturated_fat,
+          p.unsaturated_fat_per_100g / 100 AS unsaturated_fat,
+          p.omega3_fat_per_100g / 100 AS omega3_fat,
+          p.omega6_fat_per_100g / 100 AS omega6_fat,
+          p.trans_fat_per_100g / 100 AS trans_fat,
+          p.cholesterol_per_100g / 100 AS cholesterol,
+          p.sugars_per_100g / 100 AS sugars,
+          p.fiber_per_100g / 100 AS fiber,
+          p.salt_per_100g / 100 AS salt,
+          p.sodium_per_100g / 100 AS sodium
         FROM products p
         WHERE p.id IN (${placeholders})
       `,
@@ -338,6 +497,21 @@ export const productRepository = {
   getAllWeight: async (db: SQLiteDatabase) => {
     return db.getAllAsync<{ logged_at: string; weight: number }>(
       `SELECT w.logged_at, w.weight FROM weight_entries w`,
+    );
+  },
+  addFavoriteMealTemplate: async (db: SQLiteDatabase, templateId: string) => {
+    await db.runAsync(
+      `INSERT OR IGNORE INTO favorite_meal_templates (meal_template_id) VALUES (?)`,
+      [templateId],
+    );
+  },
+  removeFavoriteMealTemplate: async (
+    db: SQLiteDatabase,
+    templateId: string,
+  ) => {
+    await db.runAsync(
+      `DELETE FROM favorite_meal_templates WHERE meal_template_id = ?`,
+      [templateId],
     );
   },
 };

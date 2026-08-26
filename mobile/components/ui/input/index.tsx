@@ -203,6 +203,7 @@ const InputField = React.forwardRef<
   return (
     <UIInput.Input
       ref={ref}
+      lineBreakModeIOS="tail"
       {...props}
       className={inputFieldStyle({
         parentVariants: {

@@ -23,6 +23,7 @@ import * as Haptics from "expo-haptics";
 import { SkeletonText, Skeleton } from "@/components/ui/skeleton";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MacrosDetailsGrid } from "@/features/general/MacrosDetailsGrid";
 
 function RightAction() {
   return (
@@ -126,64 +127,8 @@ export default function MealInfoModal() {
           className="w-full h-[60%]"
         />
         <Divider className="my-0.5 w-[85%] h-0.5" />
-        <Card variant="half-rounded" className="w-full">
-          <Grid
-            className="gap-4 items-center"
-            _extra={{
-              className: "grid-cols-10",
-            }}
-          >
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{mealMacros.protein} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  белки
-                </Text>
-              </Box>
-            </GridItem>
-            <Divider className="w-0.5 h-[75%]" />
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{mealMacros.fat} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  жиры
-                </Text>
-              </Box>
-            </GridItem>
-            <Divider className="w-0.5 h-[75%]" />
-            <GridItem
-              className="pb-6"
-              _extra={{
-                className: "col-span-3",
-              }}
-            >
-              <Box className="relative w-fit items-center m-auto">
-                <Text size="3xl">{mealMacros.carbs} г</Text>
-                <Text
-                  size="xl"
-                  className="absolute -bottom-6 text-typography-300"
-                >
-                  углеводы
-                </Text>
-              </Box>
-            </GridItem>
-          </Grid>
+        <Card variant="half-rounded" className="w-full py-2.5">
+          <MacrosDetailsGrid {...mealMacros} />
         </Card>
       </VStack>
       <ScrollView className="flex-1 mt-2.5">

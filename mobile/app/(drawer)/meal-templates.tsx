@@ -9,19 +9,27 @@ import { Card } from "@/components/ui/card";
 import { FormControl } from "@/components/ui/form-control";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
-import { AddIcon, ArrowLeftIcon, ChevronRightIcon } from "@/components/ui/icon";
+import {
+  AddIcon,
+  ArrowLeftIcon,
+  ChevronRightIcon,
+  StarIcon,
+} from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { SkeletonText } from "@/components/ui/skeleton";
 import { router } from "expo-router";
 import { ScrollView, Pressable } from "react-native";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { useSearchMealTemplates } from "@/hooks/useSearchMealTemplates";
+import { Divider } from "@/components/ui/divider";
+import { useChangeFavoriteTemplate } from "@/hooks/userChangeFavoriteTemplate";
 
 export default function MealTemplates() {
   const insets = useSafeAreaInsets();
   const [searchString, setSearchString] = useState("");
   const { data: searchData, isLoading: isSearchLoading } =
     useSearchMealTemplates(searchString);
+  const { mutateAsync: addFavorite } = useChangeFavoriteTemplate();
   const showSkeleton = !searchData && isSearchLoading;
 
   const handleGoBack = () => {
@@ -36,6 +44,17 @@ export default function MealTemplates() {
       params: {
         templateId,
       },
+    });
+  };
+
+  const handleAddFavoriteTemplate = async (
+    templateId: string,
+    isFavorite: boolean,
+  ) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await addFavorite({
+      templateId,
+      isFavorite,
     });
   };
 
@@ -113,7 +132,7 @@ export default function MealTemplates() {
       <FormControl>
         <Input variant="half-rounded" size="2xl">
           <InputField
-            placeholder="Введи название ..."
+            placeholder="Введите название ..."
             value={searchString}
             onChangeText={(text) => setSearchString(text)}
           />
@@ -141,34 +160,65 @@ export default function MealTemplates() {
             : null}
           {/* Search meal templates */}
           {searchData
-            ? searchData.map(({ name, id }) => (
-                <Pressable key={id} onPress={() => handleViewTemplate(id)}>
-                  <Card
-                    size="md"
-                    variant="half-rounded"
-                    className="rounded-xl p-3.5"
-                  >
-                    <HStack className="justify-between items-center">
-                      <Heading size="xl" className="line-clamp-2">
-                        {name}
-                      </Heading>
-                      <Button
-                        variant="outline"
-                        action="primary"
-                        size="xl"
-                        className="border-0"
-                        onPress={() => handleViewTemplate(id)}
-                      >
-                        <ButtonIcon
-                          as={ChevronRightIcon}
-                          size="2xl"
-                          className="stroke-primary-600"
-                        />
-                      </Button>
-                    </HStack>
-                  </Card>
-                </Pressable>
-              ))
+            ? searchData.map(
+                ({ name, id, isFavorite, productCount, calories }) => (
+                  <Pressable key={id} onPress={() => handleViewTemplate(id)}>
+                    <Card
+                      size="md"
+                      variant="half-rounded"
+                      className="rounded-xl p-3.5"
+                    >
+                      <HStack className="items-center" space="sm">
+                        <VStack className="max-w-[75%]">
+                          <Heading
+                            size="xl"
+                            className="line-clamp-2 max-w-[85%]"
+                          >
+                            {name}
+                          </Heading>
+                          <HStack space="md" className="items-center">
+                            <Text className="text-typography-400 max-w-[50%] line-clamp-1">
+                              Ингридиентов: {productCount}
+                            </Text>
+                            <Divider className="w-0.5 h-[85%]" />
+                            <Text className="text-typography-400 max-w-[50%] line-clamp-1">
+                              {calories} ккал
+                            </Text>
+                          </HStack>
+                        </VStack>
+                        <Button
+                          action="default"
+                          variant="outline"
+                          className={`${isFavorite ? "bg-background-200" : ""} ml-auto`}
+                          onPress={() =>
+                            handleAddFavoriteTemplate(id, isFavorite)
+                          }
+                          size="xl"
+                        >
+                          <ButtonIcon
+                            as={StarIcon}
+                            size="md"
+                            className={`${isFavorite ? "fill-primary-800 stroke-primary-800" : ""}`}
+                          />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          action="primary"
+                          size="xl"
+                          className="border-0 w-2"
+                          onPress={() => handleViewTemplate(id)}
+                        >
+                          <ButtonIcon
+                            as={ChevronRightIcon}
+                            size="2xl"
+                            className="stroke-primary-600"
+                          />
+                        </Button>
+                      </HStack>
+                    </Card>
+                  </Pressable>
+                ),
+              )
             : null}
         </VStack>
       </ScrollView>

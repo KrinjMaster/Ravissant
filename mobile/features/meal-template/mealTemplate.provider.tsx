@@ -11,8 +11,19 @@ export interface Item {
   fat: number;
   carbs: number;
   id: string;
+  unit: string;
   name: string;
-  brand: string;
+  brand: string | null;
+  saturated_fat: number;
+  unsaturated_fat: number;
+  omega3_fat: number;
+  omega6_fat: number;
+  trans_fat: number;
+  cholesterol: number;
+  sugars: number;
+  fiber: number;
+  salt: number;
+  sodium: number;
 }
 
 export const MealTemplateProvider = ({ children }: { children: ReactNode }) => {
@@ -22,11 +33,31 @@ export const MealTemplateProvider = ({ children }: { children: ReactNode }) => {
     protein: number;
     fat: number;
     carbs: number;
+    saturated_fat: number;
+    unsaturated_fat: number;
+    omega3_fat: number;
+    omega6_fat: number;
+    trans_fat: number;
+    cholesterol: number;
+    sugars: number;
+    fiber: number;
+    salt: number;
+    sodium: number;
   }>({
     calories: 0,
     protein: 0,
     fat: 0,
     carbs: 0,
+    saturated_fat: 0,
+    unsaturated_fat: 0,
+    omega3_fat: 0,
+    omega6_fat: 0,
+    trans_fat: 0,
+    cholesterol: 0,
+    sugars: 0,
+    fiber: 0,
+    salt: 0,
+    sodium: 0,
   });
   const [displayData, setDisplayData] = useState<Item[]>([]);
   const db = useSQLiteContext();
@@ -50,6 +81,16 @@ export const MealTemplateProvider = ({ children }: { children: ReactNode }) => {
       protein: 0,
       fat: 0,
       carbs: 0,
+      saturated_fat: 0,
+      unsaturated_fat: 0,
+      omega3_fat: 0,
+      omega6_fat: 0,
+      trans_fat: 0,
+      cholesterol: 0,
+      sugars: 0,
+      fiber: 0,
+      salt: 0,
+      sodium: 0,
     });
     setProducts([]);
   };
@@ -71,6 +112,16 @@ export const MealTemplateProvider = ({ children }: { children: ReactNode }) => {
         protein: 0,
         fat: 0,
         carbs: 0,
+        saturated_fat: 0,
+        unsaturated_fat: 0,
+        omega3_fat: 0,
+        omega6_fat: 0,
+        trans_fat: 0,
+        cholesterol: 0,
+        sugars: 0,
+        fiber: 0,
+        salt: 0,
+        sodium: 0,
       };
 
       const items = data.map((row) => {
@@ -80,6 +131,21 @@ export const MealTemplateProvider = ({ children }: { children: ReactNode }) => {
         newMacros.protein += Math.round((row.protein * weight) / 100);
         newMacros.fat += Math.round((row.fat * weight) / 100);
         newMacros.carbs += Math.round((row.carbs * weight) / 100);
+
+        newMacros.saturated_fat += Math.round(
+          (row.saturated_fat * weight) / 100,
+        );
+        newMacros.unsaturated_fat += Math.round(
+          (row.unsaturated_fat * weight) / 100,
+        );
+        newMacros.omega3_fat += Math.round((row.omega3_fat * weight) / 100);
+        newMacros.omega6_fat += Math.round((row.omega6_fat * weight) / 100);
+        newMacros.trans_fat += Math.round((row.trans_fat * weight) / 100);
+        newMacros.cholesterol += Math.round((row.cholesterol * weight) / 100);
+        newMacros.sugars += Math.round((row.sugars * weight) / 100);
+        newMacros.fiber += Math.round((row.fiber * weight) / 100);
+        newMacros.salt += Math.round((row.salt * weight) / 100);
+        newMacros.sodium += Math.round((row.sodium * weight) / 100);
 
         return {
           ...row,
@@ -100,6 +166,16 @@ export const MealTemplateProvider = ({ children }: { children: ReactNode }) => {
         protein: 0,
         fat: 0,
         carbs: 0,
+        saturated_fat: 0,
+        unsaturated_fat: 0,
+        omega3_fat: 0,
+        omega6_fat: 0,
+        trans_fat: 0,
+        cholesterol: 0,
+        sugars: 0,
+        fiber: 0,
+        salt: 0,
+        sodium: 0,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,6 +199,7 @@ export const MealTemplateProvider = ({ children }: { children: ReactNode }) => {
     templateName: string,
   ) => {
     await productService.addMealTemplate(db, templateName, products);
+    clearData();
   };
 
   return (

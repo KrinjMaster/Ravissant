@@ -50,6 +50,30 @@ pub async fn parse_products_final() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+fn get_store_name(source: &str, brand: Option<&str>) -> String {
+    match source {
+        "Ресторан" => brand.unwrap_or(source).to_string(),
+
+        "Pyatorochka" => "Пятёрочка".to_string(),
+        "Globus" => "Глобус".to_string(),
+        "Ashan" => "Ашан".to_string(),
+        "Lenta" => "Лента".to_string(),
+        "Perekrestok" => "Перекрёсток".to_string(),
+        "AzbukaVkusa" => "Азбука вкуса".to_string(),
+        "Spar" => "SPAR".to_string(),
+        "Vkusvill" => "ВкусВилл".to_string(),
+        "Magnoliya" => "Магнолия".to_string(),
+        "Dobrininskii" => "Добрынинский".to_string(),
+        "UPalicha" => "У Палыча".to_string(),
+        "Magnit" => "Магнит".to_string(),
+        "Okey" => "О'КЕЙ".to_string(),
+        "Metro" => "METRO".to_string(),
+        "SuperLenta" => "Супер Лента".to_string(),
+
+        _ => source.to_string(),
+    }
+}
+
 pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = Connection::open("main.db")?;
 
@@ -58,6 +82,7 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
         PRAGMA foreign_keys = ON;
 
         DROP TABLE IF EXISTS meal_template_items;
+        DROP TABLE IF EXISTS favorite_meal_templates;
         DROP TABLE IF EXISTS meal_templates;
         DROP TABLE IF EXISTS favorite_products;
         DROP TABLE IF EXISTS food_entries;
@@ -184,6 +209,14 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
 
             FOREIGN KEY (product_id)
                 REFERENCES products(id)
+                ON DELETE CASCADE
+        );
+
+        CREATE TABLE favorite_meal_templates (
+            meal_template_id TEXT PRIMARY KEY,
+
+            FOREIGN KEY (meal_template_id)
+                REFERENCES meal_templates(id)
                 ON DELETE CASCADE
         );
 
@@ -341,9 +374,11 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
     // Insert products
     let mut inserted_ids = HashSet::new();
     let mut categories = HashSet::new();
+    let mut brands = HashSet::new();
 
     for product in products {
         categories.insert(product.category.clone());
+        brands.insert(product.sources.join(" ").clone());
 
         let product_id = generate_product_id(
             &product.name,
@@ -396,11 +431,12 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
         // Sources
 
         for source in &product.sources {
-            let store_id = generate_store_id(source);
+            let store_name = get_store_name(source, Some(product.brand.as_str()));
+            let store_id = generate_store_id(&store_name);
 
-            stmt_store.execute(params![store_id, source])?;
+            stmt_store.execute(params![store_id, store_name,])?;
 
-            stmt_source.execute(params![product_id, store_id])?;
+            stmt_source.execute(params![product_id, store_id,])?;
         }
 
         // Barcodes
@@ -427,6 +463,14 @@ pub fn build_database() -> Result<(), Box<dyn std::error::Error>> {
     println!(
         "All of categories: {}",
         categories
+            .iter()
+            .map(|v| v.to_string())
+            .collect::<Vec<String>>()
+            .join("; ")
+    );
+    println!(
+        "All of brands: {}",
+        brands
             .iter()
             .map(|v| v.to_string())
             .collect::<Vec<String>>()

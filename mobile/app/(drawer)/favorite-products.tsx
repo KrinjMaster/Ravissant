@@ -17,7 +17,7 @@ import { SkeletonText } from "@/components/ui/skeleton";
 import { router } from "expo-router";
 import { ScrollView, Pressable } from "react-native";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
-import { useChangeFavoriteProduct } from "@/hooks/useChangeFavorite";
+import { useChangeFavoriteProduct } from "@/hooks/useChangeFavoriteProduct";
 
 export default function FavoriteProducts() {
   const insets = useSafeAreaInsets();
@@ -79,7 +79,7 @@ export default function FavoriteProducts() {
       <FormControl>
         <Input variant="half-rounded" size="2xl">
           <InputField
-            placeholder="Введи название ..."
+            placeholder="Введите название ..."
             value={searchString}
             onChangeText={(text) => setSearchString(text)}
           />
@@ -88,8 +88,8 @@ export default function FavoriteProducts() {
       <ScrollView className="flex-1 px-3 mt-2.5">
         <VStack space="md" className="pb-5">
           {searchData && searchData.length === 0 ? (
-            <Text size="5xl" className="text-center">
-              Ничего не найдено :(
+            <Text size="4xl" className="text-center">
+              Пока нет любимых продуктов :(
             </Text>
           ) : null}
           {showSkeleton
@@ -107,7 +107,7 @@ export default function FavoriteProducts() {
             : null}
           {/* Search favorite items */}
           {searchData
-            ? searchData.map(({ name, brand, id, calories, serving_size }) => (
+            ? searchData.map(({ name, brand, id, calories, weight, unit }) => (
                 <Pressable key={id}>
                   <Card
                     size="md"
@@ -123,7 +123,9 @@ export default function FavoriteProducts() {
                           {brand}
                         </Text>
                         <HStack space="md" className="items-center mt-1.5">
-                          <Text>{serving_size} г</Text>
+                          <Text>
+                            {weight} {unit}
+                          </Text>
                           <Divider className="w-0.5 h-[75%]" />
                           <Text>{calories} ккал / 100 г</Text>
                         </HStack>
