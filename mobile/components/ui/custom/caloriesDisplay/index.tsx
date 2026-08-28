@@ -69,7 +69,7 @@ export const CaloriesDisplay = ({
           >
             <Text
               size="9xl"
-              className="text-secondary-500 text-center scale-y-150 subpixel-antialiased"
+              className="text-secondary-500 text-center scale-y-[1.75] subpixel-antialiased"
             >
               {calories}
             </Text>
@@ -85,7 +85,7 @@ export const CaloriesDisplay = ({
             >
               <Text
                 size="9xl"
-                className={`${calories > calorieGoal ? "text-error-500" : "text-primary-800"} text-center scale-y-150 subpixel-antialiased`}
+                className={`${calories > calorieGoal ? "text-error-500" : "text-primary-800"} text-center scale-y-[1.75] subpixel-antialiased`}
               >
                 {calories}
               </Text>

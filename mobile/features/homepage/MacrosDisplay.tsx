@@ -6,7 +6,6 @@ import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useOnboard } from "@/hooks/useOnboard";
 import { useEffect } from "react";
-import { Dimensions } from "react-native";
 import {
   createAnimatedComponent,
   Easing,

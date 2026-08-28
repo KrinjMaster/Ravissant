@@ -32,8 +32,32 @@ import {
   SelectDragIndicator,
   SelectItem,
 } from "@/components/ui/select";
+import { ProductViewCard } from "@/features/add-food/ProductViewCard";
+import { MealViewCard } from "@/features/add-food/MealViewCard";
 
 export type SearchSource = "products" | "recipes";
+
+export interface SearchResult {
+  id: string;
+  name: string;
+  type: "products" | "recipes";
+  brand: string | null;
+  weight: number | null;
+  unit: string | null;
+  calories: number | null;
+}
+
+export interface ViewCardProps {
+  id: string;
+  name: string;
+  brand: string | null;
+  weight: number | null;
+  unit: string | null;
+  mode: ModalMode;
+  calories: number | null;
+  meal: MealType;
+  date: string;
+}
 
 export default function AddFoodModal() {
   const { meal, date, mode } = useLocalSearchParams<{
@@ -57,25 +81,6 @@ export default function AddFoodModal() {
   const handleGoBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.back();
-  };
-
-  const handleForward = (
-    productId: string,
-    type: SearchSource,
-    date: string,
-    meal: string,
-  ) => {
-    console.log("type", type);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    // router.push({
-    //   pathname: "/modal/add-product",
-    //   params: {
-    //     productId,
-    //     meal,
-    //     date,
-    //     mode,
-    //   },
-    // });
   };
 
   useEffect(() => console.log(error), [error]);
@@ -217,45 +222,35 @@ export default function AddFoodModal() {
           {/* Search items */}
           {searchData && searchString.length !== 0
             ? searchData.map(
-                ({ name, brand, id, calories, weight, unit, type }) => (
-                  <Pressable
-                    key={id}
-                    onPress={() => handleForward(id, type, date, meal)}
-                  >
-                    <Card
-                      size="md"
-                      variant="half-rounded"
-                      className="rounded-xl p-0 pr-5"
-                    >
-                      <HStack className="justify-between items-center">
-                        <Box className="w-[85%] p-3 pr-0">
-                          <Heading size="sm" className="line-clamp-2">
-                            {name}
-                          </Heading>
-                          <Text className="line-clamp-1 text-typography-300">
-                            {brand}
-                          </Text>
-                          <HStack space="md" className="items-center mt-1.5">
-                            <Text>
-                              {weight} {unit}
-                            </Text>
-                            <Divider className="w-0.5 h-[75%]" />
-                            <Text>{calories} ккал / 100 г</Text>
-                          </HStack>
-                        </Box>
-                        <Button
-                          variant="solid"
-                          action="primary"
-                          size="xl"
-                          className="border-none rounded-full px-2 py-5 w-12 h-12"
-                          onPress={() => handleForward(id, type, date, meal)}
-                        >
-                          <ButtonIcon as={AddIcon} size="2xl" />
-                        </Button>
-                      </HStack>
-                    </Card>
-                  </Pressable>
-                ),
+                ({ name, brand, id, calories, weight, unit, type }) => {
+                  return type === "products" ? (
+                    <ProductViewCard
+                      key={id}
+                      meal={meal}
+                      mode={mode}
+                      id={id}
+                      date={date}
+                      name={name}
+                      brand={brand}
+                      calories={calories}
+                      weight={weight}
+                      unit={unit}
+                    />
+                  ) : (
+                    <MealViewCard
+                      key={id}
+                      meal={meal}
+                      id={id}
+                      mode={mode}
+                      date={date}
+                      name={name}
+                      brand={brand}
+                      calories={calories}
+                      weight={weight}
+                      unit={unit}
+                    />
+                  );
+                },
               )
             : null}
           {/* Recent items */}
@@ -272,42 +267,18 @@ export default function AddFoodModal() {
             </Text>
           ) : null}
           {recentData && searchString.length === 0
-            ? recentData.map(({ name, brand, id, calories, weight }) => (
-                <Pressable
+            ? recentData.map(({ name, brand, id, calories, weight, unit }) => (
+                <ProductViewCard
                   key={id}
-                  onPress={() => handleForward(id, date, meal)}
-                >
-                  <Card
-                    size="md"
-                    variant="half-rounded"
-                    className="rounded-xl p-0 pr-5"
-                  >
-                    <HStack className="justify-between items-center">
-                      <Box className="w-[85%] p-3 pr-0">
-                        <Heading size="sm" className="line-clamp-2">
-                          {name}
-                        </Heading>
-                        <Text className="line-clamp-1 text-typography-300">
-                          {brand}
-                        </Text>
-                        <HStack space="md" className="items-center mt-1.5">
-                          <Text>{weight} г</Text>
-                          <Divider className="w-0.5 h-[75%]" />
-                          <Text>{calories} ккал / 100 г</Text>
-                        </HStack>
-                      </Box>
-                      <Button
-                        variant="solid"
-                        action="primary"
-                        size="xl"
-                        className="border-none rounded-full px-2 py-5 w-12 h-12"
-                        onPress={() => handleForward(id, date, meal)}
-                      >
-                        <ButtonIcon as={AddIcon} size="2xl" />
-                      </Button>
-                    </HStack>
-                  </Card>
-                </Pressable>
+                  meal={meal}
+                  id={id}
+                  date={date}
+                  name={name}
+                  brand={brand}
+                  calories={calories}
+                  weight={weight}
+                  unit={unit}
+                />
               ))
             : null}
         </VStack>

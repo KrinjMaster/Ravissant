@@ -96,31 +96,63 @@ export const productRepository = {
     const search = `%${searchParams.toLowerCase()}%`;
 
     if (source === "recipes") {
-      return db.getAllAsync<{
+      const rows = await db.getAllAsync<{
         id: string;
         name: string;
         type: "recipes";
+        brand: null;
+        weight: null;
+        unit: null;
+        calories: number;
       }>(
         `
-          SELECT
-            m.id,
-            m.name,
-            'recipes' AS type
-          FROM meal_templates m
-          ${
-            favoritesOnly
-              ? "JOIN favorite_meal_templates f ON f.meal_template_id = m.id"
-              : ""
-          }
-          WHERE m.search_text LIKE ?
-          ORDER BY m.name
-          LIMIT 20
-        `,
+        SELECT
+          m.id,
+          m.name,
+          'recipes' AS type,
+          NULL AS brand,
+          NULL AS weight,
+          NULL AS unit,
+
+          CAST(
+            COALESCE(
+              SUM(
+                p.calories_per_100g * mti.grams / 10000.0
+              ),
+              0
+            ) AS INTEGER
+          ) AS calories
+
+        FROM meal_templates m
+
+        LEFT JOIN meal_template_items mti
+          ON mti.meal_template_id = m.id
+
+        LEFT JOIN products p
+          ON p.id = mti.product_id
+
+        ${
+          favoritesOnly
+            ? "JOIN favorite_meal_templates f ON f.meal_template_id = m.id"
+            : ""
+        }
+
+        WHERE m.search_text LIKE ?
+
+        GROUP BY
+          m.id,
+          m.name
+
+        ORDER BY m.name
+        LIMIT 20
+      `,
         [search],
       );
+
+      return rows;
     }
 
-    return db.getAllAsync<{
+    const rows = await db.getAllAsync<{
       id: string;
       name: string;
       type: "products";
@@ -130,22 +162,28 @@ export const productRepository = {
       calories: number;
     }>(
       `
-        SELECT
-          p.id,
-          p.name,
-          'products' AS type,
-          p.brand,
-          p.weight,
-          p.unit,
-          p.calories_per_100g / 100 AS calories
-        FROM products p
-        ${favoritesOnly ? "JOIN favorite_products f ON f.product_id = p.id" : ""}
-        WHERE p.search_text LIKE ?
-          ORDER BY p.name
-        LIMIT 20
-      `,
+      SELECT
+        p.id,
+        p.name,
+        'products' AS type,
+        p.brand,
+        p.weight,
+        p.unit,
+        p.calories_per_100g / 100.0 AS calories
+
+      FROM products p
+
+      ${favoritesOnly ? "JOIN favorite_products f ON f.product_id = p.id" : ""}
+
+      WHERE p.search_text LIKE ?
+
+      ORDER BY p.name
+      LIMIT 20
+    `,
       [search],
     );
+
+    return rows;
   },
   getItemById: async (db: SQLiteDatabase, productId: string) => {
     const result = await db.getFirstAsync<{
@@ -234,6 +272,45 @@ export const productRepository = {
   removeMealItem: async (db: SQLiteDatabase, itemId: string) => {
     await db.runAsync(`DELETE FROM food_entries WHERE id = ?`, [itemId]);
   },
+  addMealTemplateItemToMeal: async (
+    db: SQLiteDatabase,
+    templateId: string,
+    mealType: MealType,
+    loggedDay: string,
+  ) => {
+    await db.withTransactionAsync(async () => {
+      const items = await db.getAllAsync<{
+        productId: string;
+        grams: number;
+      }>(
+        `
+        SELECT
+          product_id AS productId,
+          grams
+        FROM meal_template_items
+        WHERE meal_template_id = ?
+      `,
+        [templateId],
+      );
+
+      for (const item of items) {
+        await db.runAsync(
+          `
+          INSERT INTO food_entries (
+            id,
+            logged_at,
+            logged_day,
+            meal_type,
+            product_id,
+            grams
+          )
+          VALUES (?, datetime('now'), ?, ?, ?, ?)
+        `,
+          [await generateId(), loggedDay, mealType, item.productId, item.grams],
+        );
+      }
+    });
+  },
   addFavoriteProduct: async (db: SQLiteDatabase, productId: string) => {
     await db.runAsync(
       `INSERT OR IGNORE INTO favorite_products ( product_id ) VALUES (?)`,
@@ -251,6 +328,7 @@ export const productRepository = {
       name: string;
       brand: string | null;
       weight: number;
+      unit: string;
       calories: number;
     }>(
       ` 
@@ -258,6 +336,7 @@ export const productRepository = {
           p.name,
           p.brand,
           p.weight,
+          p.unit,
           p.calories_per_100g / 100 AS calories
         FROM food_entries f
         JOIN products p ON f.product_id = p.id

@@ -8,23 +8,29 @@ import React from "react";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
-import { Card } from "@/components/ui/card";
 import { Text } from "@/components/ui/text";
-import { Grid, GridItem } from "@/components/ui/grid";
 import { Divider } from "@/components/ui/divider";
 import { ScrollView } from "react-native-gesture-handler";
 import { useGetMealTemplate } from "@/hooks/useGetMealTemplate";
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { useRemoveTemplate } from "@/hooks/useRemoveTemplate";
-import { DetailedMacrosModal } from "@/features/general/DetailedMacrosModal";
 import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
+import { MacrosDetailsGrid } from "@/features/general/MacrosDetailsGrid";
+import { MealType } from "@/types/products";
+import { useAddMealTemplateItem } from "@/hooks/useAddMealTemplateItem";
+
+type ViewMode = "view" | "add";
 
 export default function ViewTemplateModal() {
-  const { templateId } = useLocalSearchParams<{
+  const { templateId, mode, meal, date } = useLocalSearchParams<{
     templateId: string;
+    mode: ViewMode;
+    meal: MealType;
+    date: string;
   }>();
   const { data: templateData, isLoading } = useGetMealTemplate(templateId);
   const { mutateAsync: removeTemplate } = useRemoveTemplate();
+  const { mutateAsync: addTemplateItem } = useAddMealTemplateItem();
   const insets = useSafeAreaInsets();
 
   const handleGoBack = () => {
@@ -37,6 +43,14 @@ export default function ViewTemplateModal() {
     await removeTemplate({ templateId });
     router.back();
   };
+
+  const handleAddItem = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await addTemplateItem({ templateId, mealType: meal, loggedDay: date });
+    router.back();
+  };
+
+  console.log(mode, meal, date);
 
   if (isLoading || !templateData) {
     return (
@@ -88,83 +102,17 @@ export default function ViewTemplateModal() {
               <Box key={id} className="bg-secondary-0 px-2">
                 <HStack key={id} className="justify-between items-center">
                   <Box className="w-full relative">
-                    <Heading size="sm" className="line-clamp-2">
+                    <Heading size="lg" className="line-clamp-2">
                       {name}
                     </Heading>
-                    <Text className="text-typography-400">
+                    <Text size="lg" className="text-typography-400">
                       {weight} {unit}, {calories} ккал
                     </Text>
-                    <Grid
-                      className="items-center mt-2"
-                      _extra={{
-                        className: "grid-cols-11",
-                      }}
-                    >
-                      <GridItem
-                        className="pb-4"
-                        _extra={{
-                          className: "col-span-3",
-                        }}
-                      >
-                        <Box className="relative w-fit items-center m-auto">
-                          <Text size="xl">{protein} г</Text>
-                          <Text
-                            size="md"
-                            className="absolute -bottom-5 text-typography-300"
-                          >
-                            белки
-                          </Text>
-                        </Box>
-                      </GridItem>
-                      <GridItem
-                        className="items-center"
-                        _extra={{
-                          className: "col-span-1",
-                        }}
-                      >
-                        <Divider className="w-0.5 h-8" />
-                      </GridItem>
-                      <GridItem
-                        className="pb-4"
-                        _extra={{
-                          className: "col-span-3",
-                        }}
-                      >
-                        <Box className="relative w-fit items-center m-auto">
-                          <Text size="xl">{fat} г</Text>
-                          <Text
-                            size="md"
-                            className="absolute -bottom-5 text-typography-300"
-                          >
-                            жиры
-                          </Text>
-                        </Box>
-                      </GridItem>
-                      <GridItem
-                        className="items-center"
-                        _extra={{
-                          className: "col-span-1",
-                        }}
-                      >
-                        <Divider className="w-0.5 h-8" />
-                      </GridItem>
-                      <GridItem
-                        className="pb-4"
-                        _extra={{
-                          className: "col-span-3",
-                        }}
-                      >
-                        <Box className="relative w-fit items-center m-auto">
-                          <Text size="xl">{carbs} г</Text>
-                          <Text
-                            size="md"
-                            className="absolute -bottom-5 text-typography-300"
-                          >
-                            углеводы
-                          </Text>
-                        </Box>
-                      </GridItem>
-                    </Grid>
+                    <MacrosDetailsGrid
+                      protein={protein}
+                      fat={fat}
+                      carbs={carbs}
+                    />
                   </Box>
                 </HStack>
                 <Divider className="mt-5 mx-auto w-[97%] h-0.5" />
@@ -173,14 +121,25 @@ export default function ViewTemplateModal() {
           )}
         </VStack>
       </ScrollView>
-      <Button
-        action="negative"
-        className="w-full rounded-2xl h-16"
-        size="xl"
-        onPress={handleDeleteTemplate}
-      >
-        <ButtonText>Удалить</ButtonText>
-      </Button>
+      {mode === "view" ? (
+        <Button
+          action="negative"
+          className="w-full rounded-2xl h-16"
+          size="xl"
+          onPress={handleDeleteTemplate}
+        >
+          <ButtonText>Удалить</ButtonText>
+        </Button>
+      ) : (
+        <Button
+          action="primary"
+          size="xl"
+          className="w-full mt-auto h-20 rounded-3xl"
+          onPress={handleAddItem}
+        >
+          <ButtonText className="text-3xl">Добавить</ButtonText>
+        </Button>
+      )}
     </VStack>
   );
 }

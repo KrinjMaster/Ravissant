@@ -39,7 +39,7 @@ export const DetailedMacrosModal = (macrosData: {
         action="tertiary"
         onPress={() => setShowMacrosModal(true)}
       >
-        <ButtonText className="color-tertiary-500">Все нутриенты</ButtonText>
+        <ButtonText className="">Все нутриенты</ButtonText>
       </Button>
       <Modal
         isOpen={showMacrosModal}

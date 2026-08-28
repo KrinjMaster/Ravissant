@@ -43,6 +43,9 @@ export default function MealTemplates() {
       pathname: "/modal/view-template",
       params: {
         templateId,
+        mode: "view",
+        meal: "breakfast",
+        date: "12-11-2000",
       },
     });
   };
@@ -177,11 +180,11 @@ export default function MealTemplates() {
                             {name}
                           </Heading>
                           <HStack space="md" className="items-center">
-                            <Text className="text-typography-400 max-w-[50%] line-clamp-1">
+                            <Text className="text-typography-400 max-w-[65%] line-clamp-1">
                               Ингридиентов: {productCount}
                             </Text>
                             <Divider className="w-0.5 h-[85%]" />
-                            <Text className="text-typography-400 max-w-[50%] line-clamp-1">
+                            <Text className="text-typography-400 max-w-[35%] line-clamp-1">
                               {calories} ккал
                             </Text>
                           </HStack>

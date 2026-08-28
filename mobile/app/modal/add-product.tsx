@@ -32,9 +32,9 @@ import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
 export default function AddProductModal() {
   const { meal, date, productId, mode } = useLocalSearchParams<{
     productId: string;
+    mode: ModalMode;
     meal: MealType;
     date: string;
-    mode: ModalMode;
   }>();
   const { data, isLoading } = useProductById(productId);
   const [weight, setWeight] = useState(data?.weight.toString() ?? "");

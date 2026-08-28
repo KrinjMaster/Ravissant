@@ -160,6 +160,12 @@ const buttonTextStyle = tva({
   },
   parentCompoundVariants: [
     {
+      variant: "link",
+      action: "tertiary",
+      class:
+        "color-tertiary-600 color-tertiary-500 data-[hover=true]:color-tertiary-600 data-[active=true]:color-tertiary-600 data-[hover=true]:color-tertiary-500 data-[active=true]:color-tertiary-500",
+    },
+    {
       variant: "solid",
       action: "primary",
       class:
@@ -206,11 +212,6 @@ const buttonTextStyle = tva({
       action: "negative",
       class:
         "text-primary-500 data-[hover=true]:text-primary-500 data-[active=true]:text-primary-500",
-    },
-    {
-      variant: "link",
-      action: "tertiary",
-      class: "color-tertiary-500",
     },
   ],
 });

@@ -57,6 +57,34 @@ export const productService = {
       }),
     ]);
   },
+  addMealTemplateItem: async (
+    db: SQLiteDatabase,
+    templateId: string,
+    mealType: MealType,
+    loggedDay: string,
+  ) => {
+    await productRepository.addMealTemplateItemToMeal(
+      db,
+      templateId,
+      mealType,
+      loggedDay,
+    );
+
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ["summary", loggedDay],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ["meal-info", `${loggedDay} ${mealType}`],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ["meal-items", `${loggedDay} ${mealType}`],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ["recent-items"],
+      }),
+    ]);
+  },
   removeMealItem: async (
     db: SQLiteDatabase,
     itemId: string,
