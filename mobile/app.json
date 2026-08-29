@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.krinjmaser.ravissant"
+      "bundleIdentifier": "com.krinjmaser.ravissant",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -41,7 +44,13 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -50,7 +59,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c6d505a0-0c70-4002-bed1-07465c42eef7"
+        "projectId": "3c7864d1-e63c-4f62-9a57-bee0d5ee2287"
       }
     },
     "owner": "krinjmaster"

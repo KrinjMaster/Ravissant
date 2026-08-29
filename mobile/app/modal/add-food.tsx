@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { ProductViewCard } from "@/features/add-food/ProductViewCard";
 import { MealViewCard } from "@/features/add-food/MealViewCard";
+import { AddOwnButton } from "@/features/add-food/AddOwnButton";
 
 export type SearchSource = "products" | "recipes";
 
@@ -142,6 +143,7 @@ export default function AddFoodModal() {
         <Text size="3xl" className="text-center">
           {mode === "meal" ? getMealLocale(meal) : meal}
         </Text>
+        <AddOwnButton />
       </HStack>
       <FormControl>
         <Input variant="half-rounded" size="2xl" className="overflow-hidden">
@@ -270,6 +272,7 @@ export default function AddFoodModal() {
             ? recentData.map(({ name, brand, id, calories, weight, unit }) => (
                 <ProductViewCard
                   key={id}
+                  mode={mode}
                   meal={meal}
                   id={id}
                   date={date}

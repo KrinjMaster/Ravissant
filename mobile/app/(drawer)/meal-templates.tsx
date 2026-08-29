@@ -62,6 +62,7 @@ export default function MealTemplates() {
   };
 
   const handleAddTemplate = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push("/modal/add-template");
   };
 

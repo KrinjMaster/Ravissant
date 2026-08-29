@@ -28,6 +28,7 @@ import {
   PopoverBody,
 } from "@/components/ui/popover";
 import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function AddProductModal() {
   const { meal, date, productId, mode } = useLocalSearchParams<{
@@ -204,9 +205,11 @@ export default function AddProductModal() {
         </FormControl>
         <Divider className="w-[85%] h-0.5" />
         <MacrosDetailsCard {...data} />
-        <Text className="px-2.5 text-typography-400" size="sm">
-          Состав: {data.ingredients}
-        </Text>
+        <ScrollView className="max-h-[25%]">
+          <Text className="px-2.5 text-typography-300" size="sm">
+            Состав: {data.ingredients}
+          </Text>
+        </ScrollView>
         <Button
           action="primary"
           size="xl"

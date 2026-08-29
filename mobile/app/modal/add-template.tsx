@@ -76,10 +76,10 @@ export default function AddTemplateModal() {
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
         <VStack
-          className="w-full items-center justify-between py-2.5 px-2"
+          className="w-full items-center justify-between pt-2.5 px-2"
           space="md"
         >
-          <HStack className="w-full items-center justify-center px-2">
+          <HStack className="w-full min-h-14 max-h-24 items-center justify-center px-2">
             <Button
               action="default"
               variant="outline"
@@ -89,7 +89,7 @@ export default function AddTemplateModal() {
             >
               <ButtonIcon as={ArrowLeftIcon} size="2xl" />
             </Button>
-            <Heading size="xl" className="line-clamp-2 max-w-[85%] text-center">
+            <Heading size="xl" className="line-clamp-2 max-w-[80%] text-center">
               {templateName === "" ? "Новый рецепт" : templateName}
             </Heading>
           </HStack>
