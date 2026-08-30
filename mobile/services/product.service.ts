@@ -18,12 +18,16 @@ export const productService = {
     searchParams: string,
     source: SearchSource,
     favoritesOnly: boolean,
+    limit: number,
+    offset: number,
   ) =>
-    await productRepository.getItemsByName(
+    productRepository.getItemsByName(
       db,
       searchParams,
       source,
       favoritesOnly,
+      limit,
+      offset,
     ),
   getItemById: async (db: SQLiteDatabase, productId: string) =>
     await productRepository.getItemById(db, productId),
@@ -175,6 +179,11 @@ export const productService = {
   },
   getMealTemplate: async (db: SQLiteDatabase, templateId: string) => {
     const template = await productRepository.getMealTemplate(db, templateId);
+
+    if (!template) {
+      return null;
+    }
+
     const templateMacros = {
       calories: 0,
       carbs: 0,
@@ -191,87 +200,106 @@ export const productService = {
       salt: 0,
       sodium: 0,
     };
+
     const templateItems = await productRepository
       .getMealTemplateItems(db, templateId)
       .then((items) =>
-        items.map((val) => {
-          templateMacros.calories += Math.round(
-            (val.calories * val.weight) / 100,
-          );
-          templateMacros.protein += Math.round(
-            (val.protein * val.weight) / 100,
-          );
-          templateMacros.fat += Math.round((val.fat * val.weight) / 100);
-          templateMacros.carbs += Math.round((val.carbs * val.weight) / 100);
+        items.map((item) => {
+          const factor = item.weight / 100;
 
-          if (val.saturated_fat) {
-            templateMacros.saturated_fat += Math.round(
-              (val.saturated_fat * val.weight) / 100,
-            );
+          const calculated = {
+            ...item,
+            calories: Math.round(item.calories * factor),
+            protein: Math.round(item.protein * factor),
+            fat: Math.round(item.fat * factor),
+            carbs: Math.round(item.carbs * factor),
+            saturated_fat:
+              item.saturated_fat == null
+                ? null
+                : Math.round(item.saturated_fat * factor),
+            unsaturated_fat:
+              item.unsaturated_fat == null
+                ? null
+                : Math.round(item.unsaturated_fat * factor),
+            omega3_fat:
+              item.omega3_fat == null
+                ? null
+                : Math.round(item.omega3_fat * factor),
+            omega6_fat:
+              item.omega6_fat == null
+                ? null
+                : Math.round(item.omega6_fat * factor),
+            trans_fat:
+              item.trans_fat == null
+                ? null
+                : Math.round(item.trans_fat * factor),
+            cholesterol:
+              item.cholesterol == null
+                ? null
+                : Math.round(item.cholesterol * factor),
+            sugars:
+              item.sugars == null ? null : Math.round(item.sugars * factor),
+            fiber: item.fiber == null ? null : Math.round(item.fiber * factor),
+            salt: item.salt == null ? null : Math.round(item.salt * factor),
+            sodium:
+              item.sodium == null ? null : Math.round(item.sodium * factor),
+          };
+
+          templateMacros.calories += calculated.calories;
+          templateMacros.protein += calculated.protein;
+          templateMacros.fat += calculated.fat;
+          templateMacros.carbs += calculated.carbs;
+
+          if (calculated.saturated_fat != null) {
+            templateMacros.saturated_fat += calculated.saturated_fat;
           }
 
-          if (val.unsaturated_fat) {
-            templateMacros.unsaturated_fat += Math.round(
-              (val.saturated_fat * val.weight) / 100,
-            );
+          if (calculated.unsaturated_fat != null) {
+            templateMacros.unsaturated_fat += calculated.unsaturated_fat;
           }
 
-          if (val.omega3_fat) {
-            templateMacros.omega3_fat += Math.round(
-              (val.omega3_fat * val.weight) / 100,
-            );
+          if (calculated.omega3_fat != null) {
+            templateMacros.omega3_fat += calculated.omega3_fat;
           }
 
-          if (val.omega6_fat) {
-            templateMacros.omega6_fat += Math.round(
-              (val.omega6_fat * val.weight) / 100,
-            );
+          if (calculated.omega6_fat != null) {
+            templateMacros.omega6_fat += calculated.omega6_fat;
           }
 
-          if (val.trans_fat) {
-            templateMacros.trans_fat += Math.round(
-              (val.trans_fat * val.weight) / 100,
-            );
+          if (calculated.trans_fat != null) {
+            templateMacros.trans_fat += calculated.trans_fat;
           }
 
-          if (val.cholesterol) {
-            templateMacros.cholesterol += Math.round(
-              (val.cholesterol * val.weight) / 100,
-            );
+          if (calculated.cholesterol != null) {
+            templateMacros.cholesterol += calculated.cholesterol;
           }
 
-          if (val.sugars) {
-            templateMacros.sugars += Math.round(
-              (val.sugars * val.weight) / 100,
-            );
+          if (calculated.sugars != null) {
+            templateMacros.sugars += calculated.sugars;
           }
 
-          if (val.fiber) {
-            templateMacros.fiber += Math.round((val.fiber * val.weight) / 100);
+          if (calculated.fiber != null) {
+            templateMacros.fiber += calculated.fiber;
           }
 
-          if (val.salt) {
-            templateMacros.salt += Math.round((val.salt * val.weight) / 100);
+          if (calculated.salt != null) {
+            templateMacros.salt += calculated.salt;
           }
 
-          if (val.sodium) {
-            templateMacros.sodium += Math.round(
-              (val.sodium * val.weight) / 100,
-            );
+          if (calculated.sodium != null) {
+            templateMacros.sodium += calculated.sodium;
           }
 
-          return val;
+          return calculated;
         }),
       );
 
-    return template
-      ? {
-          id: template.id,
-          name: template.name,
-          items: templateItems,
-          ...templateMacros,
-        }
-      : null;
+    return {
+      id: template.id,
+      name: template.name,
+      items: templateItems,
+      ...templateMacros,
+    };
   },
   removeMealTemplate: async (db: SQLiteDatabase, templateId: string) => {
     await productRepository.removeMealTemplate(db, templateId);

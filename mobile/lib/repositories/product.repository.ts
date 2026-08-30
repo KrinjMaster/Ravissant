@@ -92,6 +92,8 @@ export const productRepository = {
     searchParams: string,
     source: SearchSource,
     favoritesOnly: boolean,
+    limit: number,
+    offset: number,
   ) => {
     const search = `%${searchParams.toLowerCase()}%`;
 
@@ -113,7 +115,6 @@ export const productRepository = {
           NULL AS brand,
           NULL AS weight,
           NULL AS unit,
-
           CAST(
             COALESCE(
               SUM(
@@ -122,31 +123,22 @@ export const productRepository = {
               0
             ) AS INTEGER
           ) AS calories
-
         FROM meal_templates m
-
         LEFT JOIN meal_template_items mti
           ON mti.meal_template_id = m.id
-
         LEFT JOIN products p
           ON p.id = mti.product_id
-
         ${
           favoritesOnly
             ? "JOIN favorite_meal_templates f ON f.meal_template_id = m.id"
             : ""
         }
-
         WHERE m.search_text LIKE ?
-
-        GROUP BY
-          m.id,
-          m.name
-
+        GROUP BY m.id, m.name
         ORDER BY m.name
-        LIMIT 20
+        LIMIT ? OFFSET ?
       `,
-        [search],
+        [search, limit, offset],
       );
 
       return rows;
@@ -170,17 +162,13 @@ export const productRepository = {
         p.weight,
         p.unit,
         p.calories_per_100g / 100.0 AS calories
-
       FROM products p
-
       ${favoritesOnly ? "JOIN favorite_products f ON f.product_id = p.id" : ""}
-
       WHERE p.search_text LIKE ?
-
-      ORDER BY p.name
-      LIMIT 20
+      ORDER BY p.name, p.id
+      LIMIT ? OFFSET ?
     `,
-      [search],
+      [search, limit, offset],
     );
 
     return rows;

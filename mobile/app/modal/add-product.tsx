@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/popover";
 import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
 import { ScrollView } from "react-native-gesture-handler";
+import { useFeedback } from "@/hooks/useFeedback";
+import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 
 export default function AddProductModal() {
   const { meal, date, productId, mode } = useLocalSearchParams<{
@@ -37,12 +39,18 @@ export default function AddProductModal() {
     meal: MealType;
     date: string;
   }>();
-  const { data, isLoading, isError, error } = useProductById(productId);
+  const {
+    data,
+    isLoading,
+    isError,
+    error: productByIdError,
+  } = useProductById(productId);
   const [weight, setWeight] = useState(data?.weight.toString() ?? "");
   const { mutateAsync: addMealItem } = useAddMealItem();
   const { mutateAsync: addFavorite } = useChangeFavoriteProduct();
   const { addTemplateItem } = useMealTemplate();
   const [isStorePopoverOpen, setIsStorePopoverOpen] = useState(false);
+  const { success, error } = useFeedback();
 
   const insets = useSafeAreaInsets();
 
@@ -59,6 +67,7 @@ export default function AddProductModal() {
     } else {
       addTemplateItem(productId, Number(weight));
     }
+    success("Продукт добавлен!");
     handleGoBack();
   };
 
@@ -68,8 +77,10 @@ export default function AddProductModal() {
       console.log(data);
     }
     if (isError) {
-      console.log(error);
+      error("Не удалось загрузить товар!");
+      console.log(productByIdError);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, isError]);
 
   const handleGoBack = () => {
@@ -110,6 +121,44 @@ export default function AddProductModal() {
         space="xl"
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
+        <Box className="absolute -top-64 -left-72 w-[30rem] h-[45rem]">
+          <Svg width="100%" height="100%" viewBox="0 0 100 100">
+            <Defs>
+              <RadialGradient
+                id="glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+                <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect width="100" height="100" fill="url(#glow)" />
+          </Svg>
+        </Box>
+        <Box className="absolute top-64 -right-80 w-[30rem] h-[45rem]">
+          <Svg width="100%" height="100%" viewBox="0 0 100 100">
+            <Defs>
+              <RadialGradient
+                id="glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+                <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect width="100" height="100" fill="url(#glow)" />
+          </Svg>
+        </Box>
         <VStack space="sm">
           <HStack className="w-full justify-between">
             <Button

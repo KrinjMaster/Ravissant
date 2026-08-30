@@ -51,7 +51,7 @@ export const BarcodeScanner = ({ className }: { className?: string }) => {
         <Rect x="222" y="10" width="4" height="60" fill="white" />
         <Rect x="229" y="10" width="1" height="60" fill="white" />
         {/* Scan line */}
-        <Rect x="5" y="39" width="230" height="3" rx="1" fill="red" />
+        <Rect x="5" y="39" width="230" height="7" rx="1" fill="red" />
       </Svg>
     </Card>
   );

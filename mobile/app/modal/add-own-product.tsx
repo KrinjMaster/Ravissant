@@ -52,11 +52,14 @@ import {
   SelectDragIndicator,
   SelectItem,
 } from "@/components/ui/select";
+import { useFeedback } from "@/hooks/useFeedback";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 
 type WeightUnit = "мл" | "гр" | "кг" | "л";
 
 export default function AddOwnProduct() {
   const [permission, requestPermission] = useCameraPermissions();
+  const { success, error: feedbackError } = useFeedback();
   const [productName, setProductName] = useState("");
   const [brandName, setBrandName] = useState("");
   const [category, setCategory] = useState("");
@@ -165,7 +168,7 @@ export default function AddOwnProduct() {
     }
 
     try {
-      const productId = await addProduct({
+      await addProduct({
         name: productName.trim(),
         brand: brandName.trim() || null,
         category: category.trim() || "Другое",
@@ -190,12 +193,13 @@ export default function AddOwnProduct() {
           sodium: nutrition.sodium,
           cholesterol: nutrition.cholesterol,
         },
-      });
+      }).finally(() => success("Товар добавлен!"));
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (error) {
       console.error("Failed to create product:", error);
+      feedbackError("Ошибка, продукт не добавлен!");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     }
   };
@@ -207,6 +211,44 @@ export default function AddOwnProduct() {
         space="lg"
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
+        <Box className="absolute -top-64 -left-72 w-[30rem] h-[45rem]">
+          <Svg width="100%" height="100%" viewBox="0 0 100 100">
+            <Defs>
+              <RadialGradient
+                id="glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+                <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect width="100" height="100" fill="url(#glow)" />
+          </Svg>
+        </Box>
+        <Box className="absolute top-32 -right-72 w-[30rem] h-[45rem]">
+          <Svg width="100%" height="100%" viewBox="0 0 100 100">
+            <Defs>
+              <RadialGradient
+                id="glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+                <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect width="100" height="100" fill="url(#glow)" />
+          </Svg>
+        </Box>
         <VStack
           className="w-full items-center justify-between pt-2.5"
           space="md"

@@ -22,6 +22,8 @@ import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeabl
 import { useSQLiteContext } from "expo-sqlite";
 import { DetailedMacrosModal } from "@/features/general/DetailedMacrosModal";
 import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
+import { useFeedback } from "@/hooks/useFeedback";
+import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 
 function RightAction() {
   return (
@@ -35,10 +37,10 @@ export default function AddTemplateModal() {
   const [templateName, setTemplateName] = useState("");
   const { displayData, removeTemplateItem, macrosData, finishMealTemplate } =
     useMealTemplate();
-  const { calories, carbs, protein, fat } = macrosData;
   const insets = useSafeAreaInsets();
-  const isButtonDisabled = displayData.length === 0 || templateName === "";
+  const { success } = useFeedback();
   const db = useSQLiteContext();
+  const isButtonDisabled = displayData.length === 0 || templateName === "";
 
   const handleGoBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -59,12 +61,15 @@ export default function AddTemplateModal() {
 
   const handleFinishTemplate = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await finishMealTemplate(db, templateName);
+    await finishMealTemplate(db, templateName).finally(() => {
+      success("Рецепт создан!");
+    });
     handleGoBack();
   };
 
   const removeItem = async (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    success("Ингридиент удалён!");
     removeTemplateItem(id);
   };
 
@@ -75,6 +80,44 @@ export default function AddTemplateModal() {
         space="md"
         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
       >
+        <Box className="absolute -top-64 -left-72 w-[30rem] h-[45rem]">
+          <Svg width="100%" height="100%" viewBox="0 0 100 100">
+            <Defs>
+              <RadialGradient
+                id="glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+                <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect width="100" height="100" fill="url(#glow)" />
+          </Svg>
+        </Box>
+        <Box className="absolute top-16 -right-80 w-[30rem] h-[45rem]">
+          <Svg width="100%" height="100%" viewBox="0 0 100 100">
+            <Defs>
+              <RadialGradient
+                id="glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+                <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect width="100" height="100" fill="url(#glow)" />
+          </Svg>
+        </Box>
         <VStack
           className="w-full items-center justify-between pt-2.5 px-2"
           space="md"

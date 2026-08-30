@@ -18,6 +18,7 @@ import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
 import { MacrosDetailsGrid } from "@/features/general/MacrosDetailsGrid";
 import { MealType } from "@/types/products";
 import { useAddMealTemplateItem } from "@/hooks/useAddMealTemplateItem";
+import { useFeedback } from "@/hooks/useFeedback";
 
 type ViewMode = "view" | "add";
 
@@ -29,6 +30,7 @@ export default function ViewTemplateModal() {
     date: string;
   }>();
   const { data: templateData, isLoading } = useGetMealTemplate(templateId);
+  const { success, error } = useFeedback();
   const { mutateAsync: removeTemplate } = useRemoveTemplate();
   const { mutateAsync: addTemplateItem } = useAddMealTemplateItem();
   const insets = useSafeAreaInsets();
@@ -40,13 +42,19 @@ export default function ViewTemplateModal() {
 
   const handleDeleteTemplate = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await removeTemplate({ templateId });
+    await removeTemplate({ templateId }).finally(() =>
+      success("Рецепт удален!"),
+    );
     router.back();
   };
 
   const handleAddItem = async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await addTemplateItem({ templateId, mealType: meal, loggedDay: date });
+    await addTemplateItem({
+      templateId,
+      mealType: meal,
+      loggedDay: date,
+    }).finally(() => success("Рецепт добавлен!"));
     router.back();
   };
 

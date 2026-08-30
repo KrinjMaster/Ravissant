@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeProvider, useTheme } from "@react-navigation/native";
 import { MealTemplateProvider } from "@/features/meal-template/mealTemplate.provider";
 import { queryClient } from "@/constants/query";
+import { FeedbackProvider } from "@/features/general/feedback.provider";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 
 configureReanimatedLogger({
@@ -68,7 +69,9 @@ export default function RootLayout() {
           <GluestackUIProvider mode="dark">
             <OnboardProvider>
               <MealTemplateProvider>
-                <RootStack />
+                <FeedbackProvider>
+                  <RootStack />
+                </FeedbackProvider>
               </MealTemplateProvider>
             </OnboardProvider>
           </GluestackUIProvider>

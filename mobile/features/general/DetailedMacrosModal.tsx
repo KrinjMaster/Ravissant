@@ -36,10 +36,10 @@ export const DetailedMacrosModal = (macrosData: {
     <Box>
       <Button
         variant="link"
-        action="tertiary"
+        action="primary"
         onPress={() => setShowMacrosModal(true)}
       >
-        <ButtonText className="">Все нутриенты</ButtonText>
+        <ButtonText>Все нутриенты</ButtonText>
       </Button>
       <Modal
         isOpen={showMacrosModal}

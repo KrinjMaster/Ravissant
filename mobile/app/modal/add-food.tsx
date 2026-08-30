@@ -20,7 +20,14 @@ import { useSearchItems } from "@/hooks/useSearchItems";
 import { MealType, ModalMode } from "@/types/products";
 import { getMealLocale } from "@/utils/meals";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import {
+  FlatList,
+  Keyboard,
+  Pressable,
+  ScrollView,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
 import { Box } from "@/components/ui/box";
 import * as Haptics from "expo-haptics";
 import { useRecentItems } from "@/hooks/useRecentItems";
@@ -58,6 +65,7 @@ import {
 import { useGetIdByBarcode } from "@/hooks/useGetIdByBarcode";
 import { queryClient } from "@/constants/query";
 import { productService } from "@/services/product.service";
+import { useFeedback } from "@/hooks/useFeedback";
 
 export type SearchSource = "products" | "recipes";
 
@@ -91,18 +99,23 @@ export default function AddFoodModal() {
   }>();
   const isProcessingBarcode = useRef(false);
   const [permission, requestPermission] = useCameraPermissions();
-  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [searchString, setSearchString] = useState("");
   const [source, setSource] = useState<SearchSource>("products");
   const { findByBarcode } = useGetIdByBarcode();
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const {
-    data: searchData,
+    data,
     isLoading: isSearchLoading,
-    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   } = useSearchItems(searchString, source, favoritesOnly);
   const { data: recentData } = useRecentItems();
+  const { success, error } = useFeedback();
+
+  const searchData = data?.pages.flat() ?? [];
+
   const showSkeleton =
     searchString.length > 0 && !searchData && isSearchLoading;
   const insets = useSafeAreaInsets();
@@ -120,23 +133,20 @@ export default function AddFoodModal() {
     isProcessingBarcode.current = true;
 
     try {
-      console.log("Scanned barcode:", data);
-
       const result = await findByBarcode(data);
-
-      console.log("Barcode lookup result:", result);
 
       if (!result?.productId) {
         console.log("Barcode not found in db:", data);
+        error("Штрих-код не найден!");
         isProcessingBarcode.current = false;
         return;
       }
 
-      setScannedBarcode(data);
       setShowModal(false);
 
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
+      success("Успех!");
       router.push({
         pathname: "/modal/add-product",
         params: {
@@ -163,127 +173,163 @@ export default function AddFoodModal() {
     }
 
     isProcessingBarcode.current = false;
-    setScannedBarcode(null);
     setShowModal(true);
   };
 
   const handleCloseScanner = () => {
     isProcessingBarcode.current = false;
-    setScannedBarcode(null);
     setShowModal(false);
   };
 
-  useEffect(() => console.log(error), [error]);
-
   return (
-    <VStack
-      className="w-screen h-screen bg-secondary-0 px-2"
-      space="md"
-      style={{ paddingTop: insets.top }}
-    >
-      <HStack className="items-center justify-center py-2.5">
-        <Button
-          action="default"
-          variant="outline"
-          onPress={handleGoBack}
-          className="absolute left-0"
-          size="xl"
-        >
-          <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-        </Button>
-        <Text size="3xl" className="text-center">
-          {mode === "meal" ? getMealLocale(meal) : meal}
-        </Text>
-        <AddOwnButton />
-      </HStack>
-      <Pressable onPress={handleBarcodePress} className="h-16">
-        <BarcodeScanner className="h-16" />
-      </Pressable>
-      <Modal isOpen={showModal} onClose={handleCloseScanner} size="lg">
-        <ModalBackdrop />
-        <ModalContent className="h-[80%] p-0">
-          <ModalHeader>
-            <ModalCloseButton className="absolute right-4 top-4">
-              <Icon as={CloseIcon} size="xl" />
-            </ModalCloseButton>
-          </ModalHeader>
-          <View style={{ flex: 1 }}>
-            <Box
-              className="absolute inset-0 items-center justify-center"
-              style={{ zIndex: 1 }}
-            >
-              <BarcodeFrame />
-            </Box>
-            <CameraView
-              style={{ flex: 1 }}
-              facing="back"
-              barcodeScannerSettings={{
-                barcodeTypes: ["ean8", "ean13", "upc_a", "upc_e", "itf14"],
-              }}
-              onBarcodeScanned={handleBarcodeScanned}
-            />
-          </View>
-        </ModalContent>
-      </Modal>
-      <FormControl>
-        <Input variant="half-rounded" size="2xl" className="overflow-hidden">
-          <InputField
-            placeholder="Введите название ..."
-            value={searchString}
-            onChangeText={(text) => setSearchString(text)}
-            multiline={false}
-            numberOfLines={1}
-            className="overflow-hidden"
-          />
-        </Input>
-        <HStack className="w-full justify-between mt-1.5 px-1.5">
-          <Select
-            defaultValue="Продукты"
-            onValueChange={(value) =>
-              setSource(value === "Продукты" ? "products" : "recipes")
-            }
-            className="w-[49%]"
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <VStack
+        className="w-screen h-screen bg-secondary-0 px-2"
+        space="md"
+        style={{ paddingTop: insets.top }}
+      >
+        <Box className="absolute -top-64 -left-64 w-[30rem] h-[45rem]">
+          <Svg width="100%" height="100%" viewBox="0 0 100 100">
+            <Defs>
+              <RadialGradient
+                id="glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+                <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect width="100" height="100" fill="url(#glow)" />
+          </Svg>
+        </Box>
+        <Box className="absolute -bottom-64 -right-72 w-[30rem] h-[45rem]">
+          <Svg width="100%" height="100%" viewBox="0 0 100 100">
+            <Defs>
+              <RadialGradient
+                id="glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+                fx="50%"
+                fy="50%"
+              >
+                <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
+                <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
+            <Rect width="100" height="100" fill="url(#glow)" />
+          </Svg>
+        </Box>
+        <HStack className="items-center justify-center py-2.5">
+          <Button
+            action="default"
+            variant="outline"
+            onPress={handleGoBack}
+            className="absolute left-0"
+            size="xl"
           >
-            <SelectTrigger variant="outline" size="xl">
-              <SelectInput size="sm" />
-              <SelectIcon className="mr-3 ml-auto" as={ChevronDownIcon} />
-            </SelectTrigger>
-            <SelectPortal>
-              <SelectBackdrop />
-              <SelectContent>
-                <SelectDragIndicatorWrapper>
-                  <SelectDragIndicator />
-                </SelectDragIndicatorWrapper>
-                <SelectItem label="Продукты" value="Продукты" />
-                <SelectItem label="Рецепты" value="Рецепты" />
-              </SelectContent>
-            </SelectPortal>
-          </Select>
-          <Select
-            defaultValue="Все"
-            onValueChange={(value) => setFavoritesOnly(value === "Любимые")}
-            className="w-[49%]"
-          >
-            <SelectTrigger variant="outline" size="xl">
-              <SelectInput size="sm" />
-              <SelectIcon className="mr-3 ml-auto" as={ChevronDownIcon} />
-            </SelectTrigger>
-            <SelectPortal>
-              <SelectBackdrop />
-              <SelectContent>
-                <SelectDragIndicatorWrapper>
-                  <SelectDragIndicator />
-                </SelectDragIndicatorWrapper>
-                <SelectItem label="Все" value="Все" />
-                <SelectItem label="Любимые" value="Любимые" />
-              </SelectContent>
-            </SelectPortal>
-          </Select>
+            <ButtonIcon as={ArrowLeftIcon} size="2xl" />
+          </Button>
+          <Text size="3xl" className="text-center">
+            {mode === "meal" ? getMealLocale(meal) : meal}
+          </Text>
+          <AddOwnButton />
         </HStack>
-      </FormControl>
-      <ScrollView className="flex-1 px-3 mt-2.5">
-        <VStack space="md" className="pb-5">
-          {searchData && searchData.length === 0 ? (
+        <Pressable onPress={handleBarcodePress} className="h-16">
+          <BarcodeScanner className="h-16" />
+        </Pressable>
+        <Modal isOpen={showModal} onClose={handleCloseScanner} size="lg">
+          <ModalBackdrop />
+          <ModalContent className="h-[80%] p-0">
+            <ModalHeader>
+              <ModalCloseButton className="absolute right-4 top-4">
+                <Icon as={CloseIcon} size="xl" />
+              </ModalCloseButton>
+            </ModalHeader>
+            <View style={{ flex: 1 }}>
+              <Box
+                className="absolute inset-0 items-center justify-center"
+                style={{ zIndex: 1 }}
+              >
+                <BarcodeFrame />
+              </Box>
+              <CameraView
+                style={{ flex: 1 }}
+                facing="back"
+                barcodeScannerSettings={{
+                  barcodeTypes: ["ean8", "ean13", "upc_a", "upc_e", "itf14"],
+                }}
+                onBarcodeScanned={handleBarcodeScanned}
+              />
+            </View>
+          </ModalContent>
+        </Modal>
+        <FormControl>
+          <Input variant="half-rounded" size="2xl" className="overflow-hidden">
+            <InputField
+              placeholder="Введите название ..."
+              value={searchString}
+              onChangeText={(text) => setSearchString(text)}
+              multiline={false}
+              numberOfLines={1}
+              className="overflow-hidden"
+            />
+          </Input>
+          <HStack className="w-full justify-between mt-1.5 px-1.5">
+            <Select
+              defaultValue="Продукты"
+              onValueChange={(value) =>
+                setSource(value === "Продукты" ? "products" : "recipes")
+              }
+              className="w-[49%]"
+            >
+              <SelectTrigger variant="outline" size="xl">
+                <SelectInput size="sm" />
+                <SelectIcon className="mr-3 ml-auto" as={ChevronDownIcon} />
+              </SelectTrigger>
+              <SelectPortal>
+                <SelectBackdrop />
+                <SelectContent>
+                  <SelectDragIndicatorWrapper>
+                    <SelectDragIndicator />
+                  </SelectDragIndicatorWrapper>
+                  <SelectItem label="Продукты" value="Продукты" />
+                  <SelectItem label="Рецепты" value="Рецепты" />
+                </SelectContent>
+              </SelectPortal>
+            </Select>
+            <Select
+              defaultValue="Все"
+              onValueChange={(value) => setFavoritesOnly(value === "Любимые")}
+              className="w-[49%]"
+            >
+              <SelectTrigger variant="outline" size="xl">
+                <SelectInput size="sm" />
+                <SelectIcon className="mr-3 ml-auto" as={ChevronDownIcon} />
+              </SelectTrigger>
+              <SelectPortal>
+                <SelectBackdrop />
+                <SelectContent>
+                  <SelectDragIndicatorWrapper>
+                    <SelectDragIndicator />
+                  </SelectDragIndicatorWrapper>
+                  <SelectItem label="Все" value="Все" />
+                  <SelectItem label="Любимые" value="Любимые" />
+                </SelectContent>
+              </SelectPortal>
+            </Select>
+          </HStack>
+        </FormControl>
+        <VStack className="flex-1 px-3 mt-2.5 h-[95%]">
+          {searchString.length !== 0 &&
+          searchData &&
+          searchData.length === 0 ? (
             <Text size="6xl" className="text-center">
               Ничего не найдено :(
             </Text>
@@ -302,39 +348,50 @@ export default function AddFoodModal() {
               ))
             : null}
           {/* Search items */}
-          {searchData && searchString.length !== 0
-            ? searchData.map(
-                ({ name, brand, id, calories, weight, unit, type }) => {
-                  return type === "products" ? (
-                    <ProductViewCard
-                      key={id}
-                      meal={meal}
-                      mode={mode}
-                      id={id}
-                      date={date}
-                      name={name}
-                      brand={brand}
-                      calories={calories}
-                      weight={weight}
-                      unit={unit}
-                    />
-                  ) : (
-                    <MealViewCard
-                      key={id}
-                      meal={meal}
-                      id={id}
-                      mode={mode}
-                      date={date}
-                      name={name}
-                      brand={brand}
-                      calories={calories}
-                      weight={weight}
-                      unit={unit}
-                    />
-                  );
-                },
-              )
-            : null}
+          {searchData && searchString.length !== 0 ? (
+            <FlatList
+              data={searchData}
+              keyExtractor={(item) => item.id}
+              ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+              contentContainerStyle={{
+                paddingBottom: 24,
+              }}
+              renderItem={({ item }) =>
+                item.type === "products" ? (
+                  <ProductViewCard
+                    id={item.id}
+                    name={item.name}
+                    brand={item.brand}
+                    weight={item.weight}
+                    unit={item.unit}
+                    calories={item.calories}
+                    meal={meal}
+                    mode={mode}
+                    date={date}
+                  />
+                ) : (
+                  <MealViewCard
+                    id={item.id}
+                    name={item.name}
+                    brand={item.brand}
+                    weight={item.weight}
+                    unit={item.unit}
+                    calories={item.calories}
+                    meal={meal}
+                    mode={mode}
+                    date={date}
+                  />
+                )
+              }
+              showsVerticalScrollIndicator={false}
+              onEndReached={() => {
+                if (hasNextPage && !isFetchingNextPage) {
+                  fetchNextPage();
+                }
+              }}
+              onEndReachedThreshold={0.5}
+            />
+          ) : null}
           {/* Recent items */}
           {recentData && recentData.length > 0 && searchString.length === 0 ? (
             <Text size="2xl" className="text-typography-500">
@@ -348,24 +405,31 @@ export default function AddFoodModal() {
               Недавние{"\n\n"}Были бы тут, если бы вы что-нибудь добавили :(
             </Text>
           ) : null}
-          {recentData && searchString.length === 0
-            ? recentData.map(({ name, brand, id, calories, weight, unit }) => (
-                <ProductViewCard
-                  key={id}
-                  mode={mode}
-                  meal={meal}
-                  id={id}
-                  date={date}
-                  name={name}
-                  brand={brand}
-                  calories={calories}
-                  weight={weight}
-                  unit={unit}
-                />
-              ))
-            : null}
+          <ScrollView
+            contentContainerStyle={{ paddingBottom: 24, gap: 12 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {recentData && searchString.length === 0
+              ? recentData.map(
+                  ({ name, brand, id, calories, weight, unit }) => (
+                    <ProductViewCard
+                      key={id}
+                      mode={mode}
+                      meal={meal}
+                      id={id}
+                      date={date}
+                      name={name}
+                      brand={brand}
+                      calories={calories}
+                      weight={weight}
+                      unit={unit}
+                    />
+                  ),
+                )
+              : null}
+          </ScrollView>
         </VStack>
-      </ScrollView>
-    </VStack>
+      </VStack>
+    </TouchableWithoutFeedback>
   );
 }

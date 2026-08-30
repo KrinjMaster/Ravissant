@@ -179,7 +179,11 @@ export default function Profile() {
                 <Text className="text-typography-300 w-full" size="4xl">
                   Вес
                 </Text>
-                <Input variant="half-rounded" size="2xl">
+                <Input
+                  variant="half-rounded"
+                  size="2xl"
+                  className="bg-transparent"
+                >
                   <InputField
                     keyboardType="decimal-pad"
                     placeholder=""
@@ -211,7 +215,11 @@ export default function Profile() {
                 <Text className="text-typography-300 w-full" size="4xl">
                   Рост
                 </Text>
-                <Input variant="half-rounded" size="2xl">
+                <Input
+                  variant="half-rounded"
+                  size="2xl"
+                  className="bg-transparent"
+                >
                   <InputField
                     keyboardType="decimal-pad"
                     placeholder=""
@@ -309,7 +317,11 @@ export default function Profile() {
                 <Text className="text-typography-300" size="xl">
                   Калории
                 </Text>
-                <Input variant="half-rounded" size="2xl">
+                <Input
+                  variant="half-rounded"
+                  size="2xl"
+                  className="bg-transparent"
+                >
                   <InputField
                     keyboardType="numeric"
                     value={displayData.nutritionPlan.calories.toString()}
@@ -331,7 +343,11 @@ export default function Profile() {
               </VStack>
               <VStack space="xs">
                 <Text className="text-typography-300 text-xl">Белки</Text>
-                <Input variant="half-rounded" size="2xl">
+                <Input
+                  variant="half-rounded"
+                  size="2xl"
+                  className="bg-transparent"
+                >
                   <InputField
                     keyboardType="numeric"
                     value={displayData.nutritionPlan.protein.toString()}
@@ -353,7 +369,11 @@ export default function Profile() {
               </VStack>
               <VStack space="xs">
                 <Text className="text-typography-300 text-xl">Жиры</Text>
-                <Input variant="half-rounded" size="2xl">
+                <Input
+                  variant="half-rounded"
+                  size="2xl"
+                  className="bg-transparent"
+                >
                   <InputField
                     keyboardType="numeric"
                     value={displayData.nutritionPlan.fat.toString()}
@@ -375,7 +395,11 @@ export default function Profile() {
               </VStack>
               <VStack space="xs">
                 <Text className="text-typography-300 text-xl">Углеводы</Text>
-                <Input variant="half-rounded" size="2xl">
+                <Input
+                  variant="half-rounded"
+                  size="2xl"
+                  className="bg-transparent"
+                >
                   <InputField
                     keyboardType="numeric"
                     value={displayData.nutritionPlan.carbs.toString()}

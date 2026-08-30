@@ -166,6 +166,12 @@ const buttonTextStyle = tva({
         "color-tertiary-600 color-tertiary-500 data-[hover=true]:color-tertiary-600 data-[active=true]:color-tertiary-600 data-[hover=true]:color-tertiary-500 data-[active=true]:color-tertiary-500",
     },
     {
+      variant: "link",
+      action: "primary",
+      class:
+        "color-primary-600 data-[hover=true]:color-primary-600 data-[active=true]:color-primary-500",
+    },
+    {
       variant: "solid",
       action: "primary",
       class:

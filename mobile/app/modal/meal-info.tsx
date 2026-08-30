@@ -24,6 +24,7 @@ import { SkeletonText, Skeleton } from "@/components/ui/skeleton";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MacrosDetailsGrid } from "@/features/general/MacrosDetailsGrid";
+import { useFeedback } from "@/hooks/useFeedback";
 
 function RightAction() {
   return (
@@ -48,6 +49,7 @@ export default function MealInfoModal() {
     meal,
   );
   const { mutateAsync: removeMealItem } = useRemoveMealItem();
+  const { success } = useFeedback();
   const insets = useSafeAreaInsets();
 
   const handleGoBack = () => {
@@ -57,7 +59,9 @@ export default function MealInfoModal() {
 
   const removeItem = async (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await removeMealItem({ itemId: id, meal, day: date });
+    await removeMealItem({ itemId: id, meal, day: date }).finally(() =>
+      success("Продукт удалён!"),
+    );
   };
 
   if (isItemsLoading || isMacrosLoading || !mealItems || !mealMacros) {
