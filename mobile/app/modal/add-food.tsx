@@ -5,7 +5,13 @@ import { Divider } from "@/components/ui/divider";
 import { FormControl } from "@/components/ui/form-control";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
-import { AddIcon, ArrowLeftIcon, ChevronDownIcon } from "@/components/ui/icon";
+import {
+  AddIcon,
+  ArrowLeftIcon,
+  ChevronDownIcon,
+  CloseIcon,
+  Icon,
+} from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { SkeletonText } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
@@ -13,8 +19,8 @@ import { VStack } from "@/components/ui/vstack";
 import { useSearchItems } from "@/hooks/useSearchItems";
 import { MealType, ModalMode } from "@/types/products";
 import { getMealLocale } from "@/utils/meals";
-import { useEffect, useState } from "react";
-import { Pressable, ScrollView } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Pressable, ScrollView, View } from "react-native";
 import { Box } from "@/components/ui/box";
 import * as Haptics from "expo-haptics";
 import { useRecentItems } from "@/hooks/useRecentItems";
@@ -35,6 +41,23 @@ import {
 import { ProductViewCard } from "@/features/add-food/ProductViewCard";
 import { MealViewCard } from "@/features/add-food/MealViewCard";
 import { AddOwnButton } from "@/features/add-food/AddOwnButton";
+import {
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+} from "@/components/ui/modal";
+import { BarcodeFrame } from "@/features/add-own-product/BarcodeFrame";
+import { BarcodeScanner } from "@/features/general/BarcodeScanner";
+import {
+  useCameraPermissions,
+  BarcodeScanningResult,
+  CameraView,
+} from "expo-camera";
+import { useGetIdByBarcode } from "@/hooks/useGetIdByBarcode";
+import { queryClient } from "@/constants/query";
+import { productService } from "@/services/product.service";
 
 export type SearchSource = "products" | "recipes";
 
@@ -66,8 +89,13 @@ export default function AddFoodModal() {
     date: string;
     mode: ModalMode;
   }>();
+  const isProcessingBarcode = useRef(false);
+  const [permission, requestPermission] = useCameraPermissions();
+  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
   const [searchString, setSearchString] = useState("");
   const [source, setSource] = useState<SearchSource>("products");
+  const { findByBarcode } = useGetIdByBarcode();
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const {
     data: searchData,
@@ -84,6 +112,67 @@ export default function AddFoodModal() {
     router.back();
   };
 
+  const handleBarcodeScanned = async ({ data }: BarcodeScanningResult) => {
+    if (isProcessingBarcode.current) {
+      return;
+    }
+
+    isProcessingBarcode.current = true;
+
+    try {
+      console.log("Scanned barcode:", data);
+
+      const result = await findByBarcode(data);
+
+      console.log("Barcode lookup result:", result);
+
+      if (!result?.productId) {
+        console.log("Barcode not found in db:", data);
+        isProcessingBarcode.current = false;
+        return;
+      }
+
+      setScannedBarcode(data);
+      setShowModal(false);
+
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+      router.push({
+        pathname: "/modal/add-product",
+        params: {
+          productId: result.productId,
+          itemType: "product",
+          meal,
+          date,
+          mode,
+        },
+      });
+    } catch (error) {
+      console.error("Barcode lookup failed:", error);
+      isProcessingBarcode.current = false;
+    }
+  };
+
+  const handleBarcodePress = async () => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+
+      if (!result.granted) {
+        return;
+      }
+    }
+
+    isProcessingBarcode.current = false;
+    setScannedBarcode(null);
+    setShowModal(true);
+  };
+
+  const handleCloseScanner = () => {
+    isProcessingBarcode.current = false;
+    setScannedBarcode(null);
+    setShowModal(false);
+  };
+
   useEffect(() => console.log(error), [error]);
 
   return (
@@ -92,44 +181,6 @@ export default function AddFoodModal() {
       space="md"
       style={{ paddingTop: insets.top }}
     >
-      <Box className="absolute bottom-52 -left-64 w-[30rem] h-[45rem]">
-        <Svg width="100%" height="100%" viewBox="0 0 100 100">
-          <Defs>
-            <RadialGradient
-              id="glow"
-              cx="50%"
-              cy="50%"
-              rx="50%"
-              ry="50%"
-              fx="50%"
-              fy="50%"
-            >
-              <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
-              <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
-            </RadialGradient>
-          </Defs>
-          <Rect width="100" height="100" fill="url(#glow)" />
-        </Svg>
-      </Box>
-      <Box className="absolute -bottom-24 -right-80 w-[30rem] h-[45rem]">
-        <Svg width="100%" height="100%" viewBox="0 0 100 100">
-          <Defs>
-            <RadialGradient
-              id="glow"
-              cx="50%"
-              cy="50%"
-              rx="50%"
-              ry="50%"
-              fx="50%"
-              fy="50%"
-            >
-              <Stop offset="0%" stopColor="#00033D" stopOpacity="0.8" />
-              <Stop offset="100%" stopColor="#00067A" stopOpacity="0" />
-            </RadialGradient>
-          </Defs>
-          <Rect width="100" height="100" fill="url(#glow)" />
-        </Svg>
-      </Box>
       <HStack className="items-center justify-center py-2.5">
         <Button
           action="default"
@@ -145,6 +196,35 @@ export default function AddFoodModal() {
         </Text>
         <AddOwnButton />
       </HStack>
+      <Pressable onPress={handleBarcodePress} className="h-16">
+        <BarcodeScanner className="h-16" />
+      </Pressable>
+      <Modal isOpen={showModal} onClose={handleCloseScanner} size="lg">
+        <ModalBackdrop />
+        <ModalContent className="h-[80%] p-0">
+          <ModalHeader>
+            <ModalCloseButton className="absolute right-4 top-4">
+              <Icon as={CloseIcon} size="xl" />
+            </ModalCloseButton>
+          </ModalHeader>
+          <View style={{ flex: 1 }}>
+            <Box
+              className="absolute inset-0 items-center justify-center"
+              style={{ zIndex: 1 }}
+            >
+              <BarcodeFrame />
+            </Box>
+            <CameraView
+              style={{ flex: 1 }}
+              facing="back"
+              barcodeScannerSettings={{
+                barcodeTypes: ["ean8", "ean13", "upc_a", "upc_e", "itf14"],
+              }}
+              onBarcodeScanned={handleBarcodeScanned}
+            />
+          </View>
+        </ModalContent>
+      </Modal>
       <FormControl>
         <Input variant="half-rounded" size="2xl" className="overflow-hidden">
           <InputField

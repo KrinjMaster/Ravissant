@@ -37,7 +37,7 @@ export default function AddProductModal() {
     meal: MealType;
     date: string;
   }>();
-  const { data, isLoading } = useProductById(productId);
+  const { data, isLoading, isError, error } = useProductById(productId);
   const [weight, setWeight] = useState(data?.weight.toString() ?? "");
   const { mutateAsync: addMealItem } = useAddMealItem();
   const { mutateAsync: addFavorite } = useChangeFavoriteProduct();
@@ -67,7 +67,10 @@ export default function AddProductModal() {
       setWeight(data.weight.toString());
       console.log(data);
     }
-  }, [data]);
+    if (isError) {
+      console.log(error);
+    }
+  }, [data, isError]);
 
   const handleGoBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -205,8 +208,8 @@ export default function AddProductModal() {
         </FormControl>
         <Divider className="w-[85%] h-0.5" />
         <MacrosDetailsCard {...data} />
-        <ScrollView className="max-h-[25%]">
-          <Text className="px-2.5 text-typography-300" size="sm">
+        <ScrollView className="max-h-[25%] w-full">
+          <Text className="px-2.5 text-typography-300 text-left" size="sm">
             Состав: {data.ingredients}
           </Text>
         </ScrollView>

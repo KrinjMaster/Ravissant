@@ -5,14 +5,15 @@ import { Heading } from "@/components/ui/heading";
 import { Icon, CloseIcon } from "@/components/ui/icon";
 import Svg, { Rect } from "react-native-svg";
 
-export const BarcodeScanner = () => {
+export const BarcodeScanner = ({ className }: { className?: string }) => {
   return (
-    <Card variant="half-rounded" className="w-full h-36 p-0">
+    <Card variant="half-rounded" className="w-full p-0 max-h-28">
       <Svg
         width="100%"
         height="100%"
         viewBox="0 0 240 80"
         preserveAspectRatio="none"
+        className={className}
       >
         <Rect x="10" y="10" width="3" height="60" fill="white" />
         <Rect x="16" y="10" width="1" height="60" fill="white" />

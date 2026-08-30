@@ -3,7 +3,12 @@ import { Card } from "@/components/ui/card";
 import { FormControl } from "@/components/ui/form-control";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
-import { ArrowLeftIcon, CloseIcon, Icon } from "@/components/ui/icon";
+import {
+  ArrowLeftIcon,
+  ChevronDownIcon,
+  CloseIcon,
+  Icon,
+} from "@/components/ui/icon";
 import { Input, InputField } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
@@ -34,10 +39,29 @@ import {
 } from "@/components/ui/modal";
 import { BarcodeFrame } from "@/features/add-own-product/BarcodeFrame";
 import { Box } from "@/components/ui/box";
+import { useAddProduct } from "@/hooks/useAddProduct";
+import {
+  Select,
+  SelectTrigger,
+  SelectInput,
+  SelectIcon,
+  SelectPortal,
+  SelectBackdrop,
+  SelectContent,
+  SelectDragIndicatorWrapper,
+  SelectDragIndicator,
+  SelectItem,
+} from "@/components/ui/select";
+
+type WeightUnit = "мл" | "гр" | "кг" | "л";
 
 export default function AddOwnProduct() {
   const [permission, requestPermission] = useCameraPermissions();
   const [productName, setProductName] = useState("");
+  const [brandName, setBrandName] = useState("");
+  const [category, setCategory] = useState("");
+  const [weight, setWeight] = useState("100");
+  const [unit, setUnit] = useState<WeightUnit>("гр");
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
   const [nutrition, setNutrition] = useState({
     calories: "",
@@ -57,11 +81,35 @@ export default function AddOwnProduct() {
   });
   const [ingredients, setIngredients] = useState("");
   const [allergens, setAllergens] = useState("");
-  const insets = useSafeAreaInsets();
   const [showModal, setShowModal] = useState(false);
+  const isInvalid =
+    Number(nutrition.protein || 0) > 100 ||
+    Number(nutrition.fat || 0) > 100 ||
+    Number(nutrition.carbs || 0) > 100 ||
+    Number(nutrition.saturatedFat || 0) > 100 ||
+    Number(nutrition.unsaturatedFat || 0) > 100 ||
+    Number(nutrition.transFat || 0) > 100 ||
+    Number(nutrition.sugars || 0) > 100 ||
+    Number(nutrition.omega3 || 0) > 100 ||
+    Number(nutrition.omega6 || 0) > 100 ||
+    Number(nutrition.salt || 0) > 100 ||
+    Number(nutrition.sodium || 0) > 100 ||
+    Number(nutrition.cholesterol || 0) > 100 ||
+    Number(nutrition.sugars || 0) > 100 ||
+    Number(nutrition.fiber || 0) > 100;
 
-  const handleBarcodeScanned = ({ type, data }: BarcodeScanningResult) => {
-    console.log("found ", type, data);
+  const insets = useSafeAreaInsets();
+  const isButtonDisabled =
+    !nutrition.calories ||
+    !nutrition.protein ||
+    !nutrition.carbs ||
+    !nutrition.fat ||
+    !productName ||
+    !weight ||
+    isInvalid;
+  const { mutateAsync: addProduct } = useAddProduct();
+
+  const handleBarcodeScanned = ({ data }: BarcodeScanningResult) => {
     setScannedBarcode(data);
     setShowModal(false);
   };
@@ -83,6 +131,73 @@ export default function AddOwnProduct() {
   const handleGoBack = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.back();
+  };
+
+  const handleAddProduct = async () => {
+    let parsedWeight = 100;
+    let parsedUnit = unit;
+
+    switch (unit) {
+      case "кг":
+        parsedWeight = Number(weight) * 1000.0;
+        parsedUnit = "гр";
+        break;
+      case "л":
+        parsedWeight = Number(weight) * 1000.0;
+        parsedUnit = "мл";
+        break;
+      default:
+        parsedWeight = Number(weight);
+        break;
+    }
+
+    if (!productName.trim()) {
+      return;
+    }
+
+    if (
+      !nutrition.calories ||
+      !nutrition.protein ||
+      !nutrition.fat ||
+      !nutrition.carbs
+    ) {
+      return;
+    }
+
+    try {
+      const productId = await addProduct({
+        name: productName.trim(),
+        brand: brandName.trim() || null,
+        category: category.trim() || "Другое",
+        weight: parsedWeight,
+        unit: parsedUnit,
+        ingredients: ingredients.trim() || null,
+        allergens: allergens.trim() || null,
+        barcode: scannedBarcode,
+        nutrition: {
+          calories: nutrition.calories,
+          protein: nutrition.protein,
+          fat: nutrition.fat,
+          saturatedFat: nutrition.saturatedFat,
+          unsaturatedFat: nutrition.unsaturatedFat,
+          omega3: nutrition.omega3,
+          omega6: nutrition.omega6,
+          transFat: nutrition.transFat,
+          carbs: nutrition.carbs,
+          sugars: nutrition.sugars,
+          fiber: nutrition.fiber,
+          salt: nutrition.salt,
+          sodium: nutrition.sodium,
+          cholesterol: nutrition.cholesterol,
+        },
+      });
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.back();
+    } catch (error) {
+      console.error("Failed to create product:", error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
   };
 
   return (
@@ -121,7 +236,7 @@ export default function AddOwnProduct() {
           </Input>
         </FormControl>
         <Pressable onPress={handleBarcodePress}>
-          <BarcodeScanner />
+          <BarcodeScanner className="h-12" />
           {scannedBarcode ? (
             <Text className="text-typography-400 text-center">
               Штрих код: {scannedBarcode}
@@ -153,20 +268,7 @@ export default function AddOwnProduct() {
                 style={{ flex: 1 }}
                 facing="back"
                 barcodeScannerSettings={{
-                  barcodeTypes: [
-                    "aztec",
-                    "ean13",
-                    "ean8",
-                    "pdf417",
-                    "upc_e",
-                    "datamatrix",
-                    "code39",
-                    "code93",
-                    "itf14",
-                    "codabar",
-                    "code128",
-                    "upc_a",
-                  ],
+                  barcodeTypes: ["ean8", "ean13", "upc_a", "upc_e", "itf14"],
                 }}
                 onBarcodeScanned={
                   !scannedBarcode || showModal
@@ -187,34 +289,34 @@ export default function AddOwnProduct() {
                 label="Калории"
                 value={nutrition.calories}
                 unit="ккал"
-                onChangeText={(value) =>
+                onChangeText={(value) => {
                   setNutrition((prev) => ({
                     ...prev,
                     calories: value,
-                  }))
-                }
+                  }));
+                }}
               />
               <MacroRow
                 label="Белки"
                 value={nutrition.protein}
                 unit="г"
-                onChangeText={(value) =>
+                onChangeText={(value) => {
                   setNutrition((prev) => ({
                     ...prev,
                     protein: value,
-                  }))
-                }
+                  }));
+                }}
               />
               <MacroRow
                 label="Жиры"
                 value={nutrition.fat}
                 unit="г"
-                onChangeText={(value) =>
+                onChangeText={(value) => {
                   setNutrition((prev) => ({
                     ...prev,
                     fat: value,
-                  }))
-                }
+                  }));
+                }}
               >
                 <VStack>
                   <MacroRow
@@ -222,24 +324,24 @@ export default function AddOwnProduct() {
                     value={nutrition.saturatedFat}
                     unit="г"
                     level={1}
-                    onChangeText={(value) =>
+                    onChangeText={(value) => {
                       setNutrition((prev) => ({
                         ...prev,
                         saturatedFat: value,
-                      }))
-                    }
+                      }));
+                    }}
                   />
                   <MacroRow
                     label="Ненасыщенные"
                     value={nutrition.unsaturatedFat}
                     unit="г"
                     level={1}
-                    onChangeText={(value) =>
+                    onChangeText={(value) => {
                       setNutrition((prev) => ({
                         ...prev,
                         unsaturatedFat: value,
-                      }))
-                    }
+                      }));
+                    }}
                   >
                     <VStack>
                       <MacroRow
@@ -247,24 +349,24 @@ export default function AddOwnProduct() {
                         value={nutrition.omega3}
                         unit="г"
                         level={2}
-                        onChangeText={(value) =>
+                        onChangeText={(value) => {
                           setNutrition((prev) => ({
                             ...prev,
                             omega3: value,
-                          }))
-                        }
+                          }));
+                        }}
                       />
                       <MacroRow
                         label="Омега-6"
                         value={nutrition.omega6}
                         unit="г"
                         level={2}
-                        onChangeText={(value) =>
+                        onChangeText={(value) => {
                           setNutrition((prev) => ({
                             ...prev,
                             omega6: value,
-                          }))
-                        }
+                          }));
+                        }}
                       />
                     </VStack>
                   </MacroRow>
@@ -273,12 +375,12 @@ export default function AddOwnProduct() {
                     value={nutrition.transFat}
                     unit="г"
                     level={1}
-                    onChangeText={(value) =>
+                    onChangeText={(value) => {
                       setNutrition((prev) => ({
                         ...prev,
                         transFat: value,
-                      }))
-                    }
+                      }));
+                    }}
                   />
                 </VStack>
               </MacroRow>
@@ -286,12 +388,12 @@ export default function AddOwnProduct() {
                 label="Углеводы"
                 value={nutrition.carbs}
                 unit="г"
-                onChangeText={(value) =>
+                onChangeText={(value) => {
                   setNutrition((prev) => ({
                     ...prev,
                     carbs: value,
-                  }))
-                }
+                  }));
+                }}
               >
                 <VStack>
                   <MacroRow
@@ -299,12 +401,12 @@ export default function AddOwnProduct() {
                     value={nutrition.sugars}
                     unit="г"
                     level={1}
-                    onChangeText={(value) =>
+                    onChangeText={(value) => {
                       setNutrition((prev) => ({
                         ...prev,
                         sugars: value,
-                      }))
-                    }
+                      }));
+                    }}
                   />
 
                   <MacroRow
@@ -312,17 +414,77 @@ export default function AddOwnProduct() {
                     value={nutrition.fiber}
                     unit="г"
                     level={1}
-                    onChangeText={(value) =>
+                    onChangeText={(value) => {
                       setNutrition((prev) => ({
                         ...prev,
                         fiber: value,
-                      }))
-                    }
+                      }));
+                    }}
                   />
                 </VStack>
               </MacroRow>
             </VStack>
           </Card>
+          <VStack space="xs" className="mt-2.5">
+            <Text className="text-typography-300 text-lg">Введите бренд</Text>
+            <Input variant="half-rounded" size="lg" className="rounded-xl">
+              <InputField
+                placeholder=""
+                value={brandName}
+                onChangeText={(val) => setBrandName(val)}
+              />
+            </Input>
+          </VStack>
+          <VStack space="xs" className="mt-2.5">
+            <Text className="text-typography-300 text-lg">
+              Введите категорию
+            </Text>
+            <Input variant="half-rounded" size="lg" className="rounded-xl">
+              <InputField
+                placeholder=""
+                value={category}
+                onChangeText={(val) => setCategory(val)}
+              />
+            </Input>
+          </VStack>
+          <VStack space="xs" className="mt-2.5">
+            <Text className="text-typography-300 text-lg">Введите вес</Text>
+            <HStack className="h-14 justify-between">
+              <Input
+                variant="half-rounded"
+                size="lg"
+                className="w-80 h-full rounded-xl"
+              >
+                <InputField
+                  placeholder=""
+                  value={weight}
+                  onChangeText={(val) => setWeight(val)}
+                />
+              </Input>
+              <Select
+                defaultValue="гр"
+                onValueChange={(value) => setUnit(value as WeightUnit)}
+                className="w-36 h-full"
+              >
+                <SelectTrigger variant="outline" size="xl" className="h-full">
+                  <SelectInput size="sm" />
+                  <SelectIcon className="mr-3 ml-auto" as={ChevronDownIcon} />
+                </SelectTrigger>
+                <SelectPortal>
+                  <SelectBackdrop />
+                  <SelectContent>
+                    <SelectDragIndicatorWrapper>
+                      <SelectDragIndicator />
+                    </SelectDragIndicatorWrapper>
+                    <SelectItem label="Гр" value="гр" />
+                    <SelectItem label="Кг" value="кг" />
+                    <SelectItem label="Мл" value="мл" />
+                    <SelectItem label="Л" value="л" />
+                  </SelectContent>
+                </SelectPortal>
+              </Select>
+            </HStack>
+          </VStack>
           <VStack space="xs" className="mt-2.5">
             <Text className="text-typography-300 text-xl">Введите состав</Text>
             <Input variant="half-rounded" size="2xl">
@@ -350,6 +512,8 @@ export default function AddOwnProduct() {
           action="primary"
           size="xl"
           className="w-full mt-auto h-20 rounded-3xl"
+          disabled={isButtonDisabled || isInvalid}
+          onPress={handleAddProduct}
         >
           <ButtonText className="text-3xl">Сохранить</ButtonText>
         </Button>

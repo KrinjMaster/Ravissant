@@ -187,6 +187,7 @@ export const productRepository = {
   },
   getItemById: async (db: SQLiteDatabase, productId: string) => {
     const result = await db.getFirstAsync<{
+      barcodes: string | null;
       name: string;
       brand: string | null;
       ingredients: string | null;
@@ -210,41 +211,49 @@ export const productRepository = {
       store: string | null;
       isFavorite: number;
     }>(
-      ` 
-        SELECT 
-          p.name,
-          p.brand,
-          p.ingredients,
-          p.allergens,
-          p.weight,
-          p.unit,
-          p.calories_per_100g / 100 AS calories,
-          p.proteins_per_100g / 100 AS protein,
-          p.fats_per_100g / 100 AS fat,
-          p.carbs_per_100g / 100 AS carbs,
-          p.saturated_fat_per_100g / 100 AS saturated_fat,
-          p.unsaturated_fat_per_100g / 100 AS unsaturated_fat,
-          p.omega3_fat_per_100g / 100 AS omega3_fat,
-          p.omega6_fat_per_100g / 100 AS omega6_fat,
-          p.trans_fat_per_100g / 100 AS trans_fat,
-          p.cholesterol_per_100g / 100 AS cholesterol,
-          p.sugars_per_100g / 100 AS sugars,
-          p.fiber_per_100g / 100 AS fiber,
-          p.salt_per_100g / 100 AS salt,
-          p.sodium_per_100g / 100 AS sodium,
-         (SELECT GROUP_CONCAT(s.name, ', ')
-        FROM product_sources ps
-        JOIN stores s ON s.id = ps.store_id
-        WHERE ps.product_id = p.id) AS store,
-             CASE
-                 WHEN f.product_id IS NOT NULL THEN 1
-                 ELSE 0
-             END AS isFavorite
-        FROM products p
-        LEFT JOIN favorite_products f ON f.product_id = p.id
-        WHERE p.id = ?
-        LIMIT 1
-      `,
+      `
+      SELECT
+        (
+          SELECT GROUP_CONCAT(pb.barcode, ',')
+          FROM product_barcodes pb
+          WHERE pb.product_id = p.id
+        ) AS barcodes,
+        p.name,
+        p.brand,
+        p.ingredients,
+        p.allergens,
+        p.weight,
+        p.unit,
+        p.calories_per_100g / 100 AS calories,
+        p.proteins_per_100g / 100 AS protein,
+        p.fats_per_100g / 100 AS fat,
+        p.carbs_per_100g / 100 AS carbs,
+        p.saturated_fat_per_100g / 100 AS saturated_fat,
+        p.unsaturated_fat_per_100g / 100 AS unsaturated_fat,
+        p.omega3_fat_per_100g / 100 AS omega3_fat,
+        p.omega6_fat_per_100g / 100 AS omega6_fat,
+        p.trans_fat_per_100g / 100 AS trans_fat,
+        p.cholesterol_per_100g / 100 AS cholesterol,
+        p.sugars_per_100g / 100 AS sugars,
+        p.fiber_per_100g / 100 AS fiber,
+        p.salt_per_100g / 100 AS salt,
+        p.sodium_per_100g / 100 AS sodium,
+        (
+          SELECT GROUP_CONCAT(s.name, ', ')
+          FROM product_sources ps
+          JOIN stores s ON s.id = ps.store_id
+          WHERE ps.product_id = p.id
+        ) AS store,
+        CASE
+          WHEN f.product_id IS NOT NULL THEN 1
+          ELSE 0
+        END AS isFavorite
+      FROM products p
+      LEFT JOIN favorite_products f
+        ON f.product_id = p.id
+      WHERE p.id = ?
+      LIMIT 1
+    `,
       [productId],
     );
 
@@ -252,7 +261,11 @@ export const productRepository = {
       return null;
     }
 
-    return { ...result, isFavorite: !!result.isFavorite };
+    return {
+      ...result,
+      barcodes: result.barcodes ? result.barcodes.split(",") : [],
+      isFavorite: !!result.isFavorite,
+    };
   },
   addMealItem: async (
     db: SQLiteDatabase,
@@ -476,6 +489,143 @@ export const productRepository = {
       [templateId],
     );
   },
+  addProduct: async (
+    db: SQLiteDatabase,
+    {
+      name,
+      brand,
+      category,
+      weight,
+      unit,
+      ingredients,
+      allergens,
+      barcode,
+      nutrition,
+    }: {
+      name: string;
+      brand: string | null;
+      category: string;
+      weight: number;
+      unit: string;
+      ingredients: string | null;
+      allergens: string | null;
+      barcode: string | null;
+      nutrition: {
+        calories: string;
+        protein: string;
+        fat: string;
+        saturatedFat: string;
+        unsaturatedFat: string;
+        omega3: string;
+        omega6: string;
+        transFat: string;
+        carbs: string;
+        sugars: string;
+        fiber: string;
+        salt: string;
+        sodium: string;
+        cholesterol: string;
+      };
+    },
+  ) => {
+    const productId = await generateId();
+
+    const toScaledInt = (value: string) => {
+      if (!value.trim()) {
+        return null;
+      }
+
+      const number = Number(value);
+
+      if (!Number.isFinite(number)) {
+        return null;
+      }
+
+      return Math.round(number * 100);
+    };
+
+    const searchText = [brand?.trim(), name.trim()]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(
+        `
+        INSERT INTO products (
+          id,
+          name,
+          search_text,
+          brand,
+          category,
+          weight,
+          unit,
+          ingredients,
+          allergens,
+          proteins_per_100g,
+          fats_per_100g,
+          carbs_per_100g,
+          calories_per_100g,
+          saturated_fat_per_100g,
+          unsaturated_fat_per_100g,
+          omega3_fat_per_100g,
+          omega6_fat_per_100g,
+          trans_fat_per_100g,
+          cholesterol_per_100g,
+          sugars_per_100g,
+          fiber_per_100g,
+          salt_per_100g,
+          sodium_per_100g
+        )
+        VALUES (
+          ?, ?, ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        )
+      `,
+        [
+          productId,
+          name.trim(),
+          searchText,
+          brand?.trim() || null,
+          category,
+          Math.round(weight),
+          unit,
+          ingredients?.trim() || null,
+          allergens?.trim() || null,
+          toScaledInt(nutrition.protein),
+          toScaledInt(nutrition.fat),
+          toScaledInt(nutrition.carbs),
+          toScaledInt(nutrition.calories),
+          toScaledInt(nutrition.saturatedFat),
+          toScaledInt(nutrition.unsaturatedFat),
+          toScaledInt(nutrition.omega3),
+          toScaledInt(nutrition.omega6),
+          toScaledInt(nutrition.transFat),
+          toScaledInt(nutrition.cholesterol),
+          toScaledInt(nutrition.sugars),
+          toScaledInt(nutrition.fiber),
+          toScaledInt(nutrition.salt),
+          toScaledInt(nutrition.sodium),
+        ],
+      );
+
+      if (barcode?.trim()) {
+        await db.runAsync(
+          `
+          INSERT OR IGNORE INTO product_barcodes (
+            product_id,
+            barcode
+          )
+          VALUES (?, ?)
+        `,
+          [productId, barcode.trim()],
+        );
+      }
+    });
+
+    return productId;
+  },
   getWeightModifiedItem: async (db: SQLiteDatabase, products: Product[]) => {
     if (products.length === 0) {
       return [];
@@ -591,6 +741,20 @@ export const productRepository = {
     await db.runAsync(
       `DELETE FROM favorite_meal_templates WHERE meal_template_id = ?`,
       [templateId],
+    );
+  },
+  getProductByBarcode: async (db: SQLiteDatabase, barcode: string) => {
+    return db.getFirstAsync<{
+      productId: string;
+    }>(
+      `
+      SELECT
+        product_id AS productId
+      FROM product_barcodes
+      WHERE barcode = ?
+      LIMIT 1
+    `,
+      [barcode.trim()],
     );
   },
 };

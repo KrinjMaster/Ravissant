@@ -305,4 +305,64 @@ export const productService = {
       queryKey: ["search-items", "recipes", true],
     });
   },
+  addProduct: async (
+    db: SQLiteDatabase,
+    {
+      name,
+      brand,
+      category,
+      weight,
+      unit,
+      ingredients,
+      allergens,
+      barcode,
+      nutrition,
+    }: {
+      name: string;
+      brand: string | null;
+      category: string;
+      weight: number;
+      unit: string;
+      ingredients: string | null;
+      allergens: string | null;
+      barcode: string | null;
+      nutrition: {
+        calories: string;
+        protein: string;
+        fat: string;
+        saturatedFat: string;
+        unsaturatedFat: string;
+        omega3: string;
+        omega6: string;
+        transFat: string;
+        carbs: string;
+        sugars: string;
+        fiber: string;
+        salt: string;
+        sodium: string;
+        cholesterol: string;
+      };
+    },
+  ) => {
+    const productId = await productRepository.addProduct(db, {
+      name,
+      brand,
+      category,
+      weight,
+      unit,
+      ingredients,
+      allergens,
+      barcode,
+      nutrition,
+    });
+
+    await queryClient.invalidateQueries({
+      queryKey: ["search-items"],
+    });
+
+    return productId;
+  },
+  getProductByBarcode: async (db: SQLiteDatabase, barcode: string) => {
+    return await productRepository.getProductByBarcode(db, barcode);
+  },
 };
