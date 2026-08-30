@@ -46,7 +46,7 @@ export const FinalScreenCard = () => {
             <Text className="text-typography-300" size="xl">
               Калории
             </Text>
-            <Input variant="half-rounded" size="2xl">
+            <Input variant="half-rounded" size="2xl" className="bg-transparent">
               <InputField
                 keyboardType="numeric"
                 value={userData.nutritionPlan?.calories.toString()}
@@ -65,7 +65,7 @@ export const FinalScreenCard = () => {
           </VStack>
           <VStack space="xs">
             <Text className="text-typography-300 text-xl">Белки</Text>
-            <Input variant="half-rounded" size="2xl">
+            <Input variant="half-rounded" size="2xl" className="bg-transparent">
               <InputField
                 keyboardType="numeric"
                 value={userData.nutritionPlan?.protein.toString()}
@@ -84,7 +84,7 @@ export const FinalScreenCard = () => {
           </VStack>
           <VStack space="xs">
             <Text className="text-typography-300 text-xl">Жиры</Text>
-            <Input variant="half-rounded" size="2xl">
+            <Input variant="half-rounded" size="2xl" className="bg-transparent">
               <InputField
                 keyboardType="numeric"
                 value={userData.nutritionPlan?.fat.toString()}
@@ -103,7 +103,7 @@ export const FinalScreenCard = () => {
           </VStack>
           <VStack space="xs">
             <Text className="text-typography-300 text-xl">Углеводы</Text>
-            <Input variant="half-rounded" size="2xl">
+            <Input variant="half-rounded" size="2xl" className="bg-transparent">
               <InputField
                 keyboardType="numeric"
                 value={userData.nutritionPlan?.carbs.toString()}

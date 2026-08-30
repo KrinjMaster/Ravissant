@@ -60,7 +60,7 @@ export const WeightQuestionCard = () => {
             <Text className="text-typography-300 text-xl">
               Введите вес (кг)
             </Text>
-            <Input variant="half-rounded" size="3xl">
+            <Input variant="half-rounded" size="3xl" className="bg-transparent">
               <InputField
                 keyboardType="decimal-pad"
                 placeholder=""

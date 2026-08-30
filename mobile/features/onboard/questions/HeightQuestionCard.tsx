@@ -56,8 +56,10 @@ export const HeightQuestionCard = () => {
           isInvalid={isInvalid && value !== ""}
         >
           <VStack space="xs">
-            <Text className="text-typography-300 text-xl">Введи рост (см)</Text>
-            <Input variant="half-rounded" size="3xl">
+            <Text className="text-typography-300 text-xl">
+              Введите рост (см)
+            </Text>
+            <Input variant="half-rounded" size="3xl" className="bg-transparent">
               <InputField
                 keyboardType="decimal-pad"
                 placeholder=""
