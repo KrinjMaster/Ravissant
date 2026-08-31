@@ -61,7 +61,7 @@ export default function AddProductModal() {
       addMealItem({
         productId,
         mealType: meal,
-        grams: Number(weight),
+        grams: parseFloat(weight.replace(",", ".")),
         loggedDay: date,
       });
     } else {
