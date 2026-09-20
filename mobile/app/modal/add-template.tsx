@@ -24,6 +24,15 @@ import { DetailedMacrosModal } from "@/features/general/DetailedMacrosModal";
 import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
 import { useFeedback } from "@/hooks/useFeedback";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
+import { Button as ButtonNative, Host, Image } from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 function RightAction() {
   return (
@@ -123,15 +132,26 @@ export default function AddTemplateModal() {
           space="md"
         >
           <HStack className="w-full min-h-14 max-h-24 items-center justify-center px-2">
-            <Button
-              action="default"
-              variant="outline"
-              onPress={handleGoBack}
-              className="absolute left-0 top-0"
-              size="xl"
+            <Host
+              matchContents
+              colorScheme="dark"
+              style={{ position: "absolute", left: 0 }}
+              modifiers={[tint("#FFFFFF")]}
             >
-              <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-            </Button>
+              <ButtonNative
+                modifiers={[
+                  buttonStyle("plain"),
+                  frame({ width: 25, height: 25 }),
+                  padding({ all: 10 }),
+                  glassEffect({ glass: { variant: "regular" } }),
+                  cornerRadius(22),
+                  tint("#FFFFFF"),
+                ]}
+                onPress={() => handleGoBack()}
+              >
+                <Image systemName="chevron.left" size={20} color="#FFFFFF" />
+              </ButtonNative>
+            </Host>
             <Heading size="xl" className="line-clamp-2 max-w-[80%] text-center">
               {templateName === "" ? "Новый рецепт" : templateName}
             </Heading>

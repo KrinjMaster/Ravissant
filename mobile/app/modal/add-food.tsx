@@ -66,6 +66,15 @@ import { useGetIdByBarcode } from "@/hooks/useGetIdByBarcode";
 import { queryClient } from "@/constants/query";
 import { productService } from "@/services/product.service";
 import { useFeedback } from "@/hooks/useFeedback";
+import { Button as ButtonNative, Host, Image } from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 export type SearchSource = "products" | "recipes";
 
@@ -227,15 +236,26 @@ export default function AddFoodModal() {
           </Svg>
         </Box>
         <HStack className="items-center justify-center py-2.5">
-          <Button
-            action="default"
-            variant="outline"
-            onPress={handleGoBack}
-            className="absolute left-0"
-            size="xl"
+          <Host
+            matchContents
+            colorScheme="dark"
+            style={{ position: "absolute", left: 0 }}
+            modifiers={[tint("#FFFFFF")]}
           >
-            <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-          </Button>
+            <ButtonNative
+              modifiers={[
+                buttonStyle("plain"),
+                frame({ width: 25, height: 25 }),
+                padding({ all: 10 }),
+                glassEffect({ glass: { variant: "regular" } }),
+                cornerRadius(22),
+                tint("#FFFFFF"),
+              ]}
+              onPress={() => handleGoBack()}
+            >
+              <Image systemName="chevron.left" size={20} color="#FFFFFF" />
+            </ButtonNative>
+          </Host>
           <Text size="3xl" className="text-center">
             {mode === "meal" ? getMealLocale(meal) : meal}
           </Text>

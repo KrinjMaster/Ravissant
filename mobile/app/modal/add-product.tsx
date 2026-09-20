@@ -31,6 +31,15 @@ import { MacrosDetailsCard } from "@/features/general/MacrosDetailsCard";
 import { ScrollView } from "react-native-gesture-handler";
 import { useFeedback } from "@/hooks/useFeedback";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
+import { Button as ButtonNative, Host, Image } from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 export default function AddProductModal() {
   const { meal, date, productId, mode } = useLocalSearchParams<{
@@ -161,14 +170,26 @@ export default function AddProductModal() {
         </Box>
         <VStack space="sm">
           <HStack className="w-full justify-between">
-            <Button
-              action="default"
-              variant="outline"
-              onPress={handleGoBack}
-              size="xl"
+            <Host
+              matchContents
+              colorScheme="dark"
+              style={{ position: "absolute", left: 0 }}
+              modifiers={[tint("#FFFFFF")]}
             >
-              <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-            </Button>
+              <ButtonNative
+                modifiers={[
+                  buttonStyle("plain"),
+                  frame({ width: 25, height: 25 }),
+                  padding({ all: 10 }),
+                  glassEffect({ glass: { variant: "regular" } }),
+                  cornerRadius(22),
+                  tint("#FFFFFF"),
+                ]}
+                onPress={() => handleGoBack()}
+              >
+                <Image systemName="chevron.left" size={20} color="#FFFFFF" />
+              </ButtonNative>
+            </Host>
             <Popover
               isOpen={isStorePopoverOpen}
               onClose={() => setIsStorePopoverOpen(false)}

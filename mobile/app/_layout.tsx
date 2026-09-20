@@ -1,5 +1,4 @@
 import { Stack } from "expo-router";
-import { Text } from "@react-navigation/elements";
 import { OnboardProvider } from "@/features/onboard/onboard.provider";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
@@ -14,10 +13,10 @@ import { deleteDatabaseAsync, SQLiteProvider } from "expo-sqlite";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { ThemeProvider, useTheme } from "@react-navigation/native";
 import { MealTemplateProvider } from "@/features/meal-template/mealTemplate.provider";
 import { queryClient } from "@/constants/query";
 import { FeedbackProvider } from "@/features/general/feedback.provider";
+import { Text } from "@/components/ui/text";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 
 configureReanimatedLogger({
@@ -52,9 +51,9 @@ export default function RootLayout() {
     init();
   }, []);
 
-  const theme = useTheme();
-  theme.colors.background = "rgba(15, 15, 15)";
-
+  // const theme = useTheme();
+  // theme.colors.background = "rgba(15, 15, 15)";
+  //
   if (!dbReady) {
     return <Text>Loading DB...</Text>;
   }

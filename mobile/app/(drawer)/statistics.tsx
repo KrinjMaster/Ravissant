@@ -15,6 +15,15 @@ import { Card } from "@/components/ui/card";
 import { LineChart } from "@/features/general/LineChart";
 import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { prepareWeightChartData } from "@/utils/weightChart";
+import { Button as ButtonNative, Host, Image } from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 export default function Statistics() {
   const [displayData, setDisplayData] = useState<number[]>([]);
@@ -87,15 +96,26 @@ export default function Statistics() {
         </Svg>
       </Box>
       <HStack className="w-full items-center justify-center">
-        <Button
-          action="default"
-          variant="outline"
-          onPress={handleGoBack}
-          className="absolute left-0"
-          size="xl"
+        <Host
+          matchContents
+          colorScheme="dark"
+          style={{ position: "absolute", left: 0 }}
+          modifiers={[tint("#FFFFFF")]}
         >
-          <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-        </Button>
+          <ButtonNative
+            modifiers={[
+              buttonStyle("plain"),
+              frame({ width: 25, height: 25 }),
+              padding({ all: 10 }),
+              glassEffect({ glass: { variant: "regular" } }),
+              cornerRadius(22),
+              tint("#FFFFFF"),
+            ]}
+            onPress={handleGoBack}
+          >
+            <Image systemName="chevron.left" size={20} color="#FFFFFF" />
+          </ButtonNative>
+        </Host>
         <Heading size="xl" className="line-clamp-2 text-start">
           Статистика
         </Heading>

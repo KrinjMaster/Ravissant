@@ -30,6 +30,15 @@ import Animated, {
 import { Card } from "@/components/ui/card";
 import { Pressable, ScrollView } from "react-native";
 import * as Linking from "expo-linking";
+import { Button as ButtonNative, Host, Image } from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 const AnimatedAccordionIcon = Animated.createAnimatedComponent(AccordionIcon);
 
@@ -85,15 +94,26 @@ export default function FAQ() {
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <HStack className="items-center justify-center py-2.5">
-        <Button
-          action="default"
-          variant="outline"
-          onPress={handleGoBack}
-          className="absolute left-0"
-          size="xl"
+        <Host
+          matchContents
+          colorScheme="dark"
+          style={{ position: "absolute", left: 0 }}
+          modifiers={[tint("#FFFFFF")]}
         >
-          <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-        </Button>
+          <ButtonNative
+            modifiers={[
+              buttonStyle("plain"),
+              frame({ width: 25, height: 25 }),
+              padding({ all: 10 }),
+              glassEffect({ glass: { variant: "regular" } }),
+              cornerRadius(22),
+              tint("#FFFFFF"),
+            ]}
+            onPress={() => handleGoBack()}
+          >
+            <Image systemName="chevron.left" size={20} color="#FFFFFF" />
+          </ButtonNative>
+        </Host>
         <Text size="3xl" className="text-center">
           FAQ
         </Text>

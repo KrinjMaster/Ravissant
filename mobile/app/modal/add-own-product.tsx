@@ -54,6 +54,15 @@ import {
 } from "@/components/ui/select";
 import { useFeedback } from "@/hooks/useFeedback";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
+import { Button as ButtonNative, Host, Image } from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 type WeightUnit = "мл" | "гр" | "кг" | "л";
 
@@ -254,15 +263,26 @@ export default function AddOwnProduct() {
           space="md"
         >
           <HStack className="w-full min-h-14 max-h-24 items-center justify-center">
-            <Button
-              action="default"
-              variant="outline"
-              className="absolute left-0 top-0"
-              size="xl"
-              onPress={handleGoBack}
+            <Host
+              matchContents
+              colorScheme="dark"
+              style={{ position: "absolute", left: 0 }}
+              modifiers={[tint("#FFFFFF")]}
             >
-              <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-            </Button>
+              <ButtonNative
+                modifiers={[
+                  buttonStyle("plain"),
+                  frame({ width: 25, height: 25 }),
+                  padding({ all: 10 }),
+                  glassEffect({ glass: { variant: "regular" } }),
+                  cornerRadius(22),
+                  tint("#FFFFFF"),
+                ]}
+                onPress={() => handleGoBack()}
+              >
+                <Image systemName="chevron.left" size={20} color="#FFFFFF" />
+              </ButtonNative>
+            </Host>
             <Heading size="xl" className="line-clamp-2 max-w-[75%] text-center">
               {productName === "" ? "Новый продукт" : productName}
             </Heading>

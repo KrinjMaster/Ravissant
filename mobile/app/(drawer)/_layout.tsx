@@ -23,6 +23,20 @@ import { Divider } from "@/components/ui/divider";
 import { VStack } from "@/components/ui/vstack";
 import { Href, router, usePathname } from "expo-router";
 import * as Haptics from "expo-haptics";
+import {
+  Button as ButtonNative,
+  Host,
+  Text as TextNative,
+  Image,
+} from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 export default function DrawerLayout() {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,14 +89,29 @@ export default function DrawerLayout() {
           end={{ x: 0, y: 0 }}
         >
           <HStack className="w-full justify-start pt-10 px-6 bg-transparent">
-            <Button
-              size="xl"
-              action="primary"
-              className="w-16 h-16 rounded-full"
-              onPress={() => handleIsOpen(true)}
+            <Host
+              matchContents
+              colorScheme="dark"
+              modifiers={[tint("#FFFFFF")]}
             >
-              <ButtonIcon as={MenuIcon} size="3xl" color="white" />
-            </Button>
+              <ButtonNative
+                modifiers={[
+                  buttonStyle("plain"),
+                  frame({ width: 44, height: 44 }),
+                  padding({ all: 10 }),
+                  glassEffect({ glass: { variant: "regular" } }),
+                  cornerRadius(22),
+                  tint("#FFFFFF"),
+                ]}
+                onPress={() => setIsOpen(true)}
+              >
+                <Image
+                  systemName="line.horizontal.3"
+                  size={20}
+                  color="#FFFFFF"
+                />
+              </ButtonNative>
+            </Host>
           </HStack>
         </LinearGradient>
       </View>

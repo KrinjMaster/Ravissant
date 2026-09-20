@@ -23,6 +23,15 @@ import Svg, { Defs, RadialGradient, Stop, Rect } from "react-native-svg";
 import { useSearchMealTemplates } from "@/hooks/useSearchMealTemplates";
 import { Divider } from "@/components/ui/divider";
 import { useChangeFavoriteTemplate } from "@/hooks/userChangeFavoriteTemplate";
+import { Button as ButtonNative, Host, Image } from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 export default function MealTemplates() {
   const insets = useSafeAreaInsets();
@@ -111,15 +120,26 @@ export default function MealTemplates() {
         </Svg>
       </Box>
       <HStack className="items-center justify-center py-2.5">
-        <Button
-          action="default"
-          variant="outline"
-          onPress={handleGoBack}
-          className="absolute left-0"
-          size="xl"
+        <Host
+          matchContents
+          colorScheme="dark"
+          style={{ position: "absolute", left: 0 }}
+          modifiers={[tint("#FFFFFF")]}
         >
-          <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-        </Button>
+          <ButtonNative
+            modifiers={[
+              buttonStyle("plain"),
+              frame({ width: 25, height: 25 }),
+              padding({ all: 10 }),
+              glassEffect({ glass: { variant: "regular" } }),
+              cornerRadius(22),
+              tint("#FFFFFF"),
+            ]}
+            onPress={() => handleGoBack()}
+          >
+            <Image systemName="chevron.left" size={20} color="#FFFFFF" />
+          </ButtonNative>
+        </Host>
         <Text size="3xl" className="text-center">
           Рецепты
         </Text>

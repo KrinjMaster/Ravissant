@@ -34,6 +34,15 @@ import { Input, InputField } from "@/components/ui/input";
 import { activityLevels, goals } from "@/constants/onboard";
 import { Box } from "@/components/ui/box";
 import { calculatePlan } from "@/utils/onboard";
+import { Button as ButtonNative, Host, Image } from "@expo/ui/swift-ui";
+import {
+  buttonStyle,
+  cornerRadius,
+  frame,
+  glassEffect,
+  padding,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 interface IsInvalid {
   isAgeInvalid: boolean;
@@ -90,18 +99,35 @@ export default function Profile() {
   };
 
   return (
-    <VStack style={{ paddingBottom: insets.bottom, paddingTop: insets.top }}>
+    <VStack
+      style={{
+        paddingBottom: insets.bottom,
+        paddingTop: insets.top,
+      }}
+      className="bg-secondary-0"
+    >
       <HStack className="pb-5 px-2">
         <HStack className="w-full items-center justify-center">
-          <Button
-            action="default"
-            variant="outline"
-            className="absolute left-0"
-            onPress={handleGoBack}
-            size="xl"
+          <Host
+            matchContents
+            colorScheme="dark"
+            style={{ position: "absolute", left: 0 }}
+            modifiers={[tint("#FFFFFF")]}
           >
-            <ButtonIcon as={ArrowLeftIcon} size="2xl" />
-          </Button>
+            <ButtonNative
+              modifiers={[
+                buttonStyle("plain"),
+                frame({ width: 25, height: 25 }),
+                padding({ all: 10 }),
+                glassEffect({ glass: { variant: "regular" } }),
+                cornerRadius(22),
+                tint("#FFFFFF"),
+              ]}
+              onPress={() => handleGoBack()}
+            >
+              <Image systemName="chevron.left" size={20} color="#FFFFFF" />
+            </ButtonNative>
+          </Host>
           <Text size="3xl" className="text-center">
             Профиль
           </Text>
