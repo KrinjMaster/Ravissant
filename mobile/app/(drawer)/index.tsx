@@ -8,7 +8,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
 export default function Index() {
   const [displayDate, setDisplayDate] = useState(() => new Date());
@@ -66,7 +66,7 @@ export default function Index() {
     transform: [{ translateX: translateX.value }],
   }));
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Recenter only after React renders the new date pages.
     // eslint-disable-next-line react-hooks/immutability
     translateX.value = -width;
