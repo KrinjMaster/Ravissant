@@ -4,7 +4,7 @@ const normalize = (value: string) =>
     .replace(/ё/g, "е")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+    .replace(/[^\p{L}\p{N}.,%]+/gu, " ")
     .replace(/\s+/g, " ")
     .trim();
 

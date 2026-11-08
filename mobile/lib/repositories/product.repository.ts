@@ -101,6 +101,8 @@ export const productRepository = {
     const searchConditions = tokens.map(() => "search_text LIKE ?");
     const searchParamsForSql = tokens.map((token) => `%${token}%`);
     const firstCharacter = tokens[0]?.[0] ?? "";
+    const allSearchConditions = searchConditions.join(" AND ");
+    const anySearchConditions = searchConditions.join(" OR ");
 
     if (source === "recipes") {
       const rows = await db.getAllAsync<{
@@ -138,13 +140,15 @@ export const productRepository = {
             ? "JOIN favorite_meal_templates f ON f.meal_template_id = m.id"
             : ""
         }
-        WHERE (${searchConditions.map((condition) => `m.${condition}`).join(" OR ")})
-          OR m.search_text LIKE ?
+        WHERE ${allSearchConditions
+          .split(" AND ")
+          .map((condition) => `m.${condition}`)
+          .join(" AND ")}
         GROUP BY m.id, m.name
         ORDER BY m.name
         LIMIT ?
       `,
-        [...searchParamsForSql, `%${firstCharacter}%`, candidateLimit],
+        [...searchParamsForSql, candidateLimit],
       );
 
       const candidates =
@@ -175,11 +179,16 @@ export const productRepository = {
                   ? "JOIN favorite_meal_templates f ON f.meal_template_id = m.id"
                   : ""
               }
+              WHERE (${anySearchConditions
+                .split(" OR ")
+                .map((condition) => `m.${condition}`)
+                .join(" OR ")})
+                OR m.search_text LIKE ?
               GROUP BY m.id, m.name
               ORDER BY m.name
               LIMIT ?
             `,
-              [candidateLimit],
+              [...searchParamsForSql, `%${firstCharacter}%`, candidateLimit],
             );
 
       return rankSearchResults(candidates, searchParams).slice(
@@ -208,12 +217,14 @@ export const productRepository = {
         p.calories_per_100g / 100.0 AS calories
       FROM products p
       ${favoritesOnly ? "JOIN favorite_products f ON f.product_id = p.id" : ""}
-      WHERE (${searchConditions.map((condition) => `p.${condition}`).join(" OR ")})
-        OR p.search_text LIKE ?
+      WHERE ${allSearchConditions
+        .split(" AND ")
+        .map((condition) => `p.${condition}`)
+        .join(" AND ")}
       ORDER BY p.name, p.id
       LIMIT ?
     `,
-      [...searchParamsForSql, `%${firstCharacter}%`, candidateLimit],
+      [...searchParamsForSql, candidateLimit],
     );
 
     const candidates =
@@ -235,10 +246,15 @@ export const productRepository = {
                 ? "JOIN favorite_products f ON f.product_id = p.id"
                 : ""
             }
+            WHERE (${anySearchConditions
+              .split(" OR ")
+              .map((condition) => `p.${condition}`)
+              .join(" OR ")})
+              OR p.search_text LIKE ?
             ORDER BY p.name, p.id
             LIMIT ?
           `,
-            [candidateLimit],
+            [...searchParamsForSql, `%${firstCharacter}%`, candidateLimit],
           );
 
     return rankSearchResults(candidates, searchParams).slice(
