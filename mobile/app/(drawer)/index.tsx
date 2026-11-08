@@ -8,7 +8,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Index() {
   const [displayDate, setDisplayDate] = useState(() => new Date());
@@ -31,7 +31,6 @@ export default function Index() {
 
   const resetPager = (days: number) => {
     changeDate(days);
-    translateX.value = -width;
   };
 
   const swipeGesture = Gesture.Pan()
@@ -66,6 +65,12 @@ export default function Index() {
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: translateX.value }],
   }));
+
+  useEffect(() => {
+    // Recenter only after React renders the new date pages.
+    // eslint-disable-next-line react-hooks/immutability
+    translateX.value = -width;
+  }, [displayDate, translateX, width]);
 
   return (
     <GestureDetector gesture={swipeGesture}>
