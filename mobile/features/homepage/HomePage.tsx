@@ -8,17 +8,72 @@ import { MealDisplay } from "@/features/homepage/MealDisplay";
 import { useMacrosSummary } from "@/hooks/useMacrosSummary";
 import { useOnboard } from "@/hooks/useOnboard";
 import { calculateMealCalories } from "@/utils/onboard";
-import { ScrollView } from "react-native-gesture-handler";
+import { Gesture, GestureDetector, ScrollView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useWindowDimensions } from "react-native";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { WeightDisplay } from "./WeightDisplay";
 
-export const HomePage = ({ displayDate }: { displayDate: Date }) => {
+export const HomePage = ({
+  displayDate,
+  onChangeDate,
+}: {
+  displayDate: Date;
+  onChangeDate: (days: number) => void;
+}) => {
   const { userData } = useOnboard();
   const { data: macrosData, isLoading } = useMacrosSummary(
     displayDate.toISOString(),
   );
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const translateX = useSharedValue(0);
+
+  const swipeGesture = Gesture.Pan()
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-15, 15])
+    .onUpdate((event) => {
+      translateX.value = event.translationX;
+    })
+    .onEnd((event) => {
+      const shouldChangeDate =
+        Math.abs(event.translationX) > width * 0.25 ||
+        Math.abs(event.velocityX) > 700;
+
+      if (!shouldChangeDate) {
+        translateX.value = withTiming(0, { duration: 180 });
+        return;
+      }
+
+      const direction = event.translationX < 0 ? -1 : 1;
+      translateX.value = withTiming(
+        direction * width,
+        {
+          duration: 220,
+          easing: Easing.out(Easing.cubic),
+        },
+        (finished) => {
+          if (finished) {
+            runOnJS(onChangeDate)(direction);
+            translateX.value = withTiming(0, {
+              duration: 220,
+              easing: Easing.inOut(Easing.cubic),
+            });
+          }
+        },
+      );
+    });
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }));
   const caloriesByMeal = calculateMealCalories(
     userData.nutritionPlan?.calories ?? 0,
   );
@@ -42,7 +97,9 @@ export const HomePage = ({ displayDate }: { displayDate: Date }) => {
   }
 
   return (
-    <ScrollView className="flex-1 h-full bg-secondary-0">
+    <GestureDetector gesture={swipeGesture}>
+      <Animated.View style={[{ flex: 1 }, animatedStyle]}>
+        <ScrollView className="flex-1 h-full bg-secondary-0">
       <VStack
         className="h-full bg-secondary-0 px-3 items-center"
         space="md"
@@ -122,6 +179,8 @@ export const HomePage = ({ displayDate }: { displayDate: Date }) => {
         <Divider className="my-0.5 w-[85%] h-0.5" />
         <WeightDisplay />
       </VStack>
-    </ScrollView>
+        </ScrollView>
+      </Animated.View>
+    </GestureDetector>
   );
 };
