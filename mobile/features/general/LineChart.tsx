@@ -88,23 +88,11 @@ export const LineChart = ({
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const actualMin = Math.min(...data);
   const actualMax = Math.max(...data);
-
-  const computedMin =
-    minY ??
-    Math.max(
-      actualMin - Math.max(actualMax - actualMin, 1) * yPaddingPercent,
-      0,
-    );
-
-  const computedMax =
-    maxY ?? actualMax + Math.max(actualMax - actualMin, 1) * yPaddingPercent;
-
-  const range = Math.max(computedMax - computedMin, 1);
-
-  const yPadding = range * 0.15;
-
-  const min = Math.max(actualMin - yPadding, 0);
-  const max = actualMax + yPadding;
+  const dataRange = actualMax - actualMin;
+  const yPadding = Math.max(dataRange, 1) * yPaddingPercent;
+  const min = minY ?? Math.max(actualMin - yPadding, 0);
+  const max = maxY ?? actualMax + (dataRange === 0 ? 1 : yPadding);
+  const range = Math.max(max - min, 1);
 
   const paddingLeft = 42;
   const paddingRight = 16;
