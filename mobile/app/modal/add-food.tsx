@@ -320,7 +320,11 @@ export default function AddFoodModal() {
                     <SelectDragIndicator />
                   </SelectDragIndicatorWrapper>
                   <SelectItem label="Продукты" value="Продукты" />
-                  <SelectItem label="Рецепты" value="Рецепты" />
+                  <SelectItem
+                    label="Рецепты"
+                    value="Рецепты"
+                    className="mb-5"
+                  />
                 </SelectContent>
               </SelectPortal>
             </Select>
@@ -340,7 +344,11 @@ export default function AddFoodModal() {
                     <SelectDragIndicator />
                   </SelectDragIndicatorWrapper>
                   <SelectItem label="Все" value="Все" />
-                  <SelectItem label="Любимые" value="Любимые" />
+                  <SelectItem
+                    label="Любимые"
+                    value="Любимые"
+                    className="mb-5"
+                  />
                 </SelectContent>
               </SelectPortal>
             </Select>

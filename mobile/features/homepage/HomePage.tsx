@@ -3,8 +3,14 @@ import { Divider } from "@/components/ui/divider";
 import { Skeleton, SkeletonText } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
+import { HStack } from "@/components/ui/hstack";
 import { MacrosDisplay } from "@/features/homepage/MacrosDisplay";
 import { MealDisplay } from "@/features/homepage/MealDisplay";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@/components/ui/icon";
+import { Button, ButtonIcon } from "@/components/ui/button";
 import { useMacrosSummary } from "@/hooks/useMacrosSummary";
 import { useOnboard } from "@/hooks/useOnboard";
 import { calculateMealCalories } from "@/utils/onboard";
@@ -15,8 +21,10 @@ import { WeightDisplay } from "./WeightDisplay";
 
 export const HomePage = ({
   displayDate,
+  onChangeDate,
 }: {
   displayDate: Date;
+  onChangeDate: (days: number) => void;
 }) => {
   const { userData } = useOnboard();
   const { data: macrosData, isLoading } = useMacrosSummary(
@@ -90,13 +98,31 @@ export const HomePage = ({
             <Rect width="100" height="100" fill="url(#glow)" />
           </Svg>
         </Box>
-        <Text size="3xl">
-          {displayDate.toLocaleString("ru-RU", {
-            weekday: "short",
-            month: "short",
-            day: "numeric",
-          })}
-        </Text>
+        <HStack className="w-full items-center justify-between px-2">
+          <Button
+            variant="link"
+            action="default"
+            accessibilityLabel="Предыдущий день"
+            onPress={() => onChangeDate(-1)}
+          >
+            <ButtonIcon as={ChevronLeftIcon} size="xl" />
+          </Button>
+          <Text size="3xl">
+            {displayDate.toLocaleString("ru-RU", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+            })}
+          </Text>
+          <Button
+            variant="link"
+            action="default"
+            accessibilityLabel="Следующий день"
+            onPress={() => onChangeDate(1)}
+          >
+            <ButtonIcon as={ChevronRightIcon} size="xl" />
+          </Button>
+        </HStack>
         <MacrosDisplay
           data={{
             ...macrosData,
