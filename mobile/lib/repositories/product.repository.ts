@@ -3,6 +3,7 @@ import { SQLiteDatabase } from "expo-sqlite";
 import { generateId } from "@/utils/product";
 import { Product } from "@/features/meal-template/mealTemplate.context";
 import { SearchSource } from "@/app/modal/add-food";
+import { rankSearchResults, searchTokens } from "@/utils/search";
 
 export const productRepository = {
   getSummary: async (db: SQLiteDatabase, dayDate: string) => {
@@ -95,7 +96,11 @@ export const productRepository = {
     limit: number,
     offset: number,
   ) => {
-    const search = `%${searchParams.toLowerCase()}%`;
+    const candidateLimit = 5000;
+    const tokens = searchTokens(searchParams);
+    const searchConditions = tokens.map(() => "search_text LIKE ?");
+    const searchParamsForSql = tokens.map((token) => `%${token}%`);
+    const firstCharacter = tokens[0]?.[0] ?? "";
 
     if (source === "recipes") {
       const rows = await db.getAllAsync<{
@@ -133,15 +138,54 @@ export const productRepository = {
             ? "JOIN favorite_meal_templates f ON f.meal_template_id = m.id"
             : ""
         }
-        WHERE m.search_text LIKE ?
+        WHERE (${searchConditions.map((condition) => `m.${condition}`).join(" OR ")})
+          OR m.search_text LIKE ?
         GROUP BY m.id, m.name
         ORDER BY m.name
-        LIMIT ? OFFSET ?
+        LIMIT ?
       `,
-        [search, limit, offset],
+        [...searchParamsForSql, `%${firstCharacter}%`, candidateLimit],
       );
 
-      return rows;
+      const candidates =
+        rows.length > 0
+          ? rows
+          : await db.getAllAsync<typeof rows[number]>(
+              `
+              SELECT
+                m.id,
+                m.name,
+                'recipes' AS type,
+                NULL AS brand,
+                NULL AS weight,
+                NULL AS unit,
+                CAST(
+                  COALESCE(
+                    SUM(p.calories_per_100g * mti.grams / 10000.0),
+                    0
+                  ) AS INTEGER
+                ) AS calories
+              FROM meal_templates m
+              LEFT JOIN meal_template_items mti
+                ON mti.meal_template_id = m.id
+              LEFT JOIN products p
+                ON p.id = mti.product_id
+              ${
+                favoritesOnly
+                  ? "JOIN favorite_meal_templates f ON f.meal_template_id = m.id"
+                  : ""
+              }
+              GROUP BY m.id, m.name
+              ORDER BY m.name
+              LIMIT ?
+            `,
+              [candidateLimit],
+            );
+
+      return rankSearchResults(candidates, searchParams).slice(
+        offset,
+        offset + limit,
+      );
     }
 
     const rows = await db.getAllAsync<{
@@ -164,14 +208,43 @@ export const productRepository = {
         p.calories_per_100g / 100.0 AS calories
       FROM products p
       ${favoritesOnly ? "JOIN favorite_products f ON f.product_id = p.id" : ""}
-      WHERE p.search_text LIKE ?
+      WHERE (${searchConditions.map((condition) => `p.${condition}`).join(" OR ")})
+        OR p.search_text LIKE ?
       ORDER BY p.name, p.id
-      LIMIT ? OFFSET ?
+      LIMIT ?
     `,
-      [search, limit, offset],
+      [...searchParamsForSql, `%${firstCharacter}%`, candidateLimit],
     );
 
-    return rows;
+    const candidates =
+      rows.length > 0
+        ? rows
+        : await db.getAllAsync<typeof rows[number]>(
+            `
+            SELECT
+              p.id,
+              p.name,
+              'products' AS type,
+              p.brand,
+              p.weight,
+              p.unit,
+              p.calories_per_100g / 100.0 AS calories
+            FROM products p
+            ${
+              favoritesOnly
+                ? "JOIN favorite_products f ON f.product_id = p.id"
+                : ""
+            }
+            ORDER BY p.name, p.id
+            LIMIT ?
+          `,
+            [candidateLimit],
+          );
+
+    return rankSearchResults(candidates, searchParams).slice(
+      offset,
+      offset + limit,
+    );
   },
   getItemById: async (db: SQLiteDatabase, productId: string) => {
     const result = await db.getFirstAsync<{

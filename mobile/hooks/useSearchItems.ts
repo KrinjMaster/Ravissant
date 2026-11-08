@@ -2,6 +2,7 @@ import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
 import { SearchSource } from "@/app/modal/add-food";
 import { productService } from "@/services/product.service";
+import { useDebouncedValue } from "./useDebouncedValue";
 
 const PAGE_SIZE = 20;
 
@@ -11,16 +12,17 @@ export const useSearchItems = (
   favoritesOnly: boolean,
 ) => {
   const db = useSQLiteContext();
+  const debouncedSearchString = useDebouncedValue(searchString.trim(), 250);
 
   return useInfiniteQuery({
-    queryKey: ["search-items", searchString, source, favoritesOnly],
+    queryKey: ["search-items", debouncedSearchString, source, favoritesOnly],
 
     initialPageParam: 0,
 
     queryFn: ({ pageParam }) =>
       productService.searchItems(
         db,
-        searchString,
+        debouncedSearchString,
         source,
         favoritesOnly,
         PAGE_SIZE,
@@ -35,6 +37,6 @@ export const useSearchItems = (
       return allPages.length * PAGE_SIZE;
     },
     placeholderData: keepPreviousData,
-    enabled: searchString.length > 0,
+    enabled: debouncedSearchString.length > 0,
   });
 };
