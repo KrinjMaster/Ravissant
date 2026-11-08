@@ -205,6 +205,7 @@ export const productRepository = {
       weight: number;
       unit: string;
       calories: number;
+      usageCount: number;
     }>(
       `
       SELECT
@@ -214,14 +215,20 @@ export const productRepository = {
         p.brand,
         p.weight,
         p.unit,
-        p.calories_per_100g / 100.0 AS calories
+        p.calories_per_100g / 100.0 AS calories,
+        COALESCE(usage.product_count, 0) AS usageCount
       FROM products p
       ${favoritesOnly ? "JOIN favorite_products f ON f.product_id = p.id" : ""}
+      LEFT JOIN (
+        SELECT product_id, COUNT(*) AS product_count
+        FROM food_entries
+        GROUP BY product_id
+      ) usage ON usage.product_id = p.id
       WHERE ${allSearchConditions
         .split(" AND ")
         .map((condition) => `p.${condition}`)
         .join(" AND ")}
-      ORDER BY p.name, p.id
+      ORDER BY usageCount DESC, p.name, p.id
       LIMIT ?
     `,
       [...searchParamsForSql, candidateLimit],
@@ -239,19 +246,25 @@ export const productRepository = {
               p.brand,
               p.weight,
               p.unit,
-              p.calories_per_100g / 100.0 AS calories
+              p.calories_per_100g / 100.0 AS calories,
+              COALESCE(usage.product_count, 0) AS usageCount
             FROM products p
             ${
               favoritesOnly
                 ? "JOIN favorite_products f ON f.product_id = p.id"
                 : ""
             }
+            LEFT JOIN (
+              SELECT product_id, COUNT(*) AS product_count
+              FROM food_entries
+              GROUP BY product_id
+            ) usage ON usage.product_id = p.id
             WHERE (${anySearchConditions
               .split(" OR ")
               .map((condition) => `p.${condition}`)
               .join(" OR ")})
               OR p.search_text LIKE ?
-            ORDER BY p.name, p.id
+            ORDER BY usageCount DESC, p.name, p.id
             LIMIT ?
           `,
             [...searchParamsForSql, `%${firstCharacter}%`, candidateLimit],

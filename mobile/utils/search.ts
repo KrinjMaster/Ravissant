@@ -64,7 +64,7 @@ export const scoreSearchResult = (name: string, query: string) => {
   return score;
 };
 
-export const rankSearchResults = <T extends { name: string }>(
+export const rankSearchResults = <T extends { name: string; usageCount?: number }>(
   results: T[],
   query: string,
 ) =>
@@ -75,5 +75,10 @@ export const rankSearchResults = <T extends { name: string }>(
       score: scoreSearchResult(result.name, query),
     }))
     .filter(({ score }) => score > 0)
-    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .sort(
+      (left, right) =>
+        right.score - left.score ||
+        (right.result.usageCount ?? 0) - (left.result.usageCount ?? 0) ||
+        left.index - right.index,
+    )
     .map(({ result }) => result);
