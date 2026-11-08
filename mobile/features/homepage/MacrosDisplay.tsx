@@ -1,18 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { CaloriesDisplay } from "@/components/ui/custom/caloriesDisplay";
 import { HStack } from "@/components/ui/hstack";
-import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress";
 import { Text } from "@/components/ui/text";
 import { VStack } from "@/components/ui/vstack";
 import { useOnboard } from "@/hooks/useOnboard";
-import { useEffect } from "react";
-import {
-  createAnimatedComponent,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import { useEffect, useMemo } from "react";
+import { Animated } from "react-native";
 import { useSafeAreaFrame } from "react-native-safe-area-context";
 
 interface Prop {
@@ -21,8 +15,6 @@ interface Prop {
   fat: number;
   carbs: number;
 }
-
-const AnimatedProgress = createAnimatedComponent(ProgressFilledTrack);
 
 export const MacrosDisplay = ({ data }: { data: Prop }) => {
   const { userData } = useOnboard();
@@ -41,43 +33,29 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
     fat: 0,
   };
 
-  const animatedProteinValue = useSharedValue(0);
-  const animatedFatValue = useSharedValue(0);
-  const animatedCarbsValue = useSharedValue(0);
+  const proteinProgress = useMemo(() => new Animated.Value(0), []);
+  const fatProgress = useMemo(() => new Animated.Value(0), []);
+  const carbsProgress = useMemo(() => new Animated.Value(0), []);
 
-  const animatedProteinStyle = useAnimatedStyle(() => ({
-    width: `${animatedProteinValue.value}%`,
-  }));
-  const animatedFatStyle = useAnimatedStyle(() => ({
-    width: `${animatedFatValue.value}%`,
-  }));
-  const animatedCarbsStyle = useAnimatedStyle(() => ({
-    width: `${animatedCarbsValue.value}%`,
-  }));
+  const animateProgress = (value: Animated.Value, amount: number) => {
+    Animated.timing(value, {
+      toValue: Math.min(100, Math.max(0, amount)),
+      duration: 800,
+      useNativeDriver: false,
+    }).start();
+  };
 
   useEffect(() => {
-    animatedProteinValue.value = withTiming((protein / proteinGoal) * 100, {
-      duration: 800,
-      easing: Easing.inOut(Easing.cubic),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [protein]);
+    animateProgress(proteinProgress, proteinGoal ? (protein / proteinGoal) * 100 : 0);
+  }, [protein, proteinGoal, proteinProgress]);
 
   useEffect(() => {
-    animatedFatValue.value = withTiming((fat / fatGoal) * 100, {
-      duration: 800,
-      easing: Easing.inOut(Easing.cubic),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fat]);
+    animateProgress(fatProgress, fatGoal ? (fat / fatGoal) * 100 : 0);
+  }, [fat, fatGoal, fatProgress]);
 
   useEffect(() => {
-    animatedCarbsValue.value = withTiming((carbs / carbsGoal) * 100, {
-      duration: 800,
-      easing: Easing.inOut(Easing.cubic),
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [carbs]);
+    animateProgress(carbsProgress, carbsGoal ? (carbs / carbsGoal) * 100 : 0);
+  }, [carbs, carbsGoal, carbsProgress]);
 
   return (
     <VStack
@@ -98,9 +76,14 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
               size="sm"
               className="w-[90%] mt-auto overflow-hidden"
             >
-              <AnimatedProgress
-                className="bg-tertiary-600"
-                style={animatedProteinStyle}
+              <Animated.View
+                className="h-2 bg-tertiary-600 rounded-full"
+                style={{
+                  width: proteinProgress.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: ["0%", "100%"],
+                  }),
+                }}
               />
             </Progress>
             <Text className="text-secondary-800" size="sm">
@@ -114,9 +97,14 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
               size="sm"
               className="w-[90%] mt-auto overflow-hidden"
             >
-              <AnimatedProgress
-                className="bg-tertiary-600"
-                style={animatedFatStyle}
+              <Animated.View
+                className="h-2 bg-tertiary-600 rounded-full"
+                style={{
+                  width: fatProgress.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: ["0%", "100%"],
+                  }),
+                }}
               />
             </Progress>
             <Text className="text-secondary-800" size="sm">
@@ -130,9 +118,14 @@ export const MacrosDisplay = ({ data }: { data: Prop }) => {
               size="sm"
               className="w-[90%] mt-auto overflow-hidden"
             >
-              <AnimatedProgress
-                className="bg-tertiary-600"
-                style={animatedCarbsStyle}
+              <Animated.View
+                className="h-2 bg-tertiary-600 rounded-full"
+                style={{
+                  width: carbsProgress.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: ["0%", "100%"],
+                  }),
+                }}
               />
             </Progress>
             <Text className="text-secondary-800" size="sm">

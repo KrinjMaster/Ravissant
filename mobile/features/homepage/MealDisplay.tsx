@@ -1,28 +1,19 @@
 import { Button, ButtonIcon } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Heading } from "@/components/ui/heading";
-import { Progress, ProgressFilledTrack } from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress";
 import { HStack } from "@/components/ui/hstack";
 import { AddIcon, Icon, InfoIcon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 import { MealType } from "@/types/products";
 import { getMealLocale } from "@/utils/meals";
 import { router } from "expo-router";
-import {
-  createAnimatedComponent,
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import { Animated, Pressable } from "react-native";
 import { VStack } from "@/components/ui/vstack";
-import { Pressable } from "react-native";
 import { useMealMacros } from "@/hooks/useMealMacros";
 import { SkeletonText } from "@/components/ui/skeleton";
 import * as Haptics from "expo-haptics";
-
-const AnimatedProgress = createAnimatedComponent(ProgressFilledTrack);
 
 export const MealDisplay = ({
   meal,
@@ -41,24 +32,19 @@ export const MealDisplay = ({
     calories: 0,
   };
 
-  const animatedProgressValue = useSharedValue(0);
-
-  const animatedProgressStyle = useAnimatedStyle(() => ({
-    height: `${animatedProgressValue.value}%`,
-  }));
+  const progressValue = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
     if (!isLoading) {
-      animatedProgressValue.value = withTiming(
-        (calories / plannedCalories) * 100,
-        {
-          duration: 400,
-          easing: Easing.inOut(Easing.cubic),
-        },
-      );
+      Animated.timing(progressValue, {
+        toValue: plannedCalories
+          ? Math.min(100, Math.max(0, (calories / plannedCalories) * 100))
+          : 0,
+        duration: 400,
+        useNativeDriver: false,
+      }).start();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [calories]);
+  }, [calories, isLoading, plannedCalories, progressValue]);
 
   const openAddFoodModal = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -98,9 +84,14 @@ export const MealDisplay = ({
     <Card className="w-full h-24 p-2.5" variant="half-rounded">
       <HStack className="h-full pr-2.5" space="lg">
         <Progress orientation="vertical" size="sm" className="overflow-hidden">
-          <AnimatedProgress
-            className="bg-tertiary-600"
-            style={animatedProgressStyle}
+          <Animated.View
+            className="absolute bottom-0 left-0 right-0 bg-tertiary-600 rounded-full"
+            style={{
+              height: progressValue.interpolate({
+                inputRange: [0, 100],
+                outputRange: ["0%", "100%"],
+              }),
+            }}
           />
         </Progress>
         <VStack className="gap-0 relative w-[80%]">

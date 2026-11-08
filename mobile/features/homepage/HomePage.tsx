@@ -42,7 +42,7 @@ export const HomePage = ({ displayDate }: { displayDate: Date }) => {
   }
 
   return (
-    <ScrollView className="flex-1 h-full">
+    <ScrollView className="flex-1 h-full bg-secondary-0">
       <VStack
         className="h-full bg-secondary-0 px-3 items-center"
         space="md"

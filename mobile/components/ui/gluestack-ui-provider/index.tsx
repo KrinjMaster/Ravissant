@@ -30,6 +30,7 @@ export function GluestackUIProvider({
           flex: 1,
           height: "100%",
           width: "100%",
+          backgroundColor: "#0F0F0F",
         },
         props.style,
       ]}

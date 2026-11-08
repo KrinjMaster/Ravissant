@@ -67,7 +67,7 @@ export default function AddProductModal() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     if (mode === "meal") {
-      addMealItem({
+      await addMealItem({
         productId,
         mealType: meal,
         grams: parseFloat(weight.replace(",", ".")),
@@ -196,7 +196,10 @@ export default function AddProductModal() {
               onOpen={() => setIsStorePopoverOpen(true)}
               offset={10}
               trigger={(triggerProps) => (
-                <HStack className="px-5 items-center max-w-[75%]" space="sm">
+                <HStack
+                  className="px-5 mx-auto h-14 max-w-[70%] items-center"
+                  space="sm"
+                >
                   {data.store?.split(", ").map((name, i) => {
                     return i === 0 ? (
                       <Text
@@ -243,7 +246,7 @@ export default function AddProductModal() {
             <Button
               action="default"
               variant="outline"
-              className={`${data.isFavorite ? "bg-background-200" : ""}`}
+              className={`${data.isFavorite ? "bg-background-200" : ""} absolute right-0`}
               onPress={handleChangeFavorite}
               size="xl"
             >

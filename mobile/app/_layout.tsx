@@ -55,17 +55,21 @@ export default function RootLayout() {
   // theme.colors.background = "rgba(15, 15, 15)";
   //
   if (!dbReady) {
-    return <Text>Loading DB...</Text>;
+    return (
+      <Text style={{ flex: 1, backgroundColor: "#0F0F0F" }}>
+        Loading DB...
+      </Text>
+    );
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#0F0F0F" }}>
       <SQLiteProvider
         databaseName="main.db"
         assetSource={{ assetId: require("../assets/main.db") }}
       >
         <QueryClientProvider client={queryClient}>
-          <GluestackUIProvider mode="dark">
+          <GluestackUIProvider mode="dark" style={{ backgroundColor: "#0F0F0F" }}>
             <OnboardProvider>
               <MealTemplateProvider>
                 <FeedbackProvider>
@@ -90,7 +94,12 @@ function RootStack() {
   if (isLoading || !loaded) return <Text>Loading...</Text>;
 
   return (
-    <Stack screenOptions={{ gestureEnabled: true }}>
+    <Stack
+      screenOptions={{
+        gestureEnabled: true,
+        contentStyle: { backgroundColor: "#0F0F0F" },
+      }}
+    >
       <Stack.Protected guard={isOnboarded}>
         <Stack.Screen name="modal" options={{ headerShown: false }} />
       </Stack.Protected>

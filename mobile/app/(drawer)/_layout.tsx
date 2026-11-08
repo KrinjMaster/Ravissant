@@ -55,12 +55,13 @@ export default function DrawerLayout() {
   };
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-secondary-0">
       <ExpoDrawer
         screenOptions={{
           swipeEdgeWidth: 0,
           headerShown: false,
           drawerStyle: { width: 0 },
+          sceneStyle: { backgroundColor: "#0F0F0F" },
         }}
       >
         <ExpoDrawer.Screen name="index" options={{ title: "Home" }} />
