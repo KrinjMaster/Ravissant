@@ -37,7 +37,7 @@ export default function Index() {
     .activeOffsetX([-20, 20])
     .failOffsetY([-15, 15])
     .onUpdate((event) => {
-      translateX.value = -width - event.translationX;
+      translateX.value = -width + event.translationX;
     })
     .onEnd((event) => {
       const shouldChangeDate =
@@ -49,7 +49,7 @@ export default function Index() {
         return;
       }
 
-      const days = event.translationX > 0 ? 1 : -1;
+      const days = event.translationX < 0 ? 1 : -1;
       translateX.value = withTiming(
         days > 0 ? -2 * width : 0,
         {
