@@ -71,7 +71,10 @@ export default function Index() {
     <GestureDetector gesture={swipeGesture}>
       <View className="flex-1 overflow-hidden bg-secondary-0">
         <Animated.View
-          style={[{ flexDirection: "row", width: width * 3 }, animatedStyle]}
+          style={[
+            { flexDirection: "row", width: width * 3, height: "100%" },
+            animatedStyle,
+          ]}
         >
           {[dateForOffset(-1), displayDate, dateForOffset(1)].map((date) => (
             <View key={date.toISOString().substring(0, 10)} style={{ width }}>
